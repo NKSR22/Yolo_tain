@@ -104,6 +104,30 @@ train.bat</pre>
 
 <div class="tip">ลองเปลี่ยน <code>model=yolo11n.pt</code> เป็น <code>yolo11s.pt</code> เพื่อเปรียบเทียบขนาดโมเดลกับความแม่นยำ (n=nano เร็วสุด, s=small แม่นขึ้นแต่ช้าลง)</div>
 
+<h2>🛠️ หมายเหตุ & แก้ปัญหา (Troubleshooting)</h2>
+<table>
+<thead><tr><th>เรื่อง</th><th>รายละเอียด / วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+  <td>รัน <code>train.bat</code> ซ้ำแล้วผลไม่อยู่ที่ <code>train\</code></td>
+  <td>YOLO ไม่เขียนทับของเดิม แต่สร้างโฟลเดอร์ใหม่เพิ่มเลข: <code>train2</code>, <code>train3</code> ... ให้ดูโฟลเดอร์ล่าสุด (หรือลบ <code>runs\detect\train*</code> ทิ้งก่อนรันใหม่)</td>
+</tr>
+<tr>
+  <td><code>CUDA out of memory</code> (การ์ด VRAM น้อย เช่น 4 GB)</td>
+  <td>มักเกิดเมื่อเปลี่ยนไปโมเดลใหญ่ (<code>yolo11s/m</code>) — ลด batch เช่น เพิ่ม <code>batch=4</code> ต่อท้ายคำสั่ง หรือใช้ <code>imgsz=416</code></td>
+</tr>
+<tr>
+  <td>Train บน CPU (ไม่มี GPU)</td>
+  <td>ทำได้แต่ช้ากว่ามาก — COCO8 ยังไหว เพราะมีแค่ 8 ภาพ; ยืนยันว่าใช้ GPU ได้จากบรรทัด <code>CUDA:0 (...)</code> ตอนเริ่ม Train</td>
+</tr>
+<tr>
+  <td>ดาวน์โหลด <code>yolo11n.pt</code> / COCO8 ไม่ได้</td>
+  <td>เกิดจากเน็ต — Ultralytics ดาวน์โหลดให้อัตโนมัติครั้งแรก ลองรันซ้ำเมื่อเน็ตพร้อม</td>
+</tr>
+</tbody>
+</table>
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> (RTX 3050 Ti, 4GB): 20 epochs เสร็จในไม่กี่วินาที ได้ <code>best.pt</code> ที่ <code>runs\detect\train\weights\</code> พร้อม mAP50 ≈ 0.85 บนชุด val (COCO8 เป็น dataset จิ๋วไว้ทดสอบ pipeline ไม่ใช่วัดความแม่นจริง)</div>
+
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
