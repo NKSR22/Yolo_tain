@@ -21,8 +21,16 @@ python -m pip install --upgrade pip
 echo [3/4] Detecting NVIDIA GPU ...
 nvidia-smi >nul 2>&1
 if %errorlevel%==0 (
-    echo GPU found - installing PyTorch with CUDA 12.1 support
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+    echo GPU found - installing PyTorch with CUDA 12.4 support
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+    if errorlevel 1 (
+        echo.
+        echo WARNING: ติดตั้ง PyTorch แบบ CUDA ไม่สำเร็จ
+        echo   สาเหตุที่พบบ่อย: Python เวอร์ชันใหม่เกินไปยังไม่มี wheel ในช่องทาง CUDA นี้
+        echo   กำลัง fallback ไปติดตั้งแบบ CPU-only แทน ^(ยัง Train ได้แต่ช้ากว่า^)
+        echo.
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    )
 ) else (
     echo No NVIDIA GPU detected - installing CPU-only PyTorch
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu

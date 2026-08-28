@@ -77,10 +77,11 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </ul>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>ติดตั้ง Python 3.10/3.11</h3>
+<h3>ติดตั้ง Python 3.10–3.13</h3>
 <p>ดาวน์โหลดจาก <code>python.org</code> แล้วติดตั้งโดย <b>ต้องติ๊ก "Add python.exe to PATH"</b> ตอนติดตั้ง</p>
 <pre>python --version
 pip --version</pre>
+<div class="tip">แนะนำ Python 3.10 หรือ 3.11 เพราะมี wheel ครบทุกช่องทางมากที่สุด แต่ <b>Python 3.13 ก็ใช้งานได้</b> — สคริปต์เวอร์ชันนี้เลือกช่องทาง CUDA ที่รองรับ 3.13 ให้แล้ว</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
@@ -98,26 +99,62 @@ setup_env.bat</pre>
 <p>สคริปต์นี้จะ:</p>
 <ol>
 <li>สร้าง Virtual Environment ชื่อ <code>venv</code></li>
-<li>ติดตั้ง PyTorch รุ่นที่รองรับ CUDA (หรือ CPU ถ้าไม่พบ GPU)</li>
-<li>ติดตั้งไลบรารี <code>ultralytics</code> (YOLO)</li>
+<li>ติดตั้ง PyTorch ช่องทาง CUDA 12.4 (<code>cu124</code>) ถ้าพบ GPU — และถ้าติดตั้งไม่สำเร็จจะ <b>fallback เป็น CPU-only อัตโนมัติ</b></li>
+<li>ติดตั้งไลบรารี <code>ultralytics</code> (YOLO) และ <code>opencv-python</code></li>
 <li>รันสคริปต์ตรวจสอบความพร้อม <code>check_env.py</code></li>
 </ol>
+<div class="tip">ไดรเวอร์ NVIDIA เวอร์ชันใหม่ (แสดง CUDA Version 12.x ใน <code>nvidia-smi</code>) รองรับ PyTorch <code>cu124</code> ได้แม้ตัวเลขจะไม่ตรงกันเป๊ะ เพราะ CUDA เข้ากันได้แบบย้อนหลัง (backward compatible)</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
 <h3>ตรวจสอบผลลัพธ์</h3>
-<p>ผลลัพธ์ที่ถูกต้องควรมีลักษณะคล้ายนี้:</p>
-<pre>Python:        3.11.x
-Torch:         2.x.x+cu121
+<p>ผลลัพธ์ที่ถูกต้องควรมีลักษณะคล้ายนี้ (เลขเวอร์ชันอาจต่างกันเล็กน้อย):</p>
+<pre>Python:        3.13.x
+Torch:         2.6.0+cu124
 CUDA available: True
 GPU:           NVIDIA GeForce RTX ...
 Ultralytics:   8.x.x  YOLO OK</pre>
 <div class="warn">ถ้า <code>CUDA available: False</code> ทั้งที่มีการ์ดจอ NVIDIA ให้ตรวจสอบ Driver และลองรัน <code>setup_env.bat</code> ใหม่อีกครั้ง หรือแจ้งผู้สอน — ยังสามารถเรียนต่อได้ด้วย CPU (ช้าลงในแล็บที่ต้อง Train)</div>
 </div>
 
+<h2>🛠️ แก้ปัญหาที่พบบ่อย (Troubleshooting)</h2>
+<table>
+<thead><tr><th>อาการ / ข้อความ Error</th><th>สาเหตุ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>ERROR: Could not find a version that satisfies the requirement torch</code><br>(<code>No matching distribution found for torch</code>)</td>
+  <td>ช่องทางที่เลือก (เช่น <code>cu121</code>) ไม่มี wheel สำหรับ Python เวอร์ชันที่ใช้ — พบบ่อยกับ Python 3.13</td>
+  <td>ใช้ช่องทางที่ใหม่กว่า เช่น <code>cu124</code> (สคริปต์เวอร์ชันนี้ตั้งค่าให้แล้ว) หรือลง Python 3.11 คู่ไว้แล้วสร้าง venv ด้วย 3.11</td>
+</tr>
+<tr>
+  <td><code>CUDA available: False</code> ทั้งที่มีการ์ดจอ NVIDIA</td>
+  <td>ติดตั้ง PyTorch แบบ CPU-only, ไดรเวอร์เก่า, หรือ venv เดิมยังค้างเวอร์ชัน CPU</td>
+  <td>อัปเดตไดรเวอร์จาก nvidia.com → ลบโฟลเดอร์ <code>venv</code> ทิ้ง → รัน <code>setup_env.bat</code> ใหม่</td>
+</tr>
+<tr>
+  <td><code>'python' is not recognized...</code></td>
+  <td>ตอนติดตั้ง Python ไม่ได้ติ๊ก "Add to PATH"</td>
+  <td>ติดตั้ง Python ใหม่แล้วติ๊ก "Add python.exe to PATH" หรือใช้ <code>py</code> แทน <code>python</code></td>
+</tr>
+<tr>
+  <td>ดาวน์โหลด torch ค้าง/หลุดกลางคัน (ไฟล์ ~2.5 GB)</td>
+  <td>เน็ตช้าหรือหลุด</td>
+  <td>รันสคริปต์ซ้ำได้เลย pip จะใช้ไฟล์ที่ cache ไว้ต่อ ไม่ต้องโหลดใหม่ทั้งหมด</td>
+</tr>
+<tr>
+  <td>โหลดโมเดลแล้ว CUDA out of memory ตอน Train (การ์ด VRAM น้อย เช่น 4 GB)</td>
+  <td>batch/รูปใหญ่เกินหน่วยความจำ GPU</td>
+  <td>ลด <code>batch</code> และ <code>imgsz</code> ในแล็บที่ Train (จะกล่าวถึงใน Lab4)</td>
+</tr>
+</tbody>
+</table>
+<div class="tip"><b>ตรวจสอบเองแบบเร็ว:</b> ถ้าต้องการรู้ว่าติดตั้ง GPU สำเร็จไหมโดยไม่ต้องรันทั้งสคริปต์ ให้ activate venv แล้วรัน<br>
+<code>python -c "import torch; print(torch.__version__, torch.cuda.is_available())"</code><br>
+ควรได้เวอร์ชันลงท้าย <code>+cu124</code> และ <code>True</code></div>
+
 <h2>📌 การใช้งาน venv ในแล็บถัดไป</h2>
 <p>ทุกครั้งที่เปิด Command Prompt ใหม่เพื่อทำงานกับโปรเจกต์นี้ ให้ Activate venv ก่อนเสมอ:</p>
-<pre>cd Yolo_training
+<pre>cd path\to\Yolo_tain
 venv\Scripts\activate</pre>
 <p>จะเห็น <code>(venv)</code> ขึ้นหน้าพรอมป์ แปลว่าพร้อมใช้งาน (ปิดด้วยคำสั่ง <code>deactivate</code>)</p>
 
