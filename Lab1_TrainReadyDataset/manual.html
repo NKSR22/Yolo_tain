@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab 1: Train YOLO ด้วย Dataset สำเร็จรูป</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel2:#1d2129; --text:#e8eaed; --muted:#9aa4b2;
+  --accent:#5b8cff; --accent2:#22c55e; --warn:#f59e0b; --danger:#ef4444; --border:#2a2f3a;
+  --code-bg:#11141a; --code-text:#c9d1d9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Tahoma,'Sarabun',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+header.hero{background:linear-gradient(135deg,#1a2540,#0f1115);border:1px solid var(--border);border-radius:16px;padding:28px 28px;margin-bottom:28px}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px;margin-bottom:10px}
+h1{font-size:28px;margin:6px 0 8px}
+.meta{color:var(--muted);font-size:14px;display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.meta span{background:var(--panel2);padding:6px 12px;border-radius:8px;border:1px solid var(--border)}
+h2{font-size:20px;margin-top:40px;padding-bottom:8px;border-bottom:2px solid var(--border);color:#fff}
+h2::before{content:"";display:inline-block}
+h3{font-size:16px;color:var(--accent);margin-top:24px}
+p{color:#d7dae0}
+ul,ol{color:#d7dae0;padding-left:22px}
+li{margin:6px 0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:16px 0}
+.step{background:var(--panel);border-left:4px solid var(--accent);border-radius:8px;padding:16px 18px;margin:14px 0}
+.step .n{color:var(--accent);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+pre{background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:10px;overflow-x:auto;border:1px solid var(--border);font-size:13.5px;line-height:1.55}
+code{font-family:Consolas,'SFMono-Regular',Menlo,monospace}
+p code, li code{background:var(--code-bg);padding:2px 6px;border-radius:4px;color:#7dd3fc}
+.tip{background:#12261c;border:1px solid #1f4a30;color:#a7f3d0;border-radius:10px;padding:12px 16px;margin:14px 0}
+.warn{background:#2a1f0f;border:1px solid #55420f;color:#fde68a;border-radius:10px;padding:12px 16px;margin:14px 0}
+.danger{background:#2a1414;border:1px solid #5a1f1f;color:#fecaca;border-radius:10px;padding:12px 16px;margin:14px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left}
+th{background:var(--panel2);color:#fff}
+.deliverable{background:linear-gradient(135deg,#0f2a1c,#101418);border:1px solid #1f4a30;border-radius:12px;padding:18px 20px;margin-top:30px}
+.deliverable h2{border:none;margin-top:0;color:#22c55e}
+nav.pager{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+nav.pager a{flex:1;text-decoration:none;color:#fff;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:14px}
+nav.pager a:hover{border-color:var(--accent)}
+nav.pager a.next{text-align:right}
+.checklist li{list-style:none;margin:8px 0}
+.checklist li::before{content:"\2610  ";color:var(--accent)}
+a{color:#7dbaff}
+footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
+.filetree{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-family:Consolas,monospace;font-size:13px;color:#c9d1d9;white-space:pre}
+.top-index a{color:#7dbaff;text-decoration:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <span class="badge">LAB 1 · Train</span>
+  <h1>Lab 1: Train YOLO ด้วย Dataset สำเร็จรูป</h1>
+  <div class="meta"><span>⏱ ระยะเวลา: 2-3 ชั่วโมง</span><span>📁 โฟลเดอร์: Lab1_TrainReadyDataset</span></div>
+</header>
+
+<div class="card">
+<h2>🎯 วัตถุประสงค์</h2>
+<ul>
+<li>เข้าใจโครงสร้าง Dataset ของ YOLO (images/labels + ไฟล์ .yaml)</li>
+<li>Train โมเดล YOLO ครั้งแรกด้วย Dataset สำเร็จรูป (COCO8) จนได้ <code>best.pt</code></li>
+</ul>
+</div>
+
+<h2>✅ ก่อนเริ่ม</h2>
+<ul><li>ทำ Lab 0 เสร็จแล้ว และ Activate venv ไว้ (<code>venv\Scripts\activate</code>)</li></ul>
+
+<div class="step"><span class="n">Step 1</span>
+<h3>ทำความเข้าใจโครงสร้าง Dataset</h3>
+<div class="filetree">coco8/
+├── data.yaml          # บอก path, จำนวนคลาส, ชื่อคลาส
+├── images/
+│   ├── train/*.jpg
+│   └── val/*.jpg
+└── labels/
+    ├── train/*.txt    # 1 บรรทัด/1 object: class x_center y_center w h (normalized 0-1)
+    └── val/*.txt</div>
+<p>Ultralytics จะดาวน์โหลด Dataset ตัวอย่าง (COCO8 มี 8 ภาพ, เบามาก) ให้อัตโนมัติในขั้นตอน Train</p>
+</div>
+
+<div class="step"><span class="n">Step 2</span>
+<h3>รัน Train</h3>
+<pre>cd Lab1_TrainReadyDataset\scripts
+train.bat</pre>
+<p>สคริปต์นี้เทียบเท่าคำสั่ง:</p>
+<pre>yolo detect train data=coco8.yaml model=yolo11n.pt epochs=20 imgsz=640</pre>
+</div>
+
+<div class="step"><span class="n">Step 3</span>
+<h3>ดูผลลัพธ์การ Train</h3>
+<p>ผลลัพธ์จะถูกเก็บไว้ที่ <code>runs\detect\train\</code> ให้เปิดไฟล์เหล่านี้ดู:</p>
+<ul>
+<li><code>weights\best.pt</code> — โมเดลที่ดีที่สุด (ใช้ต่อในแล็บถัดไป)</li>
+<li><code>results.png</code> — กราฟ loss/mAP ระหว่าง Train</li>
+<li><code>confusion_matrix.png</code>, <code>val_batch0_pred.jpg</code></li>
+</ul>
+</div>
+
+<div class="tip">ลองเปลี่ยน <code>model=yolo11n.pt</code> เป็น <code>yolo11s.pt</code> เพื่อเปรียบเทียบขนาดโมเดลกับความแม่นยำ (n=nano เร็วสุด, s=small แม่นขึ้นแต่ช้าลง)</div>
+
+<div class="deliverable">
+<h2>📦 ผลลัพธ์ที่ต้องได้</h2>
+<ul class="checklist">
+<li>ไฟล์ <code>runs\detect\train\weights\best.pt</code></li>
+<li>เข้าใจความหมายของไฟล์ .yaml และโครงสร้าง images/labels</li>
+</ul>
+</div>
+
+<nav class="pager"><a href="../Lab0_Setup/manual.html">&larr; การเตรียมเครื่อง (Environment Setup)</a><a class="next" href="../Lab2_Inference/manual.html">ทดลอง Detection กับ Image / Video / Webcam &rarr;</a></nav>
+<footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
+</div>
+</body>
+</html>

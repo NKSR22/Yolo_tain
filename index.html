@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เตรียมความพร้อมโครงงาน YOLO Object Detection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{
+  --bg:#0f1115; --panel:#171a21; --panel2:#1d2129; --text:#e8eaed; --muted:#9aa4b2;
+  --accent:#5b8cff; --accent2:#22c55e; --warn:#f59e0b; --danger:#ef4444; --border:#2a2f3a;
+  --code-bg:#11141a; --code-text:#c9d1d9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Tahoma,'Sarabun',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+header.hero{background:linear-gradient(135deg,#1a2540,#0f1115);border:1px solid var(--border);border-radius:16px;padding:28px 28px;margin-bottom:28px}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px;margin-bottom:10px}
+h1{font-size:28px;margin:6px 0 8px}
+.meta{color:var(--muted);font-size:14px;display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.meta span{background:var(--panel2);padding:6px 12px;border-radius:8px;border:1px solid var(--border)}
+h2{font-size:20px;margin-top:40px;padding-bottom:8px;border-bottom:2px solid var(--border);color:#fff}
+h2::before{content:"";display:inline-block}
+h3{font-size:16px;color:var(--accent);margin-top:24px}
+p{color:#d7dae0}
+ul,ol{color:#d7dae0;padding-left:22px}
+li{margin:6px 0}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:16px 0}
+.step{background:var(--panel);border-left:4px solid var(--accent);border-radius:8px;padding:16px 18px;margin:14px 0}
+.step .n{color:var(--accent);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+pre{background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:10px;overflow-x:auto;border:1px solid var(--border);font-size:13.5px;line-height:1.55}
+code{font-family:Consolas,'SFMono-Regular',Menlo,monospace}
+p code, li code{background:var(--code-bg);padding:2px 6px;border-radius:4px;color:#7dd3fc}
+.tip{background:#12261c;border:1px solid #1f4a30;color:#a7f3d0;border-radius:10px;padding:12px 16px;margin:14px 0}
+.warn{background:#2a1f0f;border:1px solid #55420f;color:#fde68a;border-radius:10px;padding:12px 16px;margin:14px 0}
+.danger{background:#2a1414;border:1px solid #5a1f1f;color:#fecaca;border-radius:10px;padding:12px 16px;margin:14px 0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{border:1px solid var(--border);padding:8px 12px;text-align:left}
+th{background:var(--panel2);color:#fff}
+.deliverable{background:linear-gradient(135deg,#0f2a1c,#101418);border:1px solid #1f4a30;border-radius:12px;padding:18px 20px;margin-top:30px}
+.deliverable h2{border:none;margin-top:0;color:#22c55e}
+nav.pager{display:flex;justify-content:space-between;margin-top:40px;gap:12px}
+nav.pager a{flex:1;text-decoration:none;color:#fff;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:14px}
+nav.pager a:hover{border-color:var(--accent)}
+nav.pager a.next{text-align:right}
+.checklist li{list-style:none;margin:8px 0}
+.checklist li::before{content:"\2610  ";color:var(--accent)}
+a{color:#7dbaff}
+footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
+.filetree{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-family:Consolas,monospace;font-size:13px;color:#c9d1d9;white-space:pre}
+.top-index a{color:#7dbaff;text-decoration:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap top-index">
+<header class="hero">
+  <span class="badge">คอร์สเตรียมความพร้อม</span>
+  <h1>YOLO Object Detection: จากศูนย์ถึงโครงงานจริง</h1>
+  <div class="meta"><span>📚 11 Lab (Lab 0-10)</span><span>⏱ รวมประมาณ 30-40 ชั่วโมง</span><span>🖥 Windows + Raspberry Pi</span></div>
+</header>
+
+<div class="card">
+<h2>📖 เกี่ยวกับคอร์สนี้</h2>
+<p>ชุดแบบฝึกนี้ออกแบบมาเพื่อเตรียมความพร้อมนักศึกษาก่อนเริ่มทำโครงงานที่ใช้ YOLO Object Detection
+ตั้งแต่การเตรียมเครื่อง การ Train โมเดล การสร้าง Dataset เอง ไปจนถึงการนำโมเดลไปใช้งานจริงบน Raspberry Pi
+ร่วมกับ AI HAT และระบบ Conveyor + GPIO</p>
+<p>แต่ละ Lab มีโฟลเดอร์แยกของตัวเอง พร้อมสคริปต์สำหรับรันงาน (<code>.bat</code> สำหรับ Windows, <code>.sh</code> สำหรับ Raspberry Pi ใน Lab 7-9) และคู่มือฉบับเต็มแบบ HTML</p>
+</div>
+
+<h2>🗂 ภาพรวม Lab ทั้งหมด</h2>
+<table>
+<tr><th>ช่วงเวลา</th><th>Lab</th><th>หัวข้อ</th><th>ผลลัพธ์</th><th></th></tr>
+<tr>
+<td>1-2 ชม.</td>
+<td><b>Lab 0</b></td>
+<td>การเตรียมเครื่อง (Environment Setup)</td>
+<td>เครื่องพร้อม Train</td>
+<td><a href="Lab0_Setup/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>2-3 ชม.</td>
+<td><b>Lab 1</b></td>
+<td>Train YOLO ด้วย Dataset สำเร็จรูป</td>
+<td>best.pt</td>
+<td><a href="Lab1_TrainReadyDataset/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3 ชม.</td>
+<td><b>Lab 2</b></td>
+<td>ทดลอง Detection กับ Image / Video / Webcam</td>
+<td>เข้าใจ Detection</td>
+<td><a href="Lab2_Inference/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3-4 ชม.</td>
+<td><b>Lab 3</b></td>
+<td>สร้าง Dataset เองและ Label ข้อมูล</td>
+<td>Dataset ของกลุ่ม</td>
+<td><a href="Lab3_CustomDataset/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3-4 ชม.</td>
+<td><b>Lab 4</b></td>
+<td>ปรับแต่งการ Train (epochs, imgsz, model)</td>
+<td>โมเดลที่เหมาะสม</td>
+<td><a href="Lab4_TrainTuning/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>2-3 ชม.</td>
+<td><b>Lab 5</b></td>
+<td>Evaluate โมเดล (Precision, Recall, mAP, Confusion Matrix)</td>
+<td>วิเคราะห์โมเดล</td>
+<td><a href="Lab5_Evaluation/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>2-3 ชม.</td>
+<td><b>Lab 6</b></td>
+<td>Export โมเดลสำหรับ Edge Device (ONNX ฯลฯ)</td>
+<td>Model สำหรับ Edge</td>
+<td><a href="Lab6_Export/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3 ชม.</td>
+<td><b>Lab 7</b></td>
+<td>รัน YOLO บน Raspberry Pi 5 + Camera</td>
+<td>YOLO บน Edge</td>
+<td><a href="Lab7_RaspberryPi/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3-4 ชม.</td>
+<td><b>Lab 8</b></td>
+<td>เร่งความเร็วด้วย AI HAT</td>
+<td>เร่ง Inference</td>
+<td><a href="Lab8_AIHat/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3-4 ชม.</td>
+<td><b>Lab 9</b></td>
+<td>เชื่อม AI เข้ากับ Conveyor + Sensor ผ่าน GPIO</td>
+<td>AI + Embedded</td>
+<td><a href="Lab9_ConveyorGPIO/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>3-6 ชม.</td>
+<td><b>Lab 10</b></td>
+<td>โครงงานย่อย: ระบบคัดแยกวัตถุจริง</td>
+<td>Mini Project</td>
+<td><a href="Lab10_MiniProject/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr>
+</table>
+
+<h2>🚀 เริ่มต้นอย่างไร</h2>
+<div class="step"><span class="n">1</span><p>Clone/คัดลอกโฟลเดอร์นี้ทั้งหมดไว้บนเครื่อง Windows ของกลุ่ม</p></div>
+<div class="step"><span class="n">2</span><p>เปิด <a href="Lab0_Setup/manual.html">Lab 0 — การเตรียมเครื่อง</a> แล้วทำตามขั้นตอนก่อนเป็นอันดับแรก</p></div>
+<div class="step"><span class="n">3</span><p>ทำ Lab ตามลำดับ 0 → 10 โดยแต่ละ Lab จะใช้ผลลัพธ์ (โมเดล/ไฟล์) ต่อจาก Lab ก่อนหน้า</p></div>
+
+<h2>📁 โครงสร้างโปรเจกต์</h2>
+<div class="filetree">Yolo_training/
+├── venv/                        (สร้างจาก Lab 0)
+├── index.html                   (หน้านี้)
+├── Lab0_Setup/
+│   ├── manual.html
+│   └── scripts/  setup_env.bat, check_env.py
+├── Lab1_TrainReadyDataset/
+│   ├── manual.html
+│   └── scripts/  train.bat
+├── Lab2_Inference/ ...
+├── Lab3_CustomDataset/ ...
+├── Lab4_TrainTuning/ ...
+├── Lab5_Evaluation/ ...
+├── Lab6_Export/ ...
+├── Lab7_RaspberryPi/            (สคริปต์ .sh รันบน Raspberry Pi OS)
+├── Lab8_AIHat/                  (สคริปต์ .sh รันบน Raspberry Pi OS)
+├── Lab9_ConveyorGPIO/           (สคริปต์ .sh/.py รันบน Raspberry Pi OS)
+└── Lab10_MiniProject/           (โครงงานย่อยรวมทุก Lab)</div>
+
+<div class="tip">Lab 0-6 และ 10 (ส่วนเตรียมโมเดล) ออกแบบให้รันบน <b>Windows</b> เป็นหลัก ส่วน Lab 7-9 (และการรันจริงของ Lab 10) ต้องใช้ <b>Raspberry Pi OS</b> เนื่องจากต้องเข้าถึงฮาร์ดแวร์ (กล้อง, AI HAT, GPIO) โดยตรง — ไฟล์โมเดล/Dataset ที่เตรียมจาก Windows จะถูกโอนไปยัง Pi ตามที่อธิบายไว้ใน Lab 7</div>
+
+<footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
+</div>
+</body>
+</html>
