@@ -33,13 +33,13 @@
 | Lab 3 CustomDataset | ✅ | ✅ | ✅ 6 ใบ | **เสร็จ** — ปรับเป็นแบบฝึก label + มีเฉลย |
 | Lab 4 TrainTuning | ✅ | ✅ | ✅ | **เสร็จ** — เทรน 2 รอบเทียบกัน |
 | Lab 5 Evaluation | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** — val/test + เทียบสองโมเดล |
-| Lab 6 Export | ❌ | ❌ | ❌ | ยกไปทำวันหลัง |
+| Lab 6 Export | ✅ | ✅ | ✅ 3 ใบ | **เสร็จ** — export + benchmark 3 แบบ |
 | Lab 7 RaspberryPi | ❌ | ❌ | ❌ | ต้องมีเครื่อง Pi |
 | Lab 8 AIHat | ❌ | ❌ | ❌ | ต้องมี Pi + Hailo AI HAT |
 | Lab 9 ConveyorGPIO | ❌ | ❌ | ❌ | ต้องมี Pi + ชุดสายพาน |
 | Lab 10 MiniProject | ❌ | ❌ | ❌ | ทำหลัง Lab 4-6 เสร็จ |
 
-**Lab 0-5 เสร็จครบแล้ว ไม่มีอะไรค้าง** — งานถัดไปเริ่มที่ Lab 6 (Export/ONNX)
+**Lab 0-6 เสร็จครบแล้ว ไม่มีอะไรค้าง** — เหลือ Lab 7-9 ที่ต้องมี Raspberry Pi และ Lab 10 ที่ทำได้หลังจากนั้น
 
 ---
 
@@ -322,3 +322,4 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 | 2026-08-30 | Lab 0 คู่มือฉบับเต็ม + ภาพประกอบ 2 ใบ — ปิดขอบเขต Lab 0-3 | (commit นี้) |
 | 2026-08-30 | Lab 3 ยกเครื่องเป็นแบบฝึก label + เฉลย, Lab 4 เทรน 2 รอบเทียบกัน, Lab 0 prefetch, เครื่องมือ shoot.py | `c4006fd`, `b4d811b`, `59bc263`, `4911513` |
 | 2026-08-30 | Lab 5 ครบ + แก้บั๊ก path ทั้งสาย Lab 5/6/10 | (commit นี้) |
+| 2026-08-30 | Lab 6 export ONNX + benchmark เทียบ .pt/GPU, .pt/CPU, .onnx/CPU | (commit นี้) |

@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -68,40 +76,119 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </ul>
 </div>
 
+<h2>✅ ก่อนเริ่ม</h2>
+<ul>
+<li>มีโมเดลจาก Lab 4 อยู่ที่ <code>runs\detect\full\weights\best.pt</code></li>
+<li>มีรูปจาก Lab 3 อยู่ที่ <code>Lab3_CustomDataset\raw_images\</code> (ใช้เป็นภาพทดสอบ)</li>
+</ul>
+
 <h2>ทำไมต้อง Export?</h2>
-<p>ไฟล์ <code>.pt</code> ต้องพึ่ง PyTorch (ขนาดใหญ่ ใช้ทรัพยากรเยอะ) ซึ่งไม่เหมาะกับอุปกรณ์ Edge ที่มี CPU/RAM จำกัด การแปลงเป็น <b>ONNX</b> (Open Neural Network Exchange) ทำให้รันได้เร็วขึ้นและใช้ไลบรารีที่เบากว่า (เช่น ONNX Runtime) รวมถึงยังแปลงต่อเป็น TFLite, NCNN, Hailo ฯลฯ ได้อีกด้วย</p>
+<p>ไฟล์ <code>.pt</code> ต้องพึ่ง PyTorch ซึ่งเป็นไลบรารีขนาดใหญ่มาก (กว่า 2 GB เมื่อรวม CUDA) ไม่เหมาะกับอุปกรณ์ Edge ที่มี CPU/RAM/พื้นที่จำกัด
+การแปลงเป็น <b>ONNX</b> (Open Neural Network Exchange) ทำให้รันด้วย <b>ONNX Runtime</b> ที่เบากว่ามาก และยังแปลงต่อเป็น TFLite, NCNN, Hailo ฯลฯ ได้อีก</p>
+<div class="warn"><b>อย่าเพิ่งเชื่อว่า "ONNX เล็กกว่าและเร็วกว่าเสมอ"</b> — เดี๋ยว Step 3 จะวัดจริงแล้วจะเห็นว่ามันจริงแค่ครึ่งเดียว</div>
 
 <div class="step"><span class="n">Step 1</span>
 <h3>Export เป็น ONNX</h3>
 <pre>cd Lab6_Export\scripts
 .\export_onnx.bat</pre>
-<p>เทียบเท่าคำสั่ง <code>yolo export model=best.pt format=onnx imgsz=640 simplify=True</code></p>
-</div>
-
-<div class="step"><span class="n">Step 2</span>
-<h3>ทดสอบรันโมเดล ONNX</h3>
-<pre>.\test_onnx.bat</pre>
-<p>สคริปต์นี้จะโหลดไฟล์ .onnx ผ่าน Ultralytics แล้วรัน Detection กับภาพทดสอบ เพื่อยืนยันว่า Export สำเร็จและผลลัพธ์ยังตรงกับโมเดลเดิม</p>
-</div>
-
-<div class="step"><span class="n">Step 3</span>
-<h3>เปรียบเทียบขนาดไฟล์และความเร็ว</h3>
-<pre>.\benchmark.bat</pre>
+<figure>
+  <img src="../docs/images/lab6_export.png" alt="ผลการ export เป็น ONNX แสดงการติดตั้ง onnx อัตโนมัติและไฟล์ผลลัพธ์ 10.1 MB">
+  <figcaption>ผลจริงจากการ export — สังเกตช่วง <code>AutoUpdate</code> ด้านบน</figcaption>
+</figure>
 <table>
-<tr><th>ฟอร์แมต</th><th>ใช้กับ</th><th>ข้อดี</th></tr>
-<tr><td>.pt</td><td>PC/Server ที่มี PyTorch</td><td>ยืดหยุ่นสุด แก้ไข/เทรนต่อได้</td></tr>
-<tr><td>.onnx</td><td>Cross-platform, ONNX Runtime, OpenCV DNN</td><td>เบา เร็ว พกพาข้ามแพลตฟอร์มได้</td></tr>
-<tr><td>Hailo (.hef)</td><td>Raspberry Pi + AI HAT</td><td>เร็วที่สุดบนฮาร์ดแวร์เฉพาะ (Lab 8)</td></tr>
+<thead><tr><th>บรรทัด</th><th>บอกอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>requirements: AutoUpdate success  19.2s</code></td><td>Ultralytics <b>ติดตั้งไลบรารีที่ขาดให้เองอัตโนมัติ</b> (<code>onnx</code>, <code>onnxruntime</code>, <code>onnxslim</code>) ครั้งแรกจึงช้ากว่าปกติ ครั้งต่อไปจะข้ามขั้นนี้</td></tr>
+<tr><td><code>WARNING requirements: Restart runtime or rerun command...</code></td><td>ไม่ใช่ error — เตือนว่าถ้าไลบรารีเพิ่งถูกติดตั้ง อาจต้องรันคำสั่งซ้ำอีกครั้ง ถ้ารอบนี้ export สำเร็จแล้วก็ไม่ต้องทำอะไร</td></tr>
+<tr><td><code>opset 18</code></td><td>เวอร์ชันของชุดคำสั่ง ONNX — ถ้าอุปกรณ์ปลายทางรองรับเวอร์ชันเก่ากว่า ต้องระบุ <code>opset=12</code> ตอน export</td></tr>
+<tr><td><code>slimming with onnxslim</code></td><td>ผลของ <code>simplify=True</code> — ยุบ operation ที่ซ้ำซ้อนออก ทำให้กราฟเล็กลงและรันเร็วขึ้น</td></tr>
+<tr><td><code>export success, saved as best.onnx (10.1 MB)</code></td><td>ไฟล์ถูกวางไว้<b>ข้าง ๆ <code>best.pt</code></b> ในโฟลเดอร์เดียวกัน</td></tr>
+</tbody>
 </table>
 </div>
 
-<div class="tip">คัดลอกไฟล์ <code>best.onnx</code> ที่ได้ไปไว้ในโฟลเดอร์ <code>Lab7_RaspberryPi\model\</code> เพื่อใช้ต่อใน Lab 7</div>
+<div class="step"><span class="n">Step 2</span>
+<h3>ทดสอบว่าโมเดล ONNX ยังทำงานถูกต้อง</h3>
+<pre>.\test_onnx.bat</pre>
+<figure>
+  <img src="../docs/images/lab6_onnx_result.jpg" alt="ผลตรวจจับจากโมเดล ONNX พบควาย 1 ตัว">
+  <figcaption>ผลจากโมเดล <code>.onnx</code> — ตรวจเจอ <code>buffalo</code> ถูกต้อง ยืนยันว่า export ไม่ได้ทำให้โมเดลเสีย</figcaption>
+</figure>
+<pre class="out">Loading runs\detect\full\weights\best.onnx for ONNX Runtime inference...
+image 1/1 ...\wild_01.jpg: 640x640 1 buffalo, 30.8ms
+Speed: 5.1ms preprocess, 30.8ms inference, 4.7ms postprocess per image</pre>
+<div class="danger"><b>สองกับดักที่เจอจริงตอนทดสอบ Lab นี้</b>
+<ol>
+<li><b>ต้องใส่ <code>device=cpu</code></b> — ถ้าไม่ใส่ <code>onnxruntime</code> จะเห็นการ์ดจอ NVIDIA แล้วพยายามใช้ CUDA จนพังด้วย error ยาว ๆ ว่า <code>Error loading onnxruntime_providers_cuda.dll which depends on cublasLt64_13.dll which is missing</code><br>
+เพราะแพ็กเกจ <code>onnxruntime</code> เป็นรุ่น CPU ไม่ได้แนบไฟล์ฝั่ง CUDA มาให้ — และการรันบน CPU ก็คือสถานการณ์จริงอยู่แล้ว เพราะเราจะเอา ONNX ไปลง Raspberry Pi ที่ไม่มี GPU</li>
+<li><b>ต้องทดสอบด้วยภาพที่มีสัตว์</b> — สคริปต์ใช้ <code>wild_01.jpg</code> จาก Lab 3 ไม่ใช่ <code>test.jpg</code> ของ Lab 2 เพราะโมเดลนี้รู้จักแค่ 4 คลาสสัตว์ ถ้าเอารูปรถบัสมาทดสอบจะได้ <code>(no detections)</code> ซึ่ง<b>ถูกต้องแต่พิสูจน์อะไรไม่ได้เลย</b></li>
+</ol></div>
+</div>
+
+<div class="step"><span class="n">Step 3</span>
+<h3>วัดความเร็วและขนาดไฟล์จริง</h3>
+<pre>.\benchmark.bat</pre>
+<figure>
+  <img src="../docs/images/lab6_benchmark.png" alt="ผล benchmark เทียบ .pt บน GPU, .pt บน CPU และ .onnx บน CPU">
+  <figcaption>วัด 20 รอบ (อุ่นเครื่องก่อน 5 รอบ) บน RTX 3050 Ti</figcaption>
+</figure>
+<table>
+<thead><tr><th></th><th>เวลา/ภาพ</th><th>FPS</th><th>ขนาดไฟล์</th></tr></thead>
+<tbody>
+<tr><td><code>.pt</code> บน GPU</td><td>17.0 ms</td><td>58.9</td><td>5.5 MB</td></tr>
+<tr><td><code>.pt</code> บน CPU</td><td>62.1 ms</td><td>16.1</td><td>5.5 MB</td></tr>
+<tr><td><b><code>.onnx</code> บน CPU</b></td><td><b>40.4 ms</b></td><td><b>24.8</b></td><td><b>10.6 MB</b></td></tr>
+</tbody>
+</table>
+<div class="tip"><b>อ่านผลให้ถูก: ต้องเทียบสองบรรทัดล่างเท่านั้น</b> — เอา <code>.pt</code> บน GPU ไปเทียบกับ <code>.onnx</code> บน CPU ไม่ได้ เพราะเป็นคนละฮาร์ดแวร์ เหมือนเทียบเวลาขับรถกับเวลาเดิน</div>
+<h4>สิ่งที่ตัวเลขบอก</h4>
+<ul>
+<li><b>บน CPU ONNX เร็วกว่า 1.5 เท่า</b> (62.1 → 40.4 ms) — ของจริง คุ้มกับการ export</li>
+<li><b>แต่ไฟล์ ONNX ใหญ่กว่าเกือบ 2 เท่า</b> (5.5 → 10.6 MB) — <b>สวนทางกับที่หลายคนเข้าใจว่า "ONNX เล็กกว่า"</b><br>
+เหตุผลคือ <code>.pt</code> เก็บ weight เป็น float16 บีบอัดไว้ ส่วน <code>.onnx</code> คลายออกเป็น float32 พร้อมกราฟการคำนวณเต็มรูปแบบ<br>
+สิ่งที่<b>เล็กลงจริงคือไลบรารีที่ต้องติดตั้งบนเครื่องปลายทาง</b> — ONNX Runtime ราวร้อย MB เทียบกับ PyTorch ที่เป็น GB ซึ่งคือเหตุผลตัวจริงที่ต้อง export</li>
+<li><b>GPU เร็วกว่า CPU 3.7 เท่า</b> — และ Raspberry Pi ยังช้ากว่า CPU ของโน้ตบุ๊กอีกหลายเท่า <b>อย่าคาดหวัง 25 FPS บน Pi</b> ตัวเลขจริงจะได้เห็นใน Lab 7</li>
+</ul>
+<table>
+<thead><tr><th>ฟอร์แมต</th><th>ใช้กับ</th><th>ข้อดี</th></tr></thead>
+<tbody>
+<tr><td><code>.pt</code></td><td>PC/Server ที่มี PyTorch</td><td>ยืดหยุ่นสุด เทรนต่อได้ ใช้ GPU ได้เต็มที่</td></tr>
+<tr><td><code>.onnx</code></td><td>ข้ามแพลตฟอร์ม, ONNX Runtime, OpenCV DNN</td><td>ไม่ต้องลง PyTorch บนเครื่องปลายทาง เร็วกว่าบน CPU</td></tr>
+<tr><td><code>.hef</code> (Hailo)</td><td>Raspberry Pi + AI HAT</td><td>เร็วที่สุดบนฮาร์ดแวร์เฉพาะทาง (Lab 8)</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>benchmark.py</code></h4>
+<pre>N_WARMUP = 5
+N_RUNS = 20
+
+for _ in range(N_WARMUP):          # อุ่นเครื่องก่อน เฟรมแรก ๆ ช้ากว่าปกติเสมอ
+    model(IMAGE, device=device, verbose=False)
+
+t0 = time.perf_counter()
+for _ in range(N_RUNS):
+    model(IMAGE, device=device, verbose=False)
+ms = (time.perf_counter() - t0) / N_RUNS * 1000</pre>
+<table>
+<tbody>
+<tr><td>N_WARMUP = 5</td><td><b>ทิ้ง 5 รอบแรก</b> เพราะต้องโหลดโมเดลเข้าหน่วยความจำและจัดสรร buffer ก่อน — เราเห็นผลนี้มาแล้วใน Lab 2 ที่เฟรมแรกของวิดีโอใช้ 15.5 ms ส่วนเฟรมถัดไปเหลือ 9 ms</td></tr>
+<tr><td>N_RUNS = 20</td><td><b>เฉลี่ย 20 รอบ</b> ไม่ใช่วัดครั้งเดียว เพราะเวลาต่อเฟรมแกว่งได้หลายเท่าตัว (Lab 2 วัดได้ตั้งแต่ 8.7 ถึง 28.2 ms บนเครื่องเดียวกัน)</td></tr>
+<tr><td>time.perf_counter()</td><td>ใช้แทน <code>time.time()</code> เพราะละเอียดกว่าและไม่กระโดดเวลาระบบปรับนาฬิกา</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="tip">ไฟล์ <code>best.onnx</code> ที่ได้ คือไฟล์ที่จะเอาไปใช้ต่อใน <b>Lab 7</b> (Raspberry Pi) — สคริปต์ของ Lab 7 จะไปหยิบจาก <code>runs\detect\full\weights\</code> ให้เอง ไม่ต้องคัดลอกเอง</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>ไฟล์ <code>best.onnx</code> ที่ทดสอบรันได้ผลลัพธ์ถูกต้อง</li>
-<li>ตารางเปรียบเทียบขนาดไฟล์ / เวลา inference ระหว่าง .pt กับ .onnx</li>
+<li>ไฟล์ <code>best.onnx</code> ที่ทดสอบแล้วตรวจจับได้ถูกต้อง</li>
+<li>ตารางเทียบเวลา/FPS/ขนาดไฟล์ ครบทั้ง 3 แบบ</li>
+<li>อธิบายได้ว่าทำไมไฟล์ ONNX ถึงใหญ่กว่า <code>.pt</code> ทั้งที่บอกกันว่า ONNX "เบากว่า"</li>
+<li>อธิบายได้ว่าทำไมถึงเทียบ <code>.pt</code> บน GPU กับ <code>.onnx</code> บน CPU ตรง ๆ ไม่ได้</li>
 </ul>
 </div>
 
