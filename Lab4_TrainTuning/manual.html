@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -63,49 +71,158 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <div class="card">
 <h2>🎯 วัตถุประสงค์</h2>
 <ul>
-<li>Train YOLO ด้วย Dataset ของตัวเอง (จาก Lab 3)</li>
-<li>ทดลองปรับ Hyperparameter: <code>epochs</code>, <code>imgsz</code>, ขนาดโมเดล (n/s/m) เพื่อหาค่าที่เหมาะสมที่สุด</li>
+<li>เทรนโจทย์เดียวกัน <b>2 รอบ</b> — รอบแรกด้วย 20 รูปที่ label เองใน Lab 3 อีกรอบด้วยชุดเต็มพันกว่ารูป — แล้ววัดว่าต่างกันแค่ไหน</li>
+<li>ทดลองปรับ Hyperparameter (<code>epochs</code>, <code>imgsz</code>, ขนาดโมเดล) แล้วเทียบผลอย่างเป็นระบบ</li>
+<li>ตอบให้ได้ว่า <b>ระหว่าง "เพิ่มข้อมูล" กับ "ปรับค่า" อะไรให้ผลมากกว่ากัน</b></li>
 </ul>
 </div>
 
+<div class="card">
+<h2>🗺️ Lab นี้จะทำอะไร</h2>
+<div class="filetree">รอบที่ 1  train_baseline.bat  -> 20 รูปที่คุณ label เอง (Lab 3)   -> runs\detect\baseline\
+รอบที่ 2  train_full.bat      -> african-wildlife ชุดเต็ม ~1,050 รูป -> runs\detect\full\
+                                 (คลาสเดียวกันเป๊ะ: buffalo/elephant/rhino/zebra)
+รอบที่ 3+ train_custom.bat    -> ปรับค่าแล้วลองใหม่                  -> runs\detect\exp\
+
+          compare_runs.bat    -> เอาทุกรอบมาเรียงเทียบกันในตารางเดียว</div>
+<p><b>รอบที่ 1 กับ 2 ต่างกันแค่จำนวนข้อมูลอย่างเดียว</b> — คลาสเหมือนกัน โมเดลตั้งต้นเหมือนกัน ค่าอื่นเหมือนกันหมด
+สิ่งที่ได้จึงเป็นคำตอบตรง ๆ ว่าจำนวนข้อมูลมีผลแค่ไหน</p>
+</div>
+
 <div class="step"><span class="n">Step 1</span>
-<h3>Train ด้วยค่าพื้นฐาน (Baseline)</h3>
+<h3>รอบที่ 1 — เทรนด้วยข้อมูลที่ label เอง</h3>
 <pre>cd Lab4_TrainTuning\scripts
 .\train_baseline.bat</pre>
-<p>ค่าเริ่มต้น: <code>model=yolo11n.pt epochs=50 imgsz=640</code> — จดผลลัพธ์ mAP ที่ได้ไว้เป็นค่าฐาน (baseline)</p>
+<p>ใช้ <code>Lab3_CustomDataset\dataset\data.yaml</code> ที่ได้จาก Lab 3 (20 รูป แบ่งเป็น train 16 / val 4)
+ค่าที่ใช้: <code>model=yolo11n.pt epochs=50 imgsz=640 batch=8</code> — เทรนเสร็จในไม่กี่นาที</p>
+
+<h4>ผลที่ได้จริง</h4>
+<pre class="out">                   all          4         15      0.689        0.5      0.621      0.553
+               buffalo          1          1      0.959          1      0.995      0.995
+              elephant          1         10          0          0          0          0
+                 rhino          1          2      0.798          1      0.995       0.92
+                 zebra          1          2          1          0      0.495      0.297</pre>
+<div class="danger"><b>ดูบรรทัด <code>elephant</code> ให้ดี — ได้ 0 ทุกช่อง</b><br>
+ทั้งที่ในชุด val มีช้างอยู่ <b>10 ตัว</b> ซึ่งมากที่สุดในบรรดาทุกคลาส แต่โมเดล<b>หาไม่เจอเลยแม้แต่ตัวเดียว</b><br>
+สาเหตุคือในชุด train 16 รูป มีตัวอย่างช้างน้อยเกินกว่าที่โมเดลจะเรียนรู้ได้ ส่วน <code>buffalo</code> กับ <code>rhino</code> ที่ได้ 0.995 นั้นก็ไม่ได้แปลว่าเก่งจริง — มีตัวอย่างใน val แค่คลาสละ 1-2 ตัว ทายถูกตัวเดียวก็เต็มแล้ว<br>
+<b>นี่คือหน้าตาของโมเดลที่ข้อมูลไม่พอ</b> ตัวเลขรวม mAP50 = 0.621 ดูเหมือนพอใช้ได้ แต่พอแยกรายคลาสจะเห็นว่ามันใช้งานจริงไม่ได้เลย</div>
+<div class="tip"><b>บทเรียนที่ 1: อย่าดูแต่ตัวเลขรวม</b> — ตารางแยกรายคลาสคือที่ที่ปัญหาจริงซ่อนอยู่ ค่า mAP รวมเฉลี่ยความล้มเหลวของคลาสหนึ่งกลบไปกับความสำเร็จของอีกคลาสได้เสมอ</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>ทดลองปรับค่าทีละตัว</h3>
-<p>แก้ไขค่าตัวแปรด้านบนของไฟล์ <code>train_custom.bat</code> แล้วรันซ้ำ เปรียบเทียบผลลัพธ์:</p>
-<table>
-<tr><th>พารามิเตอร์</th><th>ผลกระทบ</th></tr>
-<tr><td><code>epochs</code></td><td>รอบการเรียนรู้ยิ่งมาก โมเดลยิ่งแม่น แต่เสี่ยง overfitting และใช้เวลานานขึ้น</td></tr>
-<tr><td><code>imgsz</code></td><td>ภาพยิ่งใหญ่ ยิ่งเห็นรายละเอียดเล็กๆ ได้ดีขึ้น แต่ใช้ VRAM/เวลามากขึ้น</td></tr>
-<tr><td><code>model</code></td><td>n (nano) เร็วสุด เหมาะ Edge, m/l แม่นขึ้นแต่หนักขึ้น</td></tr>
-<tr><td><code>batch</code></td><td>batch ใหญ่เทรนเสถียรกว่า แต่ต้องมี VRAM พอ</td></tr>
-</table>
-<pre>set EPOCHS=100
-set IMGSZ=640
-set MODEL=yolo11s.pt
-set BATCH=16
+<h3>รอบที่ 2 — เทรนด้วยชุดเต็ม</h3>
+<pre>.\train_full.bat</pre>
+<p>โจทย์เดิม คลาสเดิม ค่าเดิมทุกอย่าง เปลี่ยนแค่ข้อมูลจาก 20 รูปเป็น <b>1,052 รูป</b>
+(ครั้งแรกจะดาวน์โหลด ~100 MB ถ้ายังไม่ได้รัน <code>prefetch.bat</code> จาก Lab 0)</p>
+<div class="warn">รอบนี้ใช้เวลาจริงประมาณ <b>13 นาที</b> บนการ์ด RTX 3050 Ti (4 GB) — ถ้าเครื่องช้ากว่านี้อาจถึงครึ่งชั่วโมง ปล่อยให้มันรันไป ระหว่างนั้นไปอ่านหัวข้อ Hyperparameter ข้างล่างก่อนได้</div>
 
-cd Lab4_TrainTuning\scripts
-.\train_custom.bat</pre>
+<h4>ผลที่ได้จริง</h4>
+<figure>
+  <img src="../docs/images/lab4_full_result.png" alt="ผลการเทรนชุดเต็ม แสดง mAP50 0.961 และผลแยกรายคลาสทั้งสี่">
+  <figcaption>ท้ายผลการเทรนรอบที่ 2 — เทียบบรรทัด <code>elephant</code> กับรอบแรกที่ได้ 0 ทุกช่อง</figcaption>
+</figure>
+<table>
+<thead><tr><th>คลาส</th><th>รอบ 1 (20 รูป) mAP50</th><th>รอบ 2 (1,052 รูป) mAP50</th></tr></thead>
+<tbody>
+<tr><td><code>buffalo</code></td><td>0.995 <span style="color:#9aa4b2">(val มี 1 ตัว)</span></td><td>0.959 <span style="color:#9aa4b2">(val มี 89 ตัว)</span></td></tr>
+<tr><td><code>elephant</code></td><td><b style="color:#ef4444">0.000</b></td><td><b style="color:#22c55e">0.953</b></td></tr>
+<tr><td><code>rhino</code></td><td>0.995 <span style="color:#9aa4b2">(val มี 2 ตัว)</span></td><td>0.970</td></tr>
+<tr><td><code>zebra</code></td><td>0.495</td><td>0.962</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>บทเรียนที่ 2: ตัวเลขที่ดูสวยจาก val ชุดเล็ก เชื่อไม่ได้</b> — <code>buffalo</code> ในรอบแรกได้ 0.995 ซึ่ง<i>สูงกว่า</i>รอบที่สองที่ได้ 0.959 เสียอีก แต่รอบแรกวัดจากควายตัวเดียว ส่วนรอบสองวัดจาก 89 ตัว<br>
+เลข 0.959 ที่วัดจาก 89 ตัวอย่าง <b>น่าเชื่อถือกว่า</b> เลข 0.995 ที่วัดจากตัวอย่างเดียวมาก — เวลาอ่านผล ให้ดูคอลัมน์ <code>Instances</code> ควบคู่ไปด้วยเสมอ</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>เปรียบเทียบผลลัพธ์แต่ละรอบ</h3>
-<p>แต่ละครั้งที่ Train ผลจะถูกเก็บแยกโฟลเดอร์ (<code>runs\exp1</code>, <code>runs\exp2</code>, ...) ให้เปิด <code>results.png</code> ของแต่ละรอบเทียบกัน และจดค่า <b>mAP50-95</b> ลงตาราง</p>
+<h3>เอาสองรอบมาเทียบกัน</h3>
+<pre>.\compare_runs.bat</pre>
+<p>สคริปต์จะอ่าน <code>results.csv</code> ของทุกรอบใน <code>runs\detect\</code> แล้วดึงค่าของ epoch ที่ดีที่สุดมาเรียงให้
+(ระบุชื่อรอบต่อท้ายได้ถ้าอยากเลือกเฉพาะบางรอบ เช่น <code>.\compare_runs.bat baseline full</code>)</p>
+<figure>
+  <img src="../docs/images/lab4_compare.png" alt="ตารางเทียบผลรอบ baseline กับ full">
+  <figcaption>ตารางจริงจากการรันทั้งสองรอบบนเครื่องเดียวกัน</figcaption>
+</figure>
+<table>
+<thead><tr><th>ตัวชี้วัด</th><th>20 รูป</th><th>1,052 รูป</th><th>ดีขึ้น</th></tr></thead>
+<tbody>
+<tr><td><b>mAP50-95</b></td><td>0.553</td><td>0.811</td><td>+47%</td></tr>
+<tr><td>mAP50</td><td>0.621</td><td>0.961</td><td>+55%</td></tr>
+<tr><td>precision</td><td>0.692</td><td>0.954</td><td>+38%</td></tr>
+<tr><td><b>recall</b></td><td>0.500</td><td>0.910</td><td><b>+82%</b></td></tr>
+<tr><td>เวลาเทรน</td><td>0.5 นาที</td><td>13.2 นาที</td><td>ช้าลง 26 เท่า</td></tr>
+</tbody>
+</table>
+<div class="danger"><b>ดู recall ให้ดี: 0.500 แปลว่าโมเดลรอบแรกมองข้ามวัตถุไปครึ่งหนึ่ง</b><br>
+เจอเท่าไรก็ทายค่อนข้างถูก (precision 0.692) แต่<b>หาไม่เจอตั้งครึ่ง</b> — ถ้าเอาโมเดลแบบนี้ไปคัดของบนสายพานใน Lab 9 ของเสียครึ่งหนึ่งจะไหลผ่านไปหน้าตาเฉย โดยที่ตัวเลข mAP50 = 0.621 ไม่ได้ส่งสัญญาณอะไรให้เลย</div>
+
+<figure>
+  <img src="../docs/images/lab4_full_results.png" alt="กราฟ results.png ของรอบชุดเต็ม แสดง loss ลดลงและ mAP ไต่ขึ้นอย่างต่อเนื่อง">
+  <figcaption><code>runs\detect\full\results.png</code> — เทียบกับกราฟของ Lab 1 ที่เส้นกระโดดขึ้นลงและ recall แบนราบ รอบนี้ทุกเส้นเรียบและไต่ขึ้นต่อเนื่อง เพราะแต่ละ epoch เห็นข้อมูลมากพอ</figcaption>
+</figure>
+
+<div class="card">
+<h3>💡 สรุปบทเรียนหลักของ Lab นี้</h3>
+<p>การเพิ่มข้อมูลจาก 20 เป็น 1,052 รูป ทำให้ <b>mAP50-95 ขึ้น 47%</b> โดยไม่ได้แตะค่า hyperparameter สักตัว</p>
+<p>ในทางปฏิบัติ การปรับ <code>epochs</code>, <code>imgsz</code>, ขนาดโมเดล มักช่วยได้ในระดับ <b>ไม่กี่เปอร์เซ็นต์</b> เท่านั้น
+เทียบกันแล้วคนละสเกล — <b>ถ้าโมเดลยังไม่ดีพอ คำถามแรกที่ควรถามคือ "ข้อมูลพอหรือยัง" ไม่ใช่ "ปรับค่าอะไรดี"</b></p>
+<p>คุณเพิ่งใช้เวลาราว 20 นาที label 20 รูปใน Lab 3 — ลองคิดดูว่า 1,052 รูปต้องใช้เวลาเท่าไร นั่นคือเหตุผลที่งาน AI จริง ๆ
+หมดเวลาไปกับการเตรียมข้อมูลมากกว่าการเทรนโมเดลเสมอ</p>
+</div>
 </div>
 
-<div class="tip">เทคนิค: เริ่มจาก epochs น้อยๆ (เช่น 20) เพื่อดูว่าระบบรันได้ก่อน แล้วค่อยเพิ่มเป็นค่าจริงเมื่อมั่นใจว่า pipeline ถูกต้อง จะประหยัดเวลามาก</div>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — ทั้ง 3 ตัวต่างกันแค่บรรทัดเดียว</h4>
+<pre>train_baseline.bat : yolo detect train data=Lab3_CustomDataset\dataset\data.yaml model=yolo11n.pt epochs=50 imgsz=640 batch=8 name=baseline
+train_full.bat     : yolo detect train data=african-wildlife.yaml            model=yolo11n.pt epochs=50 imgsz=640 batch=8 name=full
+train_custom.bat   : yolo detect train data=%DATA%  model=%MODEL% epochs=%EPOCHS% imgsz=%IMGSZ% batch=%BATCH% name=%NAME%</pre>
+<table>
+<tbody>
+<tr><td>data=</td><td><b>จุดเดียวที่ต่างกันระหว่างรอบ 1 กับรอบ 2</b> — ที่เหลือเหมือนกันหมด ผลที่ต่างกันจึงมาจากข้อมูลล้วน ๆ<br><code>african-wildlife.yaml</code> เป็นชื่อชุดข้อมูลที่มีมากับ Ultralytics ไม่ใช่ไฟล์ในเครื่องเรา ถ้ายังไม่มีมันจะดาวน์โหลดให้เอง</td></tr>
+<tr><td>name=</td><td>ชื่อโฟลเดอร์ผลลัพธ์ใต้ <code>runs\detect\</code> — ตั้งให้สื่อ จะได้ย้อนดูทีหลังรู้เรื่อง</td></tr>
+<tr><td>batch=8</td><td>ลดจากค่าเริ่มต้น 16 เพราะการ์ด 4 GB เอาไม่อยู่ที่ <code>imgsz=640</code> — ถ้าการ์ดใหญ่กว่านี้ปรับขึ้นได้</td></tr>
+<tr><td>ไม่มี project=</td><td>ตั้งใจไม่ใส่ ถ้าใส่เป็น path แบบ relative ผลลัพธ์จะไปซ้อนกลายเป็น <code>runs\detect\Lab4_TrainTuning\runs\...</code> แล้ว Lab 5-6 จะหาไฟล์ไม่เจอ</td></tr>
+<tr><td>if not exist %DATA%</td><td>เฉพาะ <code>train_baseline.bat</code> — ด่านตรวจว่าทำ Lab 3 มาแล้วจริง ถ้ายังไม่มีจะบอกให้กลับไปทำก่อน แทนที่จะพ่น error ของ Python</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="step"><span class="n">Step 4</span>
+<h3>ทีนี้ค่อยมาปรับ Hyperparameter</h3>
+<p>พอมีข้อมูลพอแล้ว การปรับค่าถึงจะเริ่มมีความหมาย ใช้ <code>train_custom.bat</code> ซึ่งรับค่าจากตัวแปรที่ตั้งไว้ก่อนรัน</p>
+<pre>set EPOCHS=100
+set NAME=exp_e100
+.\train_custom.bat</pre>
+<div class="warn"><b>เปลี่ยนทีละค่า และตั้ง <code>NAME</code> ให้สื่อทุกครั้ง</b> — ถ้าเปลี่ยนสามค่าพร้อมกันแล้วผลดีขึ้น จะไม่มีทางรู้ว่าค่าไหนเป็นตัวช่วย และถ้าไม่ตั้งชื่อ โฟลเดอร์จะกลายเป็น <code>exp</code>, <code>exp2</code>, <code>exp3</code> ที่ดูทีหลังแล้วจำไม่ได้ว่าอันไหนคืออะไร</div>
+<table>
+<thead><tr><th>ตัวแปร</th><th>ค่าเริ่มต้น</th><th>ผลกระทบ</th></tr></thead>
+<tbody>
+<tr><td><code>EPOCHS</code></td><td>50</td><td>จำนวนรอบที่วนดูข้อมูลทั้งชุด — มากขึ้นมักแม่นขึ้น จนถึงจุดที่เริ่ม overfit (ดูได้จาก <code>val/cls_loss</code> ใน <code>results.png</code> ที่กลับหัวขึ้น)</td></tr>
+<tr><td><code>IMGSZ</code></td><td>640</td><td>ขนาดภาพเข้าโมเดล — ใหญ่ขึ้นช่วยเรื่องวัตถุเล็ก แต่กิน VRAM และเวลาเป็นสัดส่วนกำลังสอง (จาก 640 เป็น 1280 = หนักขึ้น ~4 เท่า)</td></tr>
+<tr><td><code>MODEL</code></td><td>yolo11n.pt</td><td><code>n</code> nano เร็วสุด · <code>s</code> small · <code>m</code> medium แม่นขึ้นแต่หนักขึ้น — <b>สำคัญมากสำหรับ Lab 7-8</b> ที่ต้องเอาไปรันบน Raspberry Pi</td></tr>
+<tr><td><code>BATCH</code></td><td>8</td><td>จำนวนภาพต่อรอบคำนวณ — ใหญ่ขึ้นเทรนนิ่งกว่าแต่กิน VRAM มากขึ้น ตั้งไว้ที่ 8 เพราะการ์ด 4 GB รับ 16 ไม่ไหวเมื่อ <code>imgsz=640</code></td></tr>
+<tr><td><code>DATA</code></td><td>african-wildlife.yaml</td><td><b>ตอนทำโครงงานจริง เปลี่ยนตรงนี้</b> เป็น path ของ <code>data.yaml</code> กลุ่มตัวเอง ที่เหลือทำเหมือนเดิมทุกอย่าง</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>ประหยัดเวลา:</b> ลองด้วย <code>EPOCHS=5</code> ก่อนทุกครั้งที่เปลี่ยนอะไรใหญ่ ๆ เพื่อดูว่ารันผ่านจริงไหม แล้วค่อยตั้งค่าจริง — ดีกว่ารอ 20 นาทีแล้วมาพังตอนจบ</div>
+</div>
+
+<div class="step"><span class="n">Step 5</span>
+<h3>สรุปผลการทดลอง</h3>
+<p>รัน <code>.\compare_runs.bat</code> อีกครั้งเมื่อทดลองครบ แล้วจดลงตารางในรายงาน พร้อมตอบคำถามว่า</p>
+<ul>
+<li>การเพิ่มข้อมูลจาก 20 เป็น 1,050 รูป ทำให้ mAP50-95 ขึ้นกี่เท่า</li>
+<li>การปรับ hyperparameter ที่ดีที่สุดที่ทำได้ ทำให้ขึ้นอีกกี่ %</li>
+<li>ถ้ามีเวลาเหลืออีก 1 วัน จะเอาไปเก็บข้อมูลเพิ่ม หรือเอาไปปรับค่า เพราะอะไร</li>
+</ul>
+</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>ตารางเปรียบเทียบผลการทดลองอย่างน้อย 3 ชุดพารามิเตอร์</li>
-<li>โมเดล <code>best.pt</code> ที่ได้ค่า mAP ดีที่สุดของกลุ่ม (ใช้ต่อใน Lab 5)</li>
+<li>ตารางจาก <code>compare_runs.bat</code> ที่มีทั้งรอบ 20 รูป, รอบชุดเต็ม และรอบปรับค่าอย่างน้อย 2 แบบ</li>
+<li>โมเดล <code>runs\detect\full\weights\best.pt</code> (หรือรอบที่ดีกว่า) สำหรับใช้ต่อใน Lab 5-8</li>
+<li>อธิบายได้ว่าทำไมคลาส <code>elephant</code> ถึงได้ 0 ในรอบแรก และอะไรทำให้มันดีขึ้น</li>
 </ul>
 </div>
 
