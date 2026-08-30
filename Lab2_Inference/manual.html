@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -74,6 +82,48 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <li>ถ้ารัน Lab 1 ซ้ำหลายรอบจนได้ <code>train2</code>, <code>train3</code> ให้แก้บรรทัด <code>set MODEL=...</code> ในสคริปต์ให้ตรงกับโฟลเดอร์ที่ต้องการ</li>
 </ul>
 
+<div class="card">
+<h2>🧩 อ่านสคริปต์ <code>.bat</code> ให้เป็น</h2>
+<p>สคริปต์ทุกตัวใน Lab นี้ขึ้นต้นเหมือนกัน 4 บรรทัด เข้าใจครั้งเดียวแล้วอ่านตัวอื่นออกหมด — และถ้าเข้าใจแล้วจะแก้เองได้ ไม่ต้องรอสคริปต์สำเร็จรูป</p>
+<pre>@echo off
+REM Lab 2 - Detect objects in an image
+cd /d "%~dp0\..\.."
+call venv\Scripts\activate.bat</pre>
+<table>
+<thead><tr><th>บรรทัด</th><th>ทำอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>@echo off</code></td><td>ไม่ต้องพิมพ์คำสั่งเองออกมาโชว์ ให้เห็นเฉพาะผลลัพธ์ — ถ้าลบบรรทัดนี้ออกจะเห็นทุกคำสั่งที่สคริปต์รัน (มีประโยชน์เวลา debug)</td></tr>
+<tr><td><code>REM ...</code></td><td>คอมเมนต์ ไม่ถูกรัน</td></tr>
+<tr><td><code>cd /d "%~dp0\..\.."</code></td><td><b>บรรทัดสำคัญที่สุด</b> — <code>%~dp0</code> คือโฟลเดอร์ที่ไฟล์ <code>.bat</code> ตัวนี้วางอยู่ (ลงท้ายด้วย <code>\</code> เสมอ) แล้ว <code>..\..</code> ถอยขึ้น 2 ชั้นไปที่ <code>C:\dev\Yolo_tain</code> ส่วน <code>/d</code> คือให้ย้ายข้ามไดรฟ์ได้ด้วย<br>ผลคือ path ที่เหลือในสคริปต์เขียนอ้างจากโฟลเดอร์หลักได้เลย และ<b>ดับเบิลคลิกจากที่ไหนก็ทำงานถูกเสมอ</b> ไม่ขึ้นกับว่าตอนนั้นอยู่โฟลเดอร์ไหน</td></tr>
+<tr><td><code>call venv\Scripts\<wbr>activate.bat</code></td><td>เข้า Virtual Environment เพื่อให้เรียก <code>yolo</code> / <code>python</code> ตัวใน <code>venv</code> ไม่ใช่ตัวของระบบ<br>ต้องมีคำว่า <code>call</code> นำหน้า — ถ้าเรียก <code>.bat</code> อีกตัวเฉย ๆ โดยไม่มี <code>call</code> การทำงานจะ<b>ย้ายไปไฟล์นั้นแล้วไม่กลับมา</b> บรรทัดที่เหลือจะไม่ถูกรันเลย</td></tr>
+<tr><td><code>pause</code></td><td>บรรทัดสุดท้ายของทุกสคริปต์ — ค้างหน้าต่างไว้ให้อ่านผลก่อนปิด ถ้าไม่มีบรรทัดนี้ เวลาดับเบิลคลิกหน้าต่างจะปิดวับทันทีจนอ่านอะไรไม่ทัน</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<h2>⚙️ รูปแบบคำสั่ง <code>yolo</code></h2>
+<p>ทุกอย่างที่สคริปต์ทำ สุดท้ายคือการเรียกคำสั่งเดียวนี้ พิมพ์เองใน terminal ก็ได้ (หลัง activate venv แล้ว):</p>
+<pre>yolo &lt;task&gt; &lt;mode&gt; key=value key=value ...
+      │       │
+      │       └── predict / train / val / export / benchmark
+      └────────── detect / segment / classify / pose</pre>
+<p>Lab นี้ใช้ <code>detect</code> + <code>predict</code> ตลอด ส่วน key ที่ใช้บ่อย:</p>
+<table>
+<thead><tr><th>key</th><th>ความหมาย</th></tr></thead>
+<tbody>
+<tr><td><code>model=</code></td><td>ไฟล์โมเดล <code>.pt</code> / <code>.onnx</code> ที่จะใช้</td></tr>
+<tr><td><code>source=</code></td><td>สิ่งที่จะให้ตรวจ — ไฟล์ภาพ, ไฟล์วิดีโอ, ทั้งโฟลเดอร์, ลิงก์ URL, หรือ <code>0</code> = webcam ตัวแรก</td></tr>
+<tr><td><code>name=</code></td><td>ชื่อโฟลเดอร์ผลลัพธ์ที่จะสร้างใต้ <code>runs\detect\</code></td></tr>
+<tr><td><code>save=True</code></td><td>บันทึกภาพ/วิดีโอที่วาดกรอบแล้วลงไฟล์ (ถ้าไม่ใส่ จะประมวลผลแต่ไม่เซฟ)</td></tr>
+<tr><td><code>conf=0.25</code></td><td>ค่าเริ่มต้น — แสดงเฉพาะผลที่มั่นใจเกิน 25% ลองปรับขึ้นถ้ากรอบขยะเยอะ ลดลงถ้าตรวจไม่เจอ</td></tr>
+<tr><td><code>show=True</code></td><td>เปิดหน้าต่างแสดงผลแบบ real-time (ใช้กับ webcam)</td></tr>
+<tr><td><code>device=0</code> / <code>device=cpu</code></td><td>บังคับใช้ GPU ใบที่ 0 หรือ CPU (ปกติเลือกให้อัตโนมัติ)</td></tr>
+</tbody>
+</table>
+<div class="tip">ดู key ทั้งหมดได้ด้วย <code>yolo cfg</code> หรือที่ <a href="https://docs.ultralytics.com/modes/predict/">docs.ultralytics.com/modes/predict</a></div>
+</div>
+
 <div class="step"><span class="n">Step 1</span>
 <h3>เตรียมไฟล์ตัวอย่าง</h3>
 <pre>cd Lab2_Inference\scripts
@@ -83,27 +133,147 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 ├── test.jpg    # ภาพรถบัสกับคนเดินถนน (จาก Ultralytics)
 ├── test2.jpg   # ภาพตัวอย่างที่สอง ไว้ลองเปลี่ยน source เอง
 └── test.mp4    # วิดีโอ 5 วินาที สร้างจาก test.jpg</div>
+
+<h4>สิ่งที่จะเห็นบนหน้าจอ</h4>
+<pre class="out">[get ] test.jpg &lt;- https://ultralytics.com/images/bus.jpg
+[get ] test2.jpg &lt;- https://ultralytics.com/images/zidane.jpg
+[make] test.mp4 (5s, 648x864)
+
+Sample files are in: C:\dev\Yolo_tain\Lab2_Inference\samples
+Press any key to continue . . .</pre>
+<p>ถ้ารันซ้ำจะขึ้น <code>[skip] test.jpg already exists</code> แทน เพราะสคริปต์ไม่โหลดทับของเดิม</p>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>get_samples.py</code></h4>
+<p>สคริปต์นี้ทำ 2 อย่าง แยกเป็น 2 ฟังก์ชัน</p>
+<table>
+<tbody>
+<tr><td>download_<wbr>images()</td><td>วนดาวน์โหลดจาก dict <code>IMAGES</code> ด้วย <code>urllib.request.urlretrieve(url, dest)</code> — ก่อนโหลดเช็ค <code>dest.exists()</code> ก่อน ถ้ามีแล้วข้าม จะได้ไม่กินเน็ตซ้ำและไม่ทับไฟล์ที่นักศึกษาเปลี่ยนเอง</td></tr>
+<tr><td>make_video()</td><td>ไม่ได้ดาวน์โหลดวิดีโอจากไหน แต่<b>สร้างเอง</b>จาก <code>test.jpg</code> — ตัดกรอบขนาด 80% ของภาพแล้วเลื่อนตำแหน่งไป-กลับทีละเฟรม เขียนออกเป็น <code>.mp4</code> ด้วย <code>cv2.VideoWriter</code> รวม 100 เฟรม (5 วินาที × 20 fps)<br>ทำแบบนี้เพราะจะได้มีไฟล์วิดีโอไว้ทดสอบแน่นอน โดยไม่ต้องพึ่งลิงก์วิดีโอจากภายนอกที่อาจตายได้</td></tr>
+</tbody>
+</table>
+<p>จุดที่น่าสังเกตในโค้ด — path ทุกอันคำนวณจาก <code>Path(__file__)</code>:</p>
+<pre>SAMPLES = Path(__file__).resolve().parent.parent / "samples"</pre>
+<p><code>__file__</code> คือที่อยู่ของไฟล์ <code>.py</code> เอง ทำให้รันจากโฟลเดอร์ไหนก็หา <code>samples\</code> เจอ — เป็นวิธีเดียวกับที่บรรทัด <code>cd /d "%~dp0\..\.."</code> ทำในฝั่ง <code>.bat</code></p>
+</div>
+
 <div class="tip">อยากใช้รูป/วิดีโอของตัวเอง ก็วางไฟล์ไว้ในโฟลเดอร์ <code>samples\</code> แล้วแก้ชื่อไฟล์ในสคริปต์ที่บรรทัด <code>source=</code> ได้เลย</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
 <h3>Detection บนรูปภาพ</h3>
 <pre>.\predict_image.bat</pre>
-<p>ผลลัพธ์ (ภาพที่มีกรอบ+label) จะถูกบันทึกไว้ที่ <code>runs\detect\predict_image\test.jpg</code></p>
-<p>สคริปต์นี้เทียบเท่าคำสั่ง:</p>
-<pre>yolo detect predict model=runs\detect\train\weights\best.pt source=Lab2_Inference\samples\test.jpg name=predict_image save=True</pre>
+
+<h4>สิ่งที่จะเห็นบนหน้าจอ</h4>
+<pre class="out">Ultralytics 8.4.131  Python-3.13.14 torch-2.6.0+cu124 CUDA:0 (NVIDIA GeForce RTX 3050 Ti Laptop GPU, 4096MiB)
+YOLO11n summary (fused): 101 layers, 2,616,248 parameters, 0 gradients, 6.5 GFLOPs
+
+image 1/1 C:\dev\Yolo_tain\Lab2_Inference\samples\test.jpg: 640x480 4 persons, 1 bus, 11.8ms
+Speed: 30.4ms preprocess, 11.8ms inference, 11.9ms postprocess per image at shape (1, 3, 640, 480)
+Results saved to C:\dev\Yolo_tain\runs\detect\predict_image</pre>
+
+<h4>อ่านผลให้เป็น</h4>
+<table>
+<thead><tr><th>บรรทัด</th><th>บอกอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>CUDA:0 (...)</code></td><td>กำลังใช้ GPU ใบนี้อยู่ — ถ้าเห็น <code>CPU</code> แทน แปลว่าไม่ได้ใช้การ์ดจอ (ยังรันได้ แต่ช้ากว่ามากในแล็บที่ต้อง Train)</td></tr>
+<tr><td><code>YOLO11n summary (fused)</code></td><td>โครงสร้างโมเดล — <b>2.6 ล้านพารามิเตอร์</b>, <b>6.5 GFLOPs</b> ต่อภาพ ตัวเลขนี้บอกว่าโมเดล "เล็ก/เบา" แค่ไหน ใช้เทียบกันตอนเลือกขนาดโมเดลใน Lab 4 และตอนย้ายลง Raspberry Pi ใน Lab 7<br><code>fused</code> = รวมเลเยอร์ Conv กับ BatchNorm เข้าด้วยกันเพื่อให้ inference เร็วขึ้น (ทำอัตโนมัติตอนโหลดโมเดล)</td></tr>
+<tr><td><code>640x480</code></td><td>ขนาดภาพหลังถูกย่อให้เข้ากับ input ของโมเดล ไม่ใช่ขนาดไฟล์ต้นฉบับ</td></tr>
+<tr><td><code>4 persons, 1 bus</code></td><td><b>ผลตรวจจับ</b> — เจอคน 4 กับรถบัส 1</td></tr>
+<tr><td><code>Speed: ... preprocess / inference / postprocess</code></td><td>แยกเวลาเป็น 3 ช่วง: เตรียมภาพ (ย่อ/แปลงเป็น tensor) → โมเดลคิด → แปลงผลกลับเป็นกรอบ + ตัดกรอบซ้ำด้วย NMS<br>เวลาที่คนมักอ้างว่า "เร็วกี่ ms" คือ <b>inference</b> อย่างเดียว แต่ FPS จริงต้องรวมทั้ง 3 ช่วง — จุดนี้จะสำคัญมากใน Lab 6 ตอน benchmark</td></tr>
+<tr><td><code>Results saved to ...</code></td><td>โฟลเดอร์ที่ไฟล์ผลลัพธ์ถูกเซฟ</td></tr>
+</tbody>
+</table>
+
+<h4>ภาพผลลัพธ์</h4>
+<figure>
+  <img src="../docs/images/lab2_predict_image.jpg" alt="ผลการ detect บน test.jpg มีกรอบรอบรถบัสและคน 4 คน">
+  <figcaption><code>runs\detect\predict_image\test.jpg</code> — ตัวเลขบนกรอบคือ confidence (0-1) ยิ่งใกล้ 1 ยิ่งมั่นใจ สังเกตว่าคนที่ยืนริมซ้ายสุดถูกภาพตัดไปครึ่งตัว confidence จึงต่ำกว่าคนอื่น</figcaption>
+</figure>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>predict_image.bat</code></h4>
+<pre>set MODEL=runs\detect\train\weights\best.pt
+if not exist "%MODEL%" (
+    echo [ERROR] Model not found: %MODEL%
+    echo         Run Lab1_TrainReadyDataset\scripts\train.bat first.
+    pause
+    exit /b 1
+)
+if not exist "Lab2_Inference\samples\test.jpg" python "%~dp0get_samples.py"
+
+yolo detect predict model=%MODEL% source=Lab2_Inference\samples\test.jpg name=predict_image save=True</pre>
+<table>
+<tbody>
+<tr><td>set MODEL=</td><td>เก็บ path โมเดลไว้ในตัวแปรเดียว แล้วเรียกใช้ด้วย <code>%MODEL%</code> — ถ้าจะเปลี่ยนไปใช้โมเดลอื่น (เช่นของ Lab 4) แก้แค่บรรทัดนี้บรรทัดเดียว</td></tr>
+<tr><td>if not exist<br>&nbsp;&nbsp;"%MODEL%"</td><td><b>ด่านตรวจก่อนรัน</b> ถ้าไม่มีไฟล์โมเดลจะบอกตรง ๆ ว่าต้องกลับไปทำ Lab 1 แล้ว <code>exit /b 1</code> จบสคริปต์ทันที — ถ้าไม่มีด่านนี้ Python จะพ่น traceback ยาวหลายสิบบรรทัดซึ่งอ่านยากกว่ามาก</td></tr>
+<tr><td>if not exist<br>&nbsp;&nbsp;test.jpg</td><td>ถ้ายังไม่มีภาพตัวอย่าง เรียก <code>get_samples.py</code> ให้เอง — ข้าม Step 1 มาก็ยังรันได้</td></tr>
+<tr><td>yolo detect<br>&nbsp;&nbsp;predict</td><td>คำสั่งจริง ตามรูปแบบในหัวข้อ "รูปแบบคำสั่ง yolo" ด้านบน<br><b>ไม่มี <code>project=</code></b> โดยตั้งใจ เพราะถ้าใส่ path แบบ relative ผลลัพธ์จะไปซ้อนกลายเป็น <code>runs\detect\Lab2_Inference\runs\...</code></td></tr>
+</tbody>
+</table>
+<p>อยากลองเองโดยไม่ผ่านสคริปต์ ก็ activate venv แล้วพิมพ์บรรทัด <code>yolo</code> ตรง ๆ ได้เลย ลองเปลี่ยน <code>source=</code> เป็น <code>Lab2_Inference\samples\test2.jpg</code> หรือเพิ่ม <code>conf=0.5</code> ดูว่ากรอบหายไปกี่อัน</p>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>Detection บนวิดีโอ</h3>
 <pre>.\predict_video.bat</pre>
+
+<h4>สิ่งที่จะเห็นบนหน้าจอ</h4>
+<p>วิดีโอถูกประมวลผล<b>ทีละเฟรม</b> บรรทัดจะไหลผ่านไปเรื่อย ๆ 100 บรรทัด (1 เฟรม = 1 บรรทัด):</p>
+<pre class="out">video 1/1 (frame 1/100) C:\dev\Yolo_tain\Lab2_Inference\samples\test.mp4: 640x480 3 persons, 1 bus, 15.5ms
+video 1/1 (frame 2/100) C:\dev\Yolo_tain\Lab2_Inference\samples\test.mp4: 640x480 3 persons, 1 bus, 9.1ms
+...
+video 1/1 (frame 100/100) C:\dev\Yolo_tain\Lab2_Inference\samples\test.mp4: 640x480 3 persons, 1 bus, 8.7ms
+Speed: 2.0ms preprocess, 10.4ms inference, 1.6ms postprocess per image at shape (1, 3, 640, 480)
+Results saved to C:\dev\Yolo_tain\runs\detect\predict_video</pre>
+<p>สังเกต 2 อย่าง:</p>
+<ul>
+<li><b>เฟรมแรกช้ากว่าเฟรมอื่น</b> (15.5ms เทียบกับ ~9ms) เพราะ GPU ยังต้อง warm-up — ตอนวัด FPS จริงจึงควรทิ้งเฟรมแรก ๆ ไป (Lab 6 จะทำแบบนั้น)</li>
+<li><code>preprocess</code> เหลือแค่ 2.0ms จาก 30ms ของภาพเดี่ยว เพราะครั้งแรกรวมเวลาโหลดโมเดลเข้า GPU ไว้ด้วย</li>
+</ul>
+
+<h4>ภาพผลลัพธ์ (1 เฟรมจากวิดีโอ)</h4>
+<figure>
+  <img src="../docs/images/lab2_predict_video.jpg" alt="เฟรมที่ 45 จากวิดีโอผลลัพธ์ มีกรอบรอบรถบัสและคน">
+  <figcaption>เฟรมที่ 45 จาก <code>runs\detect\predict_video\test.avi</code> — วิดีโอนี้สร้างจากการเลื่อนกรอบไปบน <code>test.jpg</code> จึงเห็นคนไม่ครบ 4 คนเหมือนภาพนิ่ง เพราะบางคนถูกเลื่อนออกนอกเฟรมไปแล้ว</figcaption>
+</figure>
+
 <p>ผลลัพธ์จะอยู่ที่ <code>runs\detect\predict_video\</code> — บน Windows ไฟล์ที่ได้จะเป็นนามสกุล <code>.avi</code> (ไม่ใช่ .mp4) เปิดดูด้วย VLC หรือ Movies &amp; TV ได้ตามปกติ</p>
+
+<div class="walk">
+<h4>🔍 ต่างจาก <code>predict_image.bat</code> ตรงไหน</h4>
+<p>แทบไม่ต่างเลย — เปลี่ยนแค่ 2 คำ:</p>
+<pre>source=Lab2_Inference\samples\test.mp4   (เดิมเป็น test.jpg)
+name=predict_video                       (เดิมเป็น predict_image)</pre>
+<p>Ultralytics ดูจาก<b>นามสกุลไฟล์</b>เองว่าเป็นภาพหรือวิดีโอ แล้วเลือกวิธีอ่านให้อัตโนมัติ — โค้ดฝั่งเราไม่ต้องเขียนลูปอ่านเฟรมเลย ถ้าใส่ <code>source=</code> เป็นชื่อ<b>โฟลเดอร์</b> มันก็จะไล่ทำทุกไฟล์ในโฟลเดอร์นั้นให้เหมือนกัน</p>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
 <h3>Detection แบบ Real-time ผ่าน Webcam</h3>
 <pre>.\predict_webcam.bat</pre>
-<div class="tip">กด <code>q</code> ในหน้าต่างวิดีโอเพื่อหยุดการทำงาน</div>
+
+<h4>สิ่งที่จะเห็นบนหน้าจอ</h4>
+<p>จะมี<b>หน้าต่างวิดีโอเปิดขึ้นมาแยกต่างหาก</b> วาดกรอบทับภาพสดแบบ real-time ส่วนใน terminal บรรทัดจะไหลไม่หยุดจนกว่าจะกดหยุด:</p>
+<pre class="out">0: 480x640 1 person, 8.8ms
+0: 480x640 1 person, 9.1ms
+0: 480x640 1 person, 8.5ms
+...</pre>
+<p>เลข <code>0:</code> ข้างหน้าคือหมายเลข source (webcam ตัวที่ 0) — ต่างจากภาพนิ่งที่ขึ้นเป็น <code>image 1/1</code> เพราะกล้องเป็นสตรีมที่ไม่มีจุดจบ</p>
+<div class="tip">กด <code>q</code> ในหน้าต่างวิดีโอเพื่อหยุดการทำงาน — ต้อง<b>คลิกที่หน้าต่างวิดีโอก่อน</b>ให้มันเป็นหน้าต่าง active กดใน terminal ไม่มีผล (ถ้าไม่ได้จริง ๆ กด <code>Ctrl+C</code> ใน terminal)</div>
+
+<div class="walk">
+<h4>🔍 ต่างจากสองตัวก่อนตรงไหน</h4>
+<pre>yolo detect predict model=%MODEL% source=0 show=True</pre>
+<table>
+<tbody>
+<tr><td>source=0</td><td>เลข <code>0</code> เฉย ๆ (ไม่ใช่ชื่อไฟล์) = กล้องตัวแรกของเครื่อง ถ้ามีหลายตัวลองเปลี่ยนเป็น <code>1</code>, <code>2</code></td></tr>
+<tr><td>show=True</td><td>เปิดหน้าต่างแสดงผลสด — จำเป็นสำหรับ webcam ไม่งั้นจะประมวลผลไปเงียบ ๆ โดยไม่เห็นอะไรเลย</td></tr>
+<tr><td>ไม่มี save=True</td><td>ตั้งใจไม่เซฟ เพราะสตรีมจากกล้องไม่มีจุดจบ ถ้าเปิด save ไว้ไฟล์จะโตขึ้นเรื่อย ๆ จนกว่าจะกดหยุด — ถ้าอยากอัดเก็บไว้จริง ๆ ค่อยเติม <code>save=True</code> เอง</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 5</span>
