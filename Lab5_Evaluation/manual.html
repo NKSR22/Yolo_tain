@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -68,41 +76,132 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </ul>
 </div>
 
+<h2>✅ ก่อนเริ่ม</h2>
+<ul>
+<li>ทำ Lab 4 เสร็จแล้ว มีโมเดลอยู่ที่ <code>runs\detect\full\weights\best.pt</code> (รอบที่เทรนด้วยชุดเต็ม)</li>
+<li>Lab นี้<b>ไม่เทรนใหม่</b> แค่เอาโมเดลที่มีอยู่ไปวัดผล จึงใช้เวลาไม่กี่วินาทีต่อรอบ</li>
+</ul>
+
 <div class="step"><span class="n">Step 1</span>
-<h3>รัน Evaluation (Validation)</h3>
+<h3>รัน Evaluation บนชุด Validation</h3>
 <pre>cd Lab5_Evaluation\scripts
 .\evaluate.bat</pre>
-<p>เทียบเท่าคำสั่ง <code>yolo detect val model=best.pt data=data.yaml</code></p>
+<figure>
+  <img src="../docs/images/lab5_val_result.png" alt="ผลการ validate แสดงตัวเลขรวมและแยกรายคลาสทั้งสี่">
+  <figcaption>ผลจริงจากโมเดลของ Lab 4 รอบชุดเต็ม วัดบนภาพ val 225 ใบ (379 วัตถุ)</figcaption>
+</figure>
+<table>
+<thead><tr><th>คอลัมน์</th><th>ความหมาย</th></tr></thead>
+<tbody>
+<tr><td><code>Images</code> / <code>Instances</code></td><td>จำนวน<b>ภาพ</b> และจำนวน<b>วัตถุ</b>ที่ใช้วัดคลาสนั้น — <b>ดูคอลัมน์นี้ก่อนเชื่อตัวเลขอื่นเสมอ</b> ตัวเลขที่วัดจาก 1-2 วัตถุไม่มีความหมาย (เจอมาแล้วใน Lab 4)</td></tr>
+<tr><td><code>Box(P)</code> Precision</td><td>ในกรอบที่โมเดลทายมา ถูกจริงกี่ % — ต่ำ = ทายมั่วเยอะ (false positive)</td></tr>
+<tr><td><code>R</code> Recall</td><td>ในวัตถุที่มีอยู่จริง หาเจอกี่ % — ต่ำ = มองข้ามเยอะ (false negative)</td></tr>
+<tr><td><code>mAP50</code></td><td>ความแม่นยำเฉลี่ย เมื่อถือว่ากรอบทับของจริง ≥ 50% (IoU ตัวเดียวกับที่ใช้ตรวจงาน label ใน Lab 3) ก็นับว่าถูก</td></tr>
+<tr><td><code>mAP50-95</code></td><td>เฉลี่ยที่เกณฑ์ IoU 50% ถึง 95% — เข้มงวดกว่ามาก เพราะบังคับให้กรอบต้องแนบด้วย ไม่ใช่แค่ทับ ๆ กัน<br><b>ตัวเลขมาตรฐานที่ใช้เทียบโมเดลกันจริง ๆ</b> และเป็นตัวที่ YOLO ใช้เลือกว่า epoch ไหนคือ <code>best.pt</code></td></tr>
+</tbody>
+</table>
+<div class="tip"><b>ทำไม Precision กับ Recall ต้องดูคู่กันเสมอ</b> — โมเดลที่ทายแค่ครั้งเดียวทั้งชุดแล้วถูก จะได้ Precision 1.00 เต็ม ทั้งที่ใช้งานไม่ได้เลย ส่วนโมเดลที่วาดกรอบทั่วภาพจะได้ Recall สูงแต่ Precision พัง — <b>ต้องดีทั้งคู่ถึงจะใช้ได้</b> (เดี๋ยวจะเห็นตัวอย่างจริงใน Step 4)</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>อ่านผลลัพธ์ตัวเลข</h3>
+<h3>วัดบนชุด Test — ภาพที่โมเดลไม่เคยเห็นเลย</h3>
+<pre>.\evaluate_test.bat</pre>
+<p>ชุด <code>african-wildlife</code> แบ่งไว้ 3 ส่วน: <b>train</b> (1,052 ภาพ ใช้สอน) · <b>val</b> (225 ภาพ ใช้เช็คระหว่างเทรน) · <b>test</b> (227 ภาพ <b>ไม่เคยถูกใช้เลย</b>)</p>
+<div class="warn"><b>ทำไมต้องมี test แยกจาก val?</b> — ระหว่างเทรน YOLO เอาชุด val มาวัดผลทุก epoch แล้วเลือก epoch ที่ดีที่สุดเป็น <code>best.pt</code> เท่ากับว่า<b>โมเดลถูกคัดเลือกโดยอ้อมให้เก่งกับชุด val</b> ตัวเลขจาก val จึงมองในแง่ดีเกินจริงเสมอ<br>ชุด test ที่ไม่เคยแตะเลยจึงเป็นตัวเลขที่ซื่อสัตย์ที่สุด และเป็นตัวที่ควรเขียนลงรายงาน</div>
 <table>
-<tr><th>Metric</th><th>ความหมาย</th></tr>
-<tr><td>Precision</td><td>ใน object ที่โมเดลทายว่า "ใช่" มีกี่ % ที่ทายถูกจริง (ทายผิดบ่อยแค่ไหน / false positive)</td></tr>
-<tr><td>Recall</td><td>ใน object ที่มีอยู่จริง โมเดลหาเจอกี่ % (พลาดไปเยอะแค่ไหน / false negative)</td></tr>
-<tr><td>mAP50</td><td>ค่าเฉลี่ยความแม่นยำ เมื่อถือว่า "ถูก" ถ้า box ซ้อนทับของจริง ≥ 50%</td></tr>
-<tr><td>mAP50-95</td><td>เฉลี่ย mAP ที่เกณฑ์ IoU ตั้งแต่ 50% ถึง 95% (เข้มงวดกว่า, มาตรฐานที่นิยมใช้เทียบโมเดล)</td></tr>
+<thead><tr><th>ชุด</th><th>ภาพ</th><th>Precision</th><th>Recall</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
+<tbody>
+<tr><td>val (เห็นระหว่างเทรน)</td><td>225</td><td>0.954</td><td>0.910</td><td>0.961</td><td>0.812</td></tr>
+<tr><td><b>test (ไม่เคยเห็น)</b></td><td>227</td><td>0.955</td><td><b>0.944</b></td><td><b>0.975</b></td><td><b>0.831</b></td></tr>
+</tbody>
 </table>
+<div class="tip"><b>ผลบนชุด test ออกมา<u>ดีกว่า</u> val เล็กน้อย</b> — เป็นสัญญาณที่ดีมาก แปลว่าโมเดล<b>ไม่ได้ท่องจำ</b>ชุด val แต่เรียนรู้ลักษณะของสัตว์จริง ๆ<br>ถ้าเจอตรงกันข้าม เช่น val ได้ 0.96 แต่ test ได้ 0.70 นั่นคืออาการ overfitting ชัด ๆ ต้องกลับไปเพิ่มข้อมูลหรือลด epochs</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>อ่าน Confusion Matrix</h3>
-<p>เปิดไฟล์ <code>runs\val\confusion_matrix.png</code> — แนวตั้งคือค่าจริง แนวนอนคือค่าที่โมเดลทาย ถ้าตัวเลขนอกแนวทแยงมุมสูง แปลว่าโมเดลสับสนสองคลาสนั้นบ่อย</p>
-<div class="tip">ถ้า Recall ต่ำ → ลองเพิ่มจำนวนภาพ/ความหลากหลายของ Dataset (Lab 3) หรือเทรนนานขึ้น<br>ถ้า Precision ต่ำ → ตรวจสอบว่า label ผิดพลาด/วาดกรอบไม่แม่นหรือไม่</div>
+<p>เปิด <code>runs\detect\val\confusion_matrix_normalized.png</code> (ตัวที่ปรับเป็นสัดส่วนแล้ว อ่านง่ายกว่าตัวที่เป็นจำนวนนับ)</p>
+<figure>
+  <img src="../docs/images/lab5_confusion.png" alt="Confusion matrix ปกติของ 4 คลาสสัตว์ พร้อมแถวและคอลัมน์ background">
+  <figcaption>แกนนอน = ของจริง · แกนตั้ง = สิ่งที่โมเดลทาย · ช่องแนวทแยง = ทายถูก</figcaption>
+</figure>
+<table>
+<thead><tr><th>ที่เห็นในภาพ</th><th>อ่านว่าอย่างไร</th></tr></thead>
+<tbody>
+<tr><td><b>แนวทแยง 0.90-0.94</b></td><td>ทายถูก 90-94% ของแต่ละคลาส — ตรงกับ Recall ที่ได้</td></tr>
+<tr><td><code>elephant</code> ทายเป็น เมื่อของจริงคือ <code>rhino</code> = <b>0.04</b></td><td>สับสนระหว่างช้างกับแรดเล็กน้อย ซึ่งพอเข้าใจได้ ทั้งคู่เป็นสัตว์ตัวใหญ่สีเทา ผิวหยาบ ถ่ายไกล ๆ แล้วคล้ายกัน</td></tr>
+<tr><td><b>คอลัมน์ <code>background</code></b><br>zebra 0.43 · elephant 0.30 · buffalo 0.14</td><td><b>False positive</b> — โมเดลวาดกรอบขึ้นมาในที่ที่เฉลยไม่มีอะไร<br><code>zebra</code> สูงถึง 0.43 เพราะม้าลายอยู่รวมฝูง ตัวที่อยู่ไกล ๆ ในภาพมักไม่ถูก label ไว้ แต่โมเดลมองเห็นแล้วทายออกมา — <b>ส่วนหนึ่งจึงไม่ใช่ความผิดของโมเดล แต่เป็นข้อจำกัดของ label</b></td></tr>
+<tr><td><b>แถว <code>background</code></b><br>0.04-0.08 ทุกคลาส</td><td><b>วัตถุที่โมเดลมองข้าม</b> (false negative) — ต่ำแบบนี้ถือว่าดี</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>สองช่องนี้บอกทิศทางแก้ได้ตรงกว่าค่า mAP</b> — คอลัมน์ <code>background</code> สูง แปลว่าควรเพิ่มภาพพื้นหลังที่ไม่มีวัตถุเข้าไปในชุดเทรน หรือปรับ <code>conf</code> ขึ้น ส่วนแถว <code>background</code> สูง แปลว่าต้องเพิ่มภาพของคลาสนั้นให้หลากหลายขึ้น</div>
+
+<h4>กราฟ Precision-Recall</h4>
+<figure>
+  <img src="../docs/images/lab5_pr_curve.png" alt="กราฟ Precision-Recall ของทั้งสี่คลาส">
+  <figcaption><code>BoxPR_curve.png</code> — แต่ละเส้นคือหนึ่งคลาส พื้นที่ใต้เส้นคือค่า mAP50 ของคลาสนั้น</figcaption>
+</figure>
+<p>กราฟนี้แสดง<b>การแลกกันระหว่าง Precision กับ Recall เมื่อเลื่อนค่า <code>conf</code></b> — ปลายซ้าย (Recall ต่ำ) คือตั้ง <code>conf</code> สูงจนเอาเฉพาะที่มั่นใจมาก ๆ ส่วนปลายขวาคือตั้งต่ำจนรับหมด
+เส้นที่โก่งไปมุมขวาบนมากที่สุดคือคลาสที่โมเดลทำได้ดีที่สุด <b>ใช้กราฟนี้เลือกค่า <code>conf</code> ที่เหมาะกับงาน</b> — งานที่ห้ามพลาดของจริงให้เลือกจุดที่ Recall สูง ส่วนงานที่ห้ามเตือนผิดให้เลือกจุดที่ Precision สูง</p>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
-<h3>สรุปผลเป็นรายงาน</h3>
+<h3>เทียบกับโมเดลจาก Lab 4 รอบแรก — บนสนามเดียวกัน</h3>
+<p>ใน Lab 4 เราวัดโมเดล 20 รูปด้วยชุด val ของมันเอง (4 ภาพ) ซึ่งเล็กเกินจะเชื่อได้ คราวนี้เอามาวัดด้วย<b>ชุด val 225 ภาพชุดเดียวกับโมเดลใหญ่</b> จะได้เทียบกันตรง ๆ</p>
+<pre>.\compare_models.bat</pre>
+<figure>
+  <img src="../docs/images/lab5_baseline_result.png" alt="ผลการวัดโมเดลที่เทรนจาก 20 รูป บนชุด val 225 ภาพ">
+  <figcaption>โมเดลจาก 20 รูป เมื่อถูกวัดด้วยสนามจริง</figcaption>
+</figure>
+<table>
+<thead><tr><th></th><th>โมเดล 20 รูป</th><th>โมเดล 1,052 รูป</th></tr></thead>
+<tbody>
+<tr><td>Precision</td><td>0.652</td><td>0.954</td></tr>
+<tr><td><b>Recall</b></td><td><b style="color:#ef4444">0.248</b></td><td>0.910</td></tr>
+<tr><td>mAP50</td><td>0.345</td><td>0.961</td></tr>
+<tr><td>mAP50-95</td><td>0.234</td><td>0.812</td></tr>
+</tbody>
+</table>
+<div class="danger"><b>ดูบรรทัด <code>elephant</code> ในภาพให้ดี: Precision = 1.000 แต่ Recall = 0.000</b><br>
+Precision เต็ม 100% ดูเผิน ๆ เหมือนสมบูรณ์แบบ แต่ความจริงคือ<b>โมเดลแทบไม่ทายอะไรเลย</b> — ทายน้อยมากจนบังเอิญถูกหมด ส่วนช้างจริง 91 ตัวในชุด val มันหาไม่เจอสักตัว<br>
+<b>นี่คือเหตุผลที่ห้ามอ่าน Precision ตัวเดียวเด็ดขาด</b> ถ้ารายงานเขียนแค่ "โมเดลมี Precision 1.00" จะกลายเป็นการรายงานที่ทำให้เข้าใจผิดทั้งที่ตัวเลขไม่ได้โกหก</div>
+<p>สังเกตว่า Recall รวมตกจาก 0.910 เหลือ <b>0.248</b> — โมเดล 20 รูป <b>มองข้ามวัตถุไป 3 ใน 4</b> ขณะที่ mAP50 ยังขึ้น 0.345 ซึ่งดูไม่ได้แย่จนน่าตกใจ</p>
+</div>
+
+<div class="step"><span class="n">Step 5</span>
+<h3>รวบรวมไฟล์ทำรายงาน</h3>
 <pre>.\export_report.bat</pre>
-<p>สคริปต์จะรวมกราฟและตัวเลขสำคัญไว้ในโฟลเดอร์ <code>report\</code> เพื่อใช้ประกอบรายงานโครงงาน</p>
+<p>สคริปต์จะหาโฟลเดอร์ผล<b>รอบล่าสุด</b>เอง แล้วก๊อป confusion matrix, กราฟ PR/F1/P/R และภาพเทียบ label กับผลทำนาย ไปไว้ที่ <code>Lab5_Evaluation\report\</code></p>
+<pre class="out">Collecting from C:\dev\Yolo_tain\runs\detect\val_baseline
+  + confusion_matrix.png
+  + confusion_matrix_normalized.png
+  + BoxPR_curve.png
+  + BoxF1_curve.png
+  ...
+8 file(s) copied to C:\dev\Yolo_tain\Lab5_Evaluation\report</pre>
+<div class="warn"><b>สังเกตว่ามันหยิบ <code>val_baseline</code> มา ไม่ใช่ <code>val</code></b> — เพราะรอบล่าสุดที่รันคือ Step 4 ซึ่งเป็นการวัดโมเดล 20 รูป ถ้าเผลอเอาไปใส่รายงานจะกลายเป็นรายงานผลของโมเดลที่แย่กว่า<br>
+<b>ให้ระบุชื่อรอบเองทุกครั้ง</b> เพื่อความชัวร์:
+<pre>.\export_report.bat val        &lt;- ผลบนชุด val ของโมเดลชุดเต็ม
+.\export_report.bat val_test   &lt;- ผลบนชุด test (ตัวที่ควรใส่รายงาน)</pre></div>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร</h4>
+<table>
+<tbody>
+<tr><td>evaluate.bat</td><td><code>yolo detect val model=runs\detect\full\weights\best.pt data=african-wildlife.yaml name=val</code><br>คำสั่ง <code>val</code> ไม่เทรนอะไร แค่เอาโมเดลไปวัดกับชุดข้อมูล แล้วเขียนกราฟทั้งหมดให้</td></tr>
+<tr><td>evaluate_test.bat</td><td>เพิ่ม <code>split=test</code> เข้าไปคำเดียว — บอกให้ใช้ชุด test แทน val (ค่าเริ่มต้นคือ <code>split=val</code>)</td></tr>
+<tr><td>export_report.py</td><td><b>ไม่ hardcode ชื่อโฟลเดอร์</b> แต่ไล่หาโฟลเดอร์ที่ขึ้นต้นด้วย <code>val</code> แล้วเลือกอันที่แก้ไขล่าสุด — เพราะรัน evaluate ซ้ำจะได้ <code>val2</code>, <code>val3</code> เพิ่มขึ้นเรื่อย ๆ ถ้าเขียนตายตัวจะก๊อปไฟล์เก่ามาให้ตลอด</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>ตัวเลข Precision / Recall / mAP50 / mAP50-95 ของโมเดล</li>
-<li>Confusion Matrix พร้อมคำอธิบายว่าโมเดลสับสนคลาสใดบ้าง (ถ้ามี)</li>
+<li>ตาราง Precision / Recall / mAP50 / mAP50-95 <b>ทั้งชุด val และ test</b> พร้อมบอกว่าตัวไหนควรใช้อ้างอิงในรายงาน</li>
+<li>Confusion Matrix พร้อมอธิบายว่าคอลัมน์ <code>background</code> ของ zebra ที่สูงถึง 0.43 เกิดจากอะไร</li>
+<li>คำอธิบายว่าทำไม <code>elephant</code> ของโมเดล 20 รูปถึงได้ Precision 1.000 ทั้งที่ใช้งานไม่ได้เลย</li>
+<li>ไฟล์ในโฟลเดอร์ <code>report\</code> สำหรับแนบรายงานโครงงาน</li>
 </ul>
 </div>
 

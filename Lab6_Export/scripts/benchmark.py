@@ -2,8 +2,8 @@ import time
 from pathlib import Path
 from ultralytics import YOLO
 
-MODEL_DIR = Path("../../Lab4_TrainTuning/runs/exp/weights")
-IMAGE = "../../Lab2_Inference/samples/test.jpg"
+MODEL_DIR = Path(__file__).resolve().parent.parent.parent / "runs" / "detect" / "full" / "weights"
+IMAGE = str(Path(__file__).resolve().parent.parent.parent / "Lab2_Inference" / "samples" / "test.jpg")
 N_RUNS = 20
 
 for fmt, path in [("PyTorch (.pt)", MODEL_DIR / "best.pt"), ("ONNX (.onnx)", MODEL_DIR / "best.onnx")]:

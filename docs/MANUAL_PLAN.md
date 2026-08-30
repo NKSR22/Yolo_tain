@@ -32,14 +32,14 @@
 | Lab 2 Inference | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** |
 | Lab 3 CustomDataset | ✅ | ✅ | ✅ 6 ใบ | **เสร็จ** — ปรับเป็นแบบฝึก label + มีเฉลย |
 | Lab 4 TrainTuning | ✅ | ✅ | ✅ | **เสร็จ** — เทรน 2 รอบเทียบกัน |
-| Lab 5 Evaluation | ❌ | ❌ | ❌ | ยกไปทำวันหลัง |
+| Lab 5 Evaluation | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** — val/test + เทียบสองโมเดล |
 | Lab 6 Export | ❌ | ❌ | ❌ | ยกไปทำวันหลัง |
 | Lab 7 RaspberryPi | ❌ | ❌ | ❌ | ต้องมีเครื่อง Pi |
 | Lab 8 AIHat | ❌ | ❌ | ❌ | ต้องมี Pi + Hailo AI HAT |
 | Lab 9 ConveyorGPIO | ❌ | ❌ | ❌ | ต้องมี Pi + ชุดสายพาน |
 | Lab 10 MiniProject | ❌ | ❌ | ❌ | ทำหลัง Lab 4-6 เสร็จ |
 
-**Lab 0-4 เสร็จครบแล้ว ไม่มีอะไรค้าง** — งานถัดไปเริ่มที่ Lab 5 พร้อมแก้บั๊กในข้อ 6
+**Lab 0-5 เสร็จครบแล้ว ไม่มีอะไรค้าง** — งานถัดไปเริ่มที่ Lab 6 (Export/ONNX)
 
 ---
 
@@ -175,9 +175,14 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 
 ## 6. งานที่ค้างอยู่ (นอกเหนือจากคู่มือ)
 
-บั๊กที่เจอตอนไล่อ่านโค้ดแล้ว **ยังไม่ได้แก้** — ต้องจัดการตอนทำ Lab 4-10:
+บั๊กที่เจอตอนไล่อ่านโค้ด — ข้อ 1-3 **แก้แล้ว** ตอนทำ Lab 5 (commit เดียวกัน):
 
-1. **ชื่อ run ไม่ตรงกันทั้งสาย Lab 4 → 10** (สำคัญสุด)
+1. ~~**ชื่อ run ไม่ตรงกันทั้งสาย Lab 4 → 10**~~ **แก้แล้ว** — ตกลง convention เป็น
+   `runs\detectull\weightsest.pt` (โมเดลจาก Lab 4 รอบชุดเต็ม) และ `data=african-wildlife.yaml`
+   แก้ครบทั้ง Lab5/evaluate, Lab6/export_onnx, Lab6/test_onnx, Lab10/copy_from_previous_labs
+   พร้อมใส่ด่านตรวจว่ามีไฟล์จริงก่อนรัน (เดิม Lab 10 กลืน error ด้วย `2>nul`)
+
+   <details>รายละเอียดปัญหาเดิม</details>
    `train_baseline.bat` เขียนผลที่ `name=baseline` แต่ `train_custom.bat` ใช้ `name=exp`
    ส่วน `Lab5/evaluate.bat`, `Lab6/export_onnx.bat`, `Lab6/test_onnx.bat`,
    `Lab10/copy_from_previous_labs.bat` ไป hardcode `runs\exp\weights\best.pt` กันหมด
@@ -185,10 +190,14 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
    (Lab 10 ยังกลืน error ด้วย `2>nul` อีก เลยเงียบสนิท)
    **ต้องตัดสินใจ convention ให้ตรงกันแล้วแก้ทีเดียวทั้งสาย**
 
-2. **`Lab6/benchmark.py` path ผิดชั้น** — `benchmark.bat` `cd` ไปโฟลเดอร์หลักแล้วค่อยรัน python
+2. ~~**`Lab6/benchmark.py` path ผิดชั้น**~~ **แก้แล้ว** — เปลี่ยนไปคำนวณจาก `Path(__file__)`
+
+   เดิม: — `benchmark.bat` `cd` ไปโฟลเดอร์หลักแล้วค่อยรัน python
    แต่ในไฟล์ใช้ `Path("../../Lab4_TrainTuning/...")` ซึ่งชี้ออกนอกรีโปไป 2 ชั้น
 
-3. **`Lab5/export_report.bat`** — คัดลอกจาก `runs\val\` ตายตัว แต่ถ้ารัน evaluate ซ้ำ
+3. ~~**`Lab5/export_report.bat`**~~ **แก้แล้ว** — เขียนใหม่เป็น `export_report.py` ที่ไล่หาโฟลเดอร์รอบล่าสุดเอง และระบุชื่อรอบเองได้
+
+   เดิม: — คัดลอกจาก `runs\val\` ตายตัว แต่ถ้ารัน evaluate ซ้ำ
    ผลจะไปอยู่ `val2`, `val3` ทำให้ก๊อปไฟล์เก่า
 
 4. **Lab 7-9 ยังไม่ได้ตรวจเลย** ต้องมีเครื่อง Raspberry Pi (+ Hailo AI HAT, ชุดสายพาน)
@@ -312,3 +321,4 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 | 2026-08-30 | Lab 1 คู่มือฉบับเต็ม + ภาพประกอบ 3 ใบ, เพิ่มเอกสารแผนงานนี้ | (commit นี้) |
 | 2026-08-30 | Lab 0 คู่มือฉบับเต็ม + ภาพประกอบ 2 ใบ — ปิดขอบเขต Lab 0-3 | (commit นี้) |
 | 2026-08-30 | Lab 3 ยกเครื่องเป็นแบบฝึก label + เฉลย, Lab 4 เทรน 2 รอบเทียบกัน, Lab 0 prefetch, เครื่องมือ shoot.py | `c4006fd`, `b4d811b`, `59bc263`, `4911513` |
+| 2026-08-30 | Lab 5 ครบ + แก้บั๊ก path ทั้งสาย Lab 5/6/10 | (commit นี้) |

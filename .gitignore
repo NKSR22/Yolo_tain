@@ -19,3 +19,6 @@ Lab3_CustomDataset/dataset/
 # Lab 3 practice set + answer key + comparison output (regenerate with get_practice_images.bat)
 Lab3_CustomDataset/answer_key/
 Lab3_CustomDataset/compare/
+
+# Lab 5 report output (regenerate with export_report.bat)
+Lab5_Evaluation/report/
