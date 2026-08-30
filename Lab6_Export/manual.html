@@ -74,19 +74,19 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <div class="step"><span class="n">Step 1</span>
 <h3>Export เป็น ONNX</h3>
 <pre>cd Lab6_Export\scripts
-export_onnx.bat</pre>
+.\export_onnx.bat</pre>
 <p>เทียบเท่าคำสั่ง <code>yolo export model=best.pt format=onnx imgsz=640 simplify=True</code></p>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
 <h3>ทดสอบรันโมเดล ONNX</h3>
-<pre>test_onnx.bat</pre>
+<pre>.\test_onnx.bat</pre>
 <p>สคริปต์นี้จะโหลดไฟล์ .onnx ผ่าน Ultralytics แล้วรัน Detection กับภาพทดสอบ เพื่อยืนยันว่า Export สำเร็จและผลลัพธ์ยังตรงกับโมเดลเดิม</p>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>เปรียบเทียบขนาดไฟล์และความเร็ว</h3>
-<pre>benchmark.bat</pre>
+<pre>.\benchmark.bat</pre>
 <table>
 <tr><th>ฟอร์แมต</th><th>ใช้กับ</th><th>ข้อดี</th></tr>
 <tr><td>.pt</td><td>PC/Server ที่มี PyTorch</td><td>ยืดหยุ่นสุด แก้ไข/เทรนต่อได้</td></tr>

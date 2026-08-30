@@ -93,9 +93,15 @@ pip --version</pre>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>รันสคริปต์เตรียมเครื่องอัตโนมัติ</h3>
-<p>เปิดโฟลเดอร์ <code>Lab0_Setup\scripts</code> แล้วดับเบิลคลิก หรือรันใน Command Prompt:</p>
+<p>เปิดโฟลเดอร์ <code>Lab0_Setup\scripts</code> แล้วดับเบิลคลิก หรือพิมพ์คำสั่งใน Terminal:</p>
 <pre>cd Lab0_Setup\scripts
-setup_env.bat</pre>
+.\setup_env.bat</pre>
+
+<div class="warn"><b>อย่าลืมจุดกับแบ็กสแลช <code>.\</code> หน้าชื่อไฟล์</b> — ทุก Lab ในชุดนี้เขียนคำสั่งแบบนี้เหมือนกันหมด<br>
+Windows มี Terminal 2 แบบ และ <b>PowerShell</b> (ตัวที่ Windows Terminal และ VS Code เปิดให้เป็นค่าเริ่มต้น — สังเกตว่าบรรทัดคำสั่งขึ้นต้นด้วย <code>PS</code>) <b>จะไม่ยอมรันไฟล์ในโฟลเดอร์ปัจจุบันถ้าไม่ใส่ <code>.\</code></b> จะขึ้น error ว่า:
+<pre>setup_env.bat : The term 'setup_env.bat' is not recognized as the name of a cmdlet,
+function, script file, or operable program.</pre>
+เป็นกฎความปลอดภัยของ PowerShell (กันเผลอรันไฟล์แปลกปลอมที่ถูกวางไว้ในโฟลเดอร์) ไม่ใช่ว่าไฟล์หาย — ใส่ <code>.\</code> แล้วรันได้ทันที และ <code>.\</code> ก็ใช้ได้กับ Command Prompt (cmd.exe) เหมือนกัน จำแบบเดียวพอ</div>
 <p>สคริปต์นี้จะ:</p>
 <ol>
 <li>สร้าง Virtual Environment ชื่อ <code>venv</code></li>

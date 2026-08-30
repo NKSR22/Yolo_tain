@@ -68,6 +68,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <p>แต่ละ Lab มีโฟลเดอร์แยกของตัวเอง พร้อมสคริปต์สำหรับรันงาน (<code>.bat</code> สำหรับ Windows, <code>.sh</code> สำหรับ Raspberry Pi ใน Lab 7-9) และคู่มือฉบับเต็มแบบ HTML</p>
 </div>
 
+<div class="card">
+<h2>▶️ วิธีรันสคริปต์ <code>.bat</code></h2>
+<p>ดับเบิลคลิกที่ไฟล์ได้เลย หรือพิมพ์ใน Terminal โดย<b>ใส่ <code>.\</code> นำหน้าชื่อไฟล์เสมอ</b>:</p>
+<pre>cd Lab1_TrainReadyDataset\scripts
+.\train.bat</pre>
+<p>ถ้าพิมพ์ <code>train.bat</code> เฉย ๆ ใน <b>PowerShell</b> (Terminal ค่าเริ่มต้นของ Windows Terminal และ VS Code — บรรทัดคำสั่งขึ้นต้นด้วย <code>PS</code>) จะขึ้น error ว่า <code>is not recognized as the name of a cmdlet...</code> เพราะ PowerShell ไม่รันไฟล์ในโฟลเดอร์ปัจจุบันโดยไม่ระบุ path — ไม่ใช่ว่าไฟล์หายหรือติดตั้งไม่ครบ</p>
+</div>
+
 <h2>🗂 ภาพรวม Lab ทั้งหมด</h2>
 <table>
 <tr><th>ช่วงเวลา</th><th>Lab</th><th>หัวข้อ</th><th>ผลลัพธ์</th><th></th></tr>

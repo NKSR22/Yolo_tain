@@ -82,7 +82,7 @@ dataset\           &lt;- สคริปต์สร้างให้ทั้�
 <div class="step"><span class="n">Step 1</span>
 <h3>สร้างโครงสร้างโฟลเดอร์ Dataset</h3>
 <pre>cd Lab3_CustomDataset\scripts
-make_dataset_structure.bat</pre>
+.\make_dataset_structure.bat</pre>
 <p>จะได้โครงสร้าง:</p>
 <div class="filetree">Lab3_CustomDataset\
 ├── raw_images\
@@ -161,8 +161,8 @@ can</pre>
 
 <div class="step"><span class="n">Step 4</span>
 <h3>ติดตั้งและเปิดโปรแกรม Label (labelImg)</h3>
-<pre>install_labelimg.bat
-run_labelimg.bat</pre>
+<pre>.\install_labelimg.bat
+.\run_labelimg.bat</pre>
 <p>สคริปต์จะเปิด labelImg มาที่โฟลเดอร์ <code>raw_images\</code> ให้เลย พร้อมโหลดชื่อคลาสจาก <code>classes.txt</code></p>
 <ol>
 <li>เลือกโหมด <b>YOLO</b> ที่ปุ่มมุมซ้ายล่าง (ค่าเริ่มต้นคือ PascalVOC ซึ่งเป็นคนละฟอร์แมต)</li>
@@ -174,7 +174,7 @@ run_labelimg.bat</pre>
 
 <div class="step"><span class="n">Step 5</span>
 <h3>แบ่งข้อมูล Train/Val</h3>
-<pre>split_dataset.bat</pre>
+<pre>.\split_dataset.bat</pre>
 <p>สคริปต์จะแบ่งภาพ 80% เป็น train, 20% เป็น val แล้ว<b>เขียน <code>data.yaml</code> ให้อัตโนมัติ</b>จาก <code>classes.txt</code> — ไม่ต้องแก้ <code>nc</code>/<code>names</code> เองแล้ว</p>
 <pre>Done. train=5 val=1
 Classes (2): bottle, can

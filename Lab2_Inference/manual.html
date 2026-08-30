@@ -77,7 +77,7 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <div class="step"><span class="n">Step 1</span>
 <h3>เตรียมไฟล์ตัวอย่าง</h3>
 <pre>cd Lab2_Inference\scripts
-get_samples.bat</pre>
+.\get_samples.bat</pre>
 <p>สคริปต์จะดาวน์โหลดภาพตัวอย่างและสร้างวิดีโอสั้น ๆ ไว้ในโฟลเดอร์ <code>Lab2_Inference\samples\</code>:</p>
 <div class="filetree">Lab2_Inference/samples/
 ├── test.jpg    # ภาพรถบัสกับคนเดินถนน (จาก Ultralytics)
@@ -88,7 +88,7 @@ get_samples.bat</pre>
 
 <div class="step"><span class="n">Step 2</span>
 <h3>Detection บนรูปภาพ</h3>
-<pre>predict_image.bat</pre>
+<pre>.\predict_image.bat</pre>
 <p>ผลลัพธ์ (ภาพที่มีกรอบ+label) จะถูกบันทึกไว้ที่ <code>runs\detect\predict_image\test.jpg</code></p>
 <p>สคริปต์นี้เทียบเท่าคำสั่ง:</p>
 <pre>yolo detect predict model=runs\detect\train\weights\best.pt source=Lab2_Inference\samples\test.jpg name=predict_image save=True</pre>
@@ -96,13 +96,13 @@ get_samples.bat</pre>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>Detection บนวิดีโอ</h3>
-<pre>predict_video.bat</pre>
+<pre>.\predict_video.bat</pre>
 <p>ผลลัพธ์จะอยู่ที่ <code>runs\detect\predict_video\</code> — บน Windows ไฟล์ที่ได้จะเป็นนามสกุล <code>.avi</code> (ไม่ใช่ .mp4) เปิดดูด้วย VLC หรือ Movies &amp; TV ได้ตามปกติ</p>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
 <h3>Detection แบบ Real-time ผ่าน Webcam</h3>
-<pre>predict_webcam.bat</pre>
+<pre>.\predict_webcam.bat</pre>
 <div class="tip">กด <code>q</code> ในหน้าต่างวิดีโอเพื่อหยุดการทำงาน</div>
 </div>
 
