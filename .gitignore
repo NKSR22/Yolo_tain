@@ -8,3 +8,6 @@ runs/
 weights/
 datasets/
 *.pt
+
+# Lab 2 sample media (regenerate with Lab2_Inference/scripts/get_samples.bat)
+Lab2_Inference/samples/

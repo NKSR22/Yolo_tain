@@ -1,10 +1,19 @@
+"""Lab 2 - อ่านค่า box / class / confidence จากผลลัพธ์ Detection ด้วย Python"""
+from pathlib import Path
+
 from ultralytics import YOLO
 
-MODEL_PATH = "../Lab1_TrainReadyDataset/runs/train/weights/best.pt"
-IMAGE_PATH = "../Lab2_Inference/samples/test.jpg"
+ROOT = Path(__file__).resolve().parent.parent.parent  # โฟลเดอร์หลักของโปรเจกต์ (Yolo_tain)
+MODEL_PATH = ROOT / "runs" / "detect" / "train" / "weights" / "best.pt"
+IMAGE_PATH = ROOT / "Lab2_Inference" / "samples" / "test.jpg"
 
-model = YOLO(MODEL_PATH)
-results = model(IMAGE_PATH)
+if not MODEL_PATH.exists():
+    raise SystemExit(f"Model not found: {MODEL_PATH}\nRun train.bat in Lab1_TrainReadyDataset/scripts first.")
+if not IMAGE_PATH.exists():
+    raise SystemExit(f"Image not found: {IMAGE_PATH}\nRun get_samples.bat first.")
+
+model = YOLO(str(MODEL_PATH))
+results = model(str(IMAGE_PATH))
 
 for r in results:
     for box in r.boxes:

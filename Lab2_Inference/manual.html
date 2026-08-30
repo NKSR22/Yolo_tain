@@ -69,42 +69,98 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </div>
 
 <h2>✅ ก่อนเริ่ม</h2>
-<ul><li>มีไฟล์ <code>best.pt</code> จาก Lab 1 (สคริปต์จะ copy มาให้อัตโนมัติ หรือแก้ path เองได้)</li></ul>
+<ul>
+<li>ทำ Lab 1 เสร็จแล้ว และมีไฟล์โมเดลอยู่ที่ <code>runs\detect\train\weights\best.pt</code> (ทุกสคริปต์ใน Lab นี้ชี้ไปที่ path นี้)</li>
+<li>ถ้ารัน Lab 1 ซ้ำหลายรอบจนได้ <code>train2</code>, <code>train3</code> ให้แก้บรรทัด <code>set MODEL=...</code> ในสคริปต์ให้ตรงกับโฟลเดอร์ที่ต้องการ</li>
+</ul>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>Detection บนรูปภาพ</h3>
+<h3>เตรียมไฟล์ตัวอย่าง</h3>
 <pre>cd Lab2_Inference\scripts
-predict_image.bat</pre>
-<p>ผลลัพธ์ (ภาพที่มีกรอบ+label) จะถูกบันทึกไว้ที่ <code>runs\detect\predict\</code></p>
+get_samples.bat</pre>
+<p>สคริปต์จะดาวน์โหลดภาพตัวอย่างและสร้างวิดีโอสั้น ๆ ไว้ในโฟลเดอร์ <code>Lab2_Inference\samples\</code>:</p>
+<div class="filetree">Lab2_Inference/samples/
+├── test.jpg    # ภาพรถบัสกับคนเดินถนน (จาก Ultralytics)
+├── test2.jpg   # ภาพตัวอย่างที่สอง ไว้ลองเปลี่ยน source เอง
+└── test.mp4    # วิดีโอ 5 วินาที สร้างจาก test.jpg</div>
+<div class="tip">อยากใช้รูป/วิดีโอของตัวเอง ก็วางไฟล์ไว้ในโฟลเดอร์ <code>samples\</code> แล้วแก้ชื่อไฟล์ในสคริปต์ที่บรรทัด <code>source=</code> ได้เลย</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>Detection บนวิดีโอ</h3>
-<pre>predict_video.bat</pre>
-<p>ใส่ไฟล์วิดีโอของตัวเองในโฟลเดอร์ <code>samples\</code> แล้วแก้ชื่อไฟล์ในสคริปต์ได้</p>
+<h3>Detection บนรูปภาพ</h3>
+<pre>predict_image.bat</pre>
+<p>ผลลัพธ์ (ภาพที่มีกรอบ+label) จะถูกบันทึกไว้ที่ <code>runs\detect\predict_image\test.jpg</code></p>
+<p>สคริปต์นี้เทียบเท่าคำสั่ง:</p>
+<pre>yolo detect predict model=runs\detect\train\weights\best.pt source=Lab2_Inference\samples\test.jpg name=predict_image save=True</pre>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
+<h3>Detection บนวิดีโอ</h3>
+<pre>predict_video.bat</pre>
+<p>ผลลัพธ์จะอยู่ที่ <code>runs\detect\predict_video\</code> — บน Windows ไฟล์ที่ได้จะเป็นนามสกุล <code>.avi</code> (ไม่ใช่ .mp4) เปิดดูด้วย VLC หรือ Movies &amp; TV ได้ตามปกติ</p>
+</div>
+
+<div class="step"><span class="n">Step 4</span>
 <h3>Detection แบบ Real-time ผ่าน Webcam</h3>
 <pre>predict_webcam.bat</pre>
 <div class="tip">กด <code>q</code> ในหน้าต่างวิดีโอเพื่อหยุดการทำงาน</div>
 </div>
 
-<div class="step"><span class="n">Step 4</span>
+<div class="step"><span class="n">Step 5</span>
 <h3>อ่านค่าผลลัพธ์ใน Python</h3>
-<p>ดูตัวอย่างการดึงค่า box/class/confidence แบบ Python ล้วนได้ที่ <code>scripts\read_results.py</code></p>
+<p>ดูตัวอย่างการดึงค่า box/class/confidence แบบ Python ล้วนได้ที่ <code>scripts\read_results.py</code> รันด้วย:</p>
+<pre>python read_results.py</pre>
+<p>หัวใจของโค้ดคือ 3 บรรทัดนี้ — ที่เหลือคือการวนอ่านค่าออกมา:</p>
 <pre>from ultralytics import YOLO
-model = YOLO("best.pt")
-results = model("samples/test.jpg")
+model = YOLO("runs/detect/train/weights/best.pt")
+results = model("Lab2_Inference/samples/test.jpg")
 for r in results:
     for box in r.boxes:
-        print(box.cls, box.conf, box.xyxy)</pre>
+        print(model.names[int(box.cls[0])], float(box.conf[0]), box.xyxy[0].tolist())</pre>
+<p>ตัวอย่าง output ที่ได้จริง:</p>
+<pre>class=bus conf=0.95 box=(22,230,807,733)
+class=person conf=0.90 box=(671,394,810,878)
+class=person conf=0.89 box=(48,400,240,904)</pre>
+<ul>
+<li><code>box.cls</code> — class id (ตัวเลข) แปลงเป็นชื่อคลาสด้วย <code>model.names[...]</code></li>
+<li><code>box.conf</code> — confidence 0-1 ยิ่งใกล้ 1 ยิ่งมั่นใจ</li>
+<li><code>box.xyxy</code> — พิกัดกรอบ (x1,y1) มุมบนซ้าย และ (x2,y2) มุมล่างขวา หน่วยเป็นพิกเซล</li>
+</ul>
 </div>
+
+<h2>🛠️ หมายเหตุ &amp; แก้ปัญหา (Troubleshooting)</h2>
+<table>
+<thead><tr><th>อาการ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>[ERROR] Model not found: runs\detect\train\weights\best.pt</code></td>
+  <td>ยังไม่ได้ Train ใน Lab 1 หรือลบ <code>runs\</code> ไปแล้ว — กลับไปรัน <code>Lab1_TrainReadyDataset\scripts\train.bat</code> ก่อน</td>
+</tr>
+<tr>
+  <td>รันสคริปต์ซ้ำแล้วผลลัพธ์ไม่อยู่ที่โฟลเดอร์เดิม</td>
+  <td>เหมือน Lab 1 คือ YOLO ไม่เขียนทับ แต่สร้าง <code>predict_image2</code>, <code>predict_image3</code> ... เพิ่มให้ ดูโฟลเดอร์ล่าสุดเสมอ</td>
+</tr>
+<tr>
+  <td>ดาวน์โหลดภาพตัวอย่างไม่ได้</td>
+  <td>เป็นปัญหาอินเทอร์เน็ต — คัดลอกรูปอะไรก็ได้มาตั้งชื่อ <code>test.jpg</code> ไว้ใน <code>Lab2_Inference\samples\</code> แทน แล้วรัน <code>get_samples.bat</code> ซ้ำเพื่อสร้างวิดีโอ</td>
+</tr>
+<tr>
+  <td>Webcam ไม่ขึ้นภาพ / ค้าง</td>
+  <td>กล้องอาจถูกโปรแกรมอื่นใช้อยู่ (Teams, Zoom) ให้ปิดก่อน; ถ้ามีกล้องหลายตัวให้แก้ <code>source=0</code> เป็น <code>source=1</code></td>
+</tr>
+<tr>
+  <td>โมเดลตรวจเจอแค่ไม่กี่คลาส</td>
+  <td>ปกติ — <code>best.pt</code> จาก Lab 1 เทรนบน COCO8 (แค่ 8 ภาพ) จึงเก่งเฉพาะคลาสที่เคยเห็น เช่น person/bus; จะได้โมเดลที่ตรงงานจริงใน Lab 3-4</td>
+</tr>
+</tbody>
+</table>
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> (RTX 3050 Ti, 4GB): <code>test.jpg</code> ตรวจเจอ <code>4 persons, 1 bus</code> ที่ ~12 ms/ภาพ และวิดีโอ 100 เฟรมประมวลผลจบภายในไม่กี่วินาที</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>ภาพผลลัพธ์ Detection จากทั้ง 3 แหล่ง (image/video/webcam)</li>
+<li>ภาพผลลัพธ์ Detection จากทั้ง 3 แหล่ง (image / video / webcam)</li>
+<li>ผลลัพธ์ที่พิมพ์ออกมาจาก <code>read_results.py</code></li>
 <li>อธิบายได้ว่า confidence score และ class id คืออะไร</li>
 </ul>
 </div>
