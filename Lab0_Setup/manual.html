@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -88,7 +96,36 @@ pip --version</pre>
 <h3>(ถ้ามีการ์ดจอ NVIDIA) ติดตั้ง GPU Driver + ตรวจสอบ CUDA</h3>
 <p>อัปเดต NVIDIA Driver ให้ล่าสุดจาก nvidia.com แล้วตรวจสอบด้วยคำสั่ง</p>
 <pre>nvidia-smi</pre>
-<div class="tip">ถ้าเห็นตาราง GPU พร้อมเลข <b>CUDA Version</b> ที่มุมขวาบน แปลว่า Driver พร้อมแล้ว (ไม่ต้องติดตั้ง CUDA Toolkit แยก เพราะ PyTorch จะแนบ CUDA runtime มาให้เอง)</div>
+<figure>
+  <img src="../docs/images/lab0_nvidia_smi.png" alt="ผลลัพธ์คำสั่ง nvidia-smi แสดงตาราง GPU และรายการโปรเซสที่ใช้การ์ดจอ">
+  <figcaption>ผลจริงจากเครื่องทดสอบ — ถ้าขึ้นตารางแบบนี้ แปลว่าไดรเวอร์พร้อมแล้ว</figcaption>
+</figure>
+<table>
+<thead><tr><th>ที่ต้องดู</th><th>อ่านว่าอย่างไร</th></tr></thead>
+<tbody>
+<tr>
+  <td><code>CUDA Version: 12.7</code><br>(มุมขวาบน)</td>
+  <td><b>เวอร์ชัน CUDA สูงสุดที่ไดรเวอร์ตัวนี้รองรับ</b> ไม่ใช่เวอร์ชันที่ติดตั้งไว้<br>
+  สังเกตว่าเลขนี้เป็น <b>12.7</b> แต่ <code>setup_env.bat</code> ติดตั้ง PyTorch ช่องทาง <b><code>cu124</code></b> — <b>ไม่ตรงกันแบบนี้ถูกต้องแล้ว ไม่ต้องแก้อะไร</b> เพราะไดรเวอร์ที่รองรับ 12.7 ย่อมรันของที่สร้างด้วย 12.4 ได้ (backward compatible)<br>
+  ขอแค่เลขนี้ <b>ไม่ต่ำกว่า 12.4</b> ก็พอ ถ้าต่ำกว่าให้อัปเดตไดรเวอร์จาก nvidia.com</td>
+</tr>
+<tr>
+  <td><code>Driver Version: 566.07</code></td>
+  <td>เวอร์ชันไดรเวอร์ NVIDIA ที่ติดตั้งอยู่</td>
+</tr>
+<tr>
+  <td><code>485MiB / 4096MiB</code><br>(Memory-Usage)</td>
+  <td>VRAM ที่ใช้ไปแล้ว / ทั้งหมด — <b>สังเกตว่ายังไม่ได้ทำอะไรเลยก็ถูกใช้ไปแล้ว 485 MiB</b> จากโปรแกรมในตาราง Processes ด้านล่าง (เบราว์เซอร์, Terminal ฯลฯ)<br>
+  บนการ์ด 4 GB จึงเหลือให้เทรนจริงไม่ถึง 3.6 GB — เป็นเหตุผลที่เจอ <code>CUDA out of memory</code> ง่ายกว่าที่คิด <b>ปิดเบราว์เซอร์ก่อนเทรนช่วยได้จริง</b></td>
+</tr>
+<tr>
+  <td>ตาราง <code>Processes</code></td>
+  <td>รายการโปรแกรมที่กำลังใช้การ์ดจออยู่ ใช้ดูว่าอะไรกิน VRAM ของเราไป</td>
+</tr>
+</tbody>
+</table>
+<div class="tip">ไม่ต้องติดตั้ง CUDA Toolkit แยกต่างหาก — PyTorch แนบ CUDA runtime มาให้ในตัวแล้ว มีแค่<b>ไดรเวอร์</b> NVIDIA ก็พอ</div>
+<div class="warn">ถ้าพิมพ์ <code>nvidia-smi</code> แล้วขึ้น <code>'nvidia-smi' is not recognized...</code> แปลว่าเครื่องไม่มีการ์ดจอ NVIDIA หรือยังไม่ได้ติดตั้งไดรเวอร์ — <b>ยังเรียนต่อได้</b> สคริปต์จะติดตั้งแบบ CPU-only ให้อัตโนมัติ แค่ช้ากว่าในแล็บที่ต้อง Train</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
@@ -110,16 +147,72 @@ function, script file, or operable program.</pre>
 <li>รันสคริปต์ตรวจสอบความพร้อม <code>check_env.py</code></li>
 </ol>
 <div class="tip">ไดรเวอร์ NVIDIA เวอร์ชันใหม่ (แสดง CUDA Version 12.x ใน <code>nvidia-smi</code>) รองรับ PyTorch <code>cu124</code> ได้แม้ตัวเลขจะไม่ตรงกันเป๊ะ เพราะ CUDA เข้ากันได้แบบย้อนหลัง (backward compatible)</div>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>setup_env.bat</code></h4>
+<p>สคริปต์ยาวสุดใน Lab ทั้งหมด แต่แบ่งเป็น 4 ช่วงตามที่ echo บอก</p>
+<pre>cd /d "%~dp0\..\.."
+
+echo [1/4] Creating virtual environment (venv) ...
+python -m venv venv
+if errorlevel 1 (
+    echo ERROR: ไม่พบ python กรุณาติดตั้ง Python และเลือก "Add to PATH"
+    pause
+    exit /b 1
+)
+call venv\Scripts\activate.bat</pre>
+<table>
+<tbody>
+<tr><td>cd /d "%~dp0\..\.."</td><td><code>%~dp0</code> คือโฟลเดอร์ที่ไฟล์ <code>.bat</code> วางอยู่ แล้ว <code>..\..</code> ถอยขึ้น 2 ชั้นมาที่ <code>Yolo_tain</code> — <code>venv</code> จึงถูกสร้างที่<b>โฟลเดอร์หลักเสมอ</b> ไม่ใช่ในโฟลเดอร์ <code>scripts</code></td></tr>
+<tr><td>python -m venv venv</td><td>สร้าง <b>Virtual Environment</b> — Python ชุดแยกเฉพาะโปรเจกต์นี้ ไลบรารีที่ลงจะอยู่ในโฟลเดอร์ <code>venv\</code> ไม่ปนกับ Python ของเครื่อง<br>ทำแบบนี้เพื่อให้แต่ละโปรเจกต์ใช้เวอร์ชันไลบรารีต่างกันได้ และถ้าพังก็ลบ <code>venv\</code> ทิ้งแล้วสร้างใหม่ได้โดยไม่กระทบอย่างอื่น</td></tr>
+<tr><td>if errorlevel 1</td><td>ด่านตรวจว่าเครื่องมี <code>python</code> ใน PATH ไหม — เป็นปัญหาอันดับหนึ่งของ Lab นี้ (ลืมติ๊ก "Add to PATH" ตอนติดตั้ง)</td></tr>
+</tbody>
+</table>
+<pre>echo [3/4] Detecting NVIDIA GPU ...
+nvidia-smi >nul 2>&amp;1
+if %errorlevel%==0 (
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+    if errorlevel 1 (
+        echo WARNING: ติดตั้ง PyTorch แบบ CUDA ไม่สำเร็จ ... fallback เป็น CPU-only
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    )
+) else (
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+)</pre>
+<table>
+<tbody>
+<tr><td>nvidia-smi &gt;nul 2&gt;&amp;1</td><td><b>เทคนิคที่ใช้บ่อย</b> — รัน <code>nvidia-smi</code> แล้วโยนผลลัพธ์ทิ้งทั้งหมด (<code>&gt;nul</code> ทิ้งข้อความปกติ, <code>2&gt;&amp;1</code> ทิ้งข้อความ error) เราไม่สนใจว่ามันพิมพ์อะไร สนแค่ว่า<b>รันสำเร็จหรือไม่</b> ซึ่งดูจาก <code>%errorlevel%</code> — เป็นวิธีเช็คว่าเครื่องมีการ์ดจอ NVIDIA ไหม</td></tr>
+<tr><td>--index-url ...<wbr>/whl/cu124</td><td>บอก pip ให้ไปโหลดจากคลังของ PyTorch ช่องทาง CUDA 12.4 แทนคลังกลาง (PyPI) — ถ้าไม่ระบุจะได้ PyTorch แบบ CPU-only ซึ่งใช้การ์ดจอไม่ได้เลย</td></tr>
+<tr><td>if errorlevel 1<br>&nbsp;&nbsp;(fallback)</td><td><b>ด่านสำรอง</b> ถ้าช่องทาง CUDA ไม่มี wheel สำหรับ Python เวอร์ชันที่ใช้ ก็ถอยไปติดตั้งแบบ CPU-only ให้อัตโนมัติ — <b>เรียนต่อได้ แค่ช้าลง</b> ดีกว่าค้างอยู่ตรงนั้น</td></tr>
+</tbody>
+</table>
+<p>ช่วง <code>[4/4]</code> ติดตั้ง <code>ultralytics</code> กับ <code>opencv-python</code> แล้วเรียก <code>check_env.py</code> ตรวจผลให้เลย</p>
+<div class="tip">ช่วงนี้จะเห็นข้อความของ pip ไหลยาวหลายนาที (ดาวน์โหลด PyTorch ~2.5 GB) — <b>เป็นเรื่องปกติ ปล่อยให้มันทำงานไป</b> ถ้าเน็ตหลุดกลางคัน รันสคริปต์ซ้ำได้เลย pip จะใช้ไฟล์ที่โหลดค้างไว้ต่อ ไม่ต้องเริ่มใหม่ทั้งหมด</div>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
 <h3>ตรวจสอบผลลัพธ์</h3>
-<p>ผลลัพธ์ที่ถูกต้องควรมีลักษณะคล้ายนี้ (เลขเวอร์ชันอาจต่างกันเล็กน้อย):</p>
-<pre>Python:        3.13.x
-Torch:         2.6.0+cu124
-CUDA available: True
-GPU:           NVIDIA GeForce RTX ...
-Ultralytics:   8.x.x  YOLO OK</pre>
+<p>ท้ายสุดสคริปต์จะเรียก <code>check_env.py</code> พิมพ์สรุปออกมาแบบนี้ — <b>นี่คือหน้าจอที่ต้องดูว่าผ่านหรือไม่ผ่าน</b></p>
+<figure>
+  <img src="../docs/images/lab0_verify.png" alt="หน้าต่าง terminal แสดงผลการตรวจสอบ Python, Torch, CUDA, GPU และ Ultralytics">
+  <figcaption>ผลจริงจากเครื่องทดสอบ — เลขเวอร์ชันของคุณอาจต่างไปบ้าง แต่ต้องครบทั้ง 5 บรรทัด</figcaption>
+</figure>
+<table>
+<thead><tr><th>บรรทัด</th><th>ต้องเป็นอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>Python: 3.13.14</code></td><td>รองรับ 3.10-3.13 — ถ้าเป็น 3.14 ขึ้นไปอาจยังไม่มี wheel ของ PyTorch ให้ใช้</td></tr>
+<tr><td><code>Torch: 2.6.0+cu124</code></td><td><b>ต้องมี <code>+cu124</code> ต่อท้าย</b> ถ้าขึ้นเป็น <code>2.6.0+cpu</code> แปลว่าไปติดตั้งแบบ CPU-only มา (fallback ทำงาน) จะใช้การ์ดจอไม่ได้</td></tr>
+<tr><td><code>CUDA available: True</code></td><td><b>บรรทัดชี้เป็นชี้ตาย</b> — ถ้าเป็น <code>False</code> ทั้งที่มีการ์ดจอ NVIDIA ต้องแก้ก่อนไปต่อ (ดู Troubleshooting ด้านล่าง)</td></tr>
+<tr><td><code>GPU: NVIDIA GeForce ...</code></td><td>ชื่อการ์ดที่ PyTorch มองเห็น — ต้องตรงกับที่เห็นใน <code>nvidia-smi</code></td></tr>
+<tr><td><code>Ultralytics: 8.4.131 YOLO OK</code></td><td>คำว่า <code>YOLO OK</code> แปลว่า <code>import YOLO</code> สำเร็จ ไม่ใช่แค่ติดตั้งไฟล์ครบ</td></tr>
+</tbody>
+</table>
+<div class="tip">เรียกดูซ้ำได้ทุกเมื่อโดยไม่ต้องรัน <code>setup_env.bat</code> ใหม่:
+<pre>cd C:\dev\Yolo_tain
+venv\Scripts\activate
+python Lab0_Setup\scripts\check_env.py</pre>
+มีประโยชน์มากตอนสงสัยว่า venv เพี้ยนไปหรือเปล่า</div>
 <div class="warn">ถ้า <code>CUDA available: False</code> ทั้งที่มีการ์ดจอ NVIDIA ให้ตรวจสอบ Driver และลองรัน <code>setup_env.bat</code> ใหม่อีกครั้ง หรือแจ้งผู้สอน — ยังสามารถเรียนต่อได้ด้วย CPU (ช้าลงในแล็บที่ต้อง Train)</div>
 </div>
 
