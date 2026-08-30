@@ -79,40 +79,67 @@ figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
 
 <div class="card">
 <h2>🗺️ ภาพรวมขั้นตอน</h2>
-<p>หัวใจของ Lab นี้คือ <b>ทำงานทุกอย่างในโฟลเดอร์ <code>raw_images\</code> แล้วปล่อยให้สคริปต์จัดของลง <code>dataset\</code> ให้</b> — อย่าไปวางหรือแก้ไฟล์ใน <code>dataset\</code> เองเพราะจะถูกเขียนทับ</p>
-<div class="filetree">raw_images\        &lt;- ถ่ายรูปมาวางที่นี่ + label ที่นี่ (คุณทำงานตรงนี้)
+<p>Lab นี้ต่างจาก Lab อื่นตรงที่ <b>มีเฉลย</b> — รูปที่ใช้ฝึกมาจากชุดข้อมูล <code>african-wildlife</code>
+ซึ่งมีคนทำ label ไว้แล้ว สคริปต์จะ<b>ซ่อนเฉลยไว้</b>ให้เรา label เองก่อน แล้วค่อยเทียบทีหลังว่าทำได้ดีแค่ไหน</p>
+<div class="filetree">raw_images\        &lt;- รูปสำหรับฝึก + ไฟล์ label ที่เราวาดเอง (เราทำงานตรงนี้)
+answer_key\        &lt;- เฉลย ซ่อนไว้ อย่าเพิ่งเปิดดู
    │
+   │  compare_labels.bat   -> บอกว่าเราวาดตรงกับเฉลยแค่ไหน
    │  split_dataset.bat
    v
 dataset\           &lt;- สคริปต์สร้างให้ทั้งหมด (images/labels/data.yaml)</div>
+<p>อย่าไปวางหรือแก้ไฟล์ใน <code>dataset\</code> เองเพราะจะถูกเขียนทับทุกครั้งที่รัน <code>split_dataset.bat</code></p>
+<div class="tip"><b>ทำไมต้องมีเฉลย?</b> การ label เป็นทักษะที่ต้องฝึก แต่ถ้าถ่ายรูปเองแล้ว label เอง จะไม่มีทางรู้เลยว่าที่ทำไปนั้นดีหรือแย่<br>
+คุณภาพของ label <b>ชี้ขาดความแม่นของโมเดลมากกว่าการปรับค่าใด ๆ</b> — Lab นี้จึงให้ฝึกกับรูปที่มีเฉลย เพื่อจะได้รู้ว่า "label ที่ดี" หน้าตาเป็นอย่างไร ก่อนไปทำ dataset ของโครงงานจริงที่ไม่มีใครมาตรวจให้</div>
 </div>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>สร้างโครงสร้างโฟลเดอร์ Dataset</h3>
+<h3>ดึงรูปสำหรับฝึก</h3>
 <pre>cd Lab3_CustomDataset\scripts
-.\make_dataset_structure.bat</pre>
+.\get_practice_images.bat</pre>
+<p>สคริปต์จะดาวน์โหลดชุด <code>african-wildlife</code> (ครั้งแรก ~100 MB) แล้วคัดรูปมา <b>20 ใบ</b> ให้กระจายครบทั้ง 4 คลาส
+พร้อม<b>ย้ายไฟล์เฉลยไปเก็บไว้ที่ <code>answer_key\</code></b> และเขียน <code>classes.txt</code> ให้เสร็จ</p>
+<pre class="out">Preparing the african-wildlife dataset (first run downloads ~100 MB)
+
+Copied 20 images to C:\dev\Yolo_tain\Lab3_CustomDataset\raw_images
+Answer key kept separately in C:\dev\Yolo_tain\Lab3_CustomDataset\answer_key (do not peek yet)
+Wrote classes.txt: buffalo, elephant, rhino, zebra
+
+Objects in the answer key, by class:
+  elephant    15
+  zebra       11
+  rhino        7
+  buffalo      6</pre>
+<p>ทุกคนจะได้รูปชุดเดียวกัน (สคริปต์ตรึงค่าสุ่มไว้) จึงเทียบผลกันในห้องได้</p>
+<div class="warn"><b>อย่าเปิดโฟลเดอร์ <code>answer_key\</code> ดูก่อน label เสร็จ</b> — ไม่ได้ห้ามเพราะเป็นข้อสอบ แต่ถ้าแอบดูแล้ว จะไม่ได้ฝึกสายตาตัวเอง ซึ่งเป็นจุดประสงค์ทั้งหมดของ Lab นี้</div>
+<h4>คลาสที่จะต้อง label</h4>
+<pre>buffalo
+elephant
+rhino
+zebra</pre>
+<div class="warn"><b>ลำดับบรรทัดใน <code>classes.txt</code> สำคัญมาก</b> — บรรทัดแรกคือ class id 0, บรรทัดที่สองคือ 1 ไปเรื่อย ๆ ทั้ง labelImg และ <code>data.yaml</code> ใช้ลำดับนี้ร่วมกัน ถ้าสลับบรรทัดทีหลัง label เดิมทั้งหมดจะเพี้ยน</div>
+</div>
+
+<div class="step"><span class="n">Step 2</span>
+<h3>สร้างโครงสร้างโฟลเดอร์ Dataset</h3>
+<pre>.\make_dataset_structure.bat</pre>
 <p>จะได้โครงสร้าง:</p>
 <div class="filetree">Lab3_CustomDataset\
 ├── raw_images\
-│   └── classes.txt      # รายชื่อคลาส 1 บรรทัด/1 คลาส
+│   ├── wild_01.jpg ... wild_20.jpg   # รูปที่ต้อง label
+│   └── classes.txt                   # buffalo / elephant / rhino / zebra
+├── answer_key\                       # เฉลย (ห้ามดู)
 └── dataset\
     ├── images\train\  images\val\
     ├── labels\train\  labels\val\
     └── data.yaml</div>
 </div>
 
-<div class="step"><span class="n">Step 2</span>
-<h3>เก็บภาพ (Data Collection)</h3>
-<ul>
-<li>ถ่ายภาพวัตถุที่จะ detect อย่างน้อย <b>100-200 ภาพ</b> ต่อคลาส</li>
-<li>ถ่ายหลายมุม หลายแสง หลายพื้นหลัง เพื่อให้โมเดล generalize ได้ดี</li>
-<li>วางไฟล์ภาพทั้งหมดไว้ที่ <code>Lab3_CustomDataset\raw_images\</code></li>
-</ul>
-</div>
-
 <div class="card">
-<h2>📥 แหล่งดาวน์โหลดรูปภาพ</h2>
-<p><b>โครงงานจริงควรถ่ายรูปเอง</b> เพราะโมเดลจะเจอสภาพแสง มุมกล้อง และพื้นหลังแบบเดียวกับตอนใช้งานจริง แต่ถ้าอยาก<b>ลองรัน Lab ให้ครบขั้นตอนก่อน</b> หรือต้องการรูปมาเสริม ใช้แหล่งเหล่านี้ได้</p>
+<h2>📥 หา Dataset สำหรับโครงงานของตัวเอง</h2>
+<div class="tip">หัวข้อนี้<b>ไม่ต้องทำในคาบ</b> — เก็บไว้อ่านตอนเริ่มทำโครงงานจริง ซึ่งเป็นตอนที่ต้องหาข้อมูลเอง ไม่มีสคริปต์เตรียมให้แล้ว</div>
+<p><b>ถ่ายรูปเองดีที่สุด</b> เพราะโมเดลจะเจอสภาพแสง มุมกล้อง และพื้นหลังแบบเดียวกับตอนใช้งานจริง — ถ้าโครงงานคือคัดแยกของบนสายพาน ก็ควรถ่ายจากกล้องที่ติดตั้งจริงบนสายพานนั้น <b>ตั้งเป้าที่ 100-200 ภาพต่อคลาส</b> และให้แต่ละคลาสมีจำนวนใกล้เคียงกัน</p>
+<p>ส่วนกรณีที่อยากได้ข้อมูลเสริม หรืออยากลองโจทย์ใหม่เร็ว ๆ ใช้แหล่งเหล่านี้ได้:</p>
 
 <h3>1. ชุดรูปที่มีอยู่ในเครื่องแล้ว (เร็วที่สุด)</h3>
 <p>หลังทำ Lab 1 เสร็จ Ultralytics จะโหลดชุด COCO8 (8 ภาพ) ไว้ในเครื่องแล้ว หา path ได้จาก:</p>
@@ -160,14 +187,6 @@ dataset\           &lt;- สคริปต์สร้างให้ทั้�
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>กำหนดชื่อคลาสใน classes.txt</h3>
-<p>เปิด <code>raw_images\classes.txt</code> ด้วย Notepad แล้วใส่ชื่อคลาสของกลุ่ม <b>บรรทัดละ 1 คลาส</b> เช่น</p>
-<pre>bottle
-can</pre>
-<div class="warn"><b>ลำดับบรรทัดสำคัญมาก</b> — บรรทัดแรกคือ class id 0, บรรทัดที่สองคือ 1 ไปเรื่อย ๆ ทั้ง labelImg และ <code>data.yaml</code> ใช้ลำดับนี้ร่วมกัน ถ้าสลับบรรทัดทีหลัง label เดิมทั้งหมดจะเพี้ยน</div>
-</div>
-
-<div class="step"><span class="n">Step 4</span>
 <h3>ติดตั้งและเปิดโปรแกรม Label (labelImg)</h3>
 <pre>.\install_labelimg.bat
 .\run_labelimg.bat</pre>
@@ -196,8 +215,8 @@ can</pre>
 
 <h4>ขั้นที่ 3 — เลือกชื่อคลาส</h4>
 <figure>
-  <img src="../docs/images/lab3_labelimg_label_dialog.png" alt="กล่องเลือกคลาสของ labelImg แสดงรายการ person และ animal">
-  <figcaption>พอปล่อยเมาส์ กล่องนี้จะเด้งขึ้นมา — รายการ <code>person</code> / <code>animal</code> มาจาก <code>classes.txt</code> ที่สคริปต์ส่งให้ ส่วนแถบล่างของหน้าต่างบอกขนาดกรอบที่เพิ่งวาด <code>Width: 184, Height: 122</code></figcaption>
+  <img src="../docs/images/lab3_labelimg_label_dialog.png" alt="กล่องเลือกคลาสของ labelImg ที่เด้งขึ้นมาหลังวาดกรอบเสร็จ">
+  <figcaption>พอปล่อยเมาส์ กล่องนี้จะเด้งขึ้นมา — รายการคลาสที่ให้เลือกมาจาก <code>classes.txt</code> ที่สคริปต์ส่งให้ (ของ Lab นี้จะเป็น <code>buffalo</code> / <code>elephant</code> / <code>rhino</code> / <code>zebra</code>) ส่วนแถบล่างของหน้าต่างบอกขนาดกรอบที่เพิ่งวาด</figcaption>
 </figure>
 <div class="warn"><b>ให้คลิกเลือกจากรายการ อย่าพิมพ์ชื่อคลาสเอง</b> — พิมพ์เองมีโอกาสสะกดผิดหรือพิมพ์ชื่อที่ไม่มีใน <code>classes.txt</code> ซึ่งจะทำให้เลข class id เพี้ยนทั้งชุด ถ้าในรายการไม่มีคลาสที่ต้องการ ให้ปิดโปรแกรม ไปเพิ่มบรรทัดใน <code>classes.txt</code> ก่อน แล้วค่อยเปิดใหม่</div>
 
@@ -228,21 +247,58 @@ can</pre>
 <div class="tip">ทางเลือกอื่น: ใช้เว็บ <b>Roboflow</b> (roboflow.com) label ผ่านเบราว์เซอร์แล้ว Export เป็นฟอร์แมต "YOLOv8" — สะดวกเมื่อทำงานเป็นกลุ่มหลายคนพร้อมกัน</div>
 </div>
 
+<div class="step"><span class="n">Step 4</span>
+<h3>เทียบผลงานกับเฉลย</h3>
+<p>label ครบทั้ง 20 รูปแล้ว (อย่าลืม <code>Ctrl+S</code> ทุกรูป) ให้รัน:</p>
+<pre>.\compare_labels.bat</pre>
+<figure>
+  <img src="../docs/images/lab3_compare_report.png" alt="รายงานเทียบ label กับเฉลย แสดง IoU รายรูปและสรุปรวม">
+  <figcaption>ตัวอย่างรายงาน (จำลองผลงานที่มีข้อผิดพลาดครบทุกแบบ เพื่อให้เห็นว่ารายงานบอกอะไรได้บ้าง)</figcaption>
+</figure>
+<table>
+<thead><tr><th>คำที่เห็นในรายงาน</th><th>แปลว่า</th></tr></thead>
+<tbody>
+<tr><td><code>matched 3/3 | mean IoU 0.93</code></td><td>วาดครบทุกวัตถุ และกรอบทับกับเฉลยเฉลี่ย 93% — ดีมาก</td></tr>
+<tr><td><b>IoU</b> (Intersection over Union)</td><td>ตัววัดว่ากรอบสองอันซ้อนทับกันแค่ไหน = พื้นที่ส่วนที่ทับกัน ÷ พื้นที่รวมทั้งสองกรอบ<br>1.00 = วาดตรงเป๊ะ · <b>≥ 0.75 = กรอบแนบดี</b> · 0.50-0.75 = หลวมหรือเยื้อง · &lt; 0.50 = ถือว่าคนละวัตถุ<br>ตัวเดียวกับที่ YOLO ใช้ตัดสินว่าโมเดลทายถูกไหมตอนคิด mAP ใน Lab 4-5</td></tr>
+<tr><td><code>MISSED 1 (rhino)</code></td><td><b>ลืม label</b> — ในภาพมีแรดแต่เราไม่ได้วาดกรอบให้ โทษหนักที่สุด เพราะโมเดลจะเรียนว่า "แรดตัวนี้คือพื้นหลัง"</td></tr>
+<tr><td><code>EXTRA 1</code></td><td>วาดกรอบเกินมาในที่ที่เฉลยไม่มีอะไร</td></tr>
+<tr><td><code>WRONG CLASS elephant-&gt;buffalo</code></td><td>วาดกรอบถูกตำแหน่ง แต่เลือกคลาสผิด (เลือก elephant ทั้งที่เฉลยเป็น buffalo)</td></tr>
+<tr><td><code>NOT LABELLED YET</code></td><td>ยังไม่ได้ label รูปนั้นเลย หรือลืมกด <code>Ctrl+S</code></td></tr>
+</tbody>
+</table>
+
+<h4>ดูเป็นภาพว่าเราวาดต่างจากเฉลยตรงไหน</h4>
+<pre>.\compare_labels.bat --images</pre>
+<figure>
+  <img src="../docs/images/lab3_compare_boxes.jpg" alt="ภาพม้าลาย 3 ตัว มีกรอบเฉลยสีเขียวและกรอบที่วาดเองสีส้มเยื้องกัน">
+  <figcaption><span style="color:#3cdc64">เขียว = เฉลย</span> · <span style="color:#ff9628">ส้ม = ที่เราวาด</span> — รูปนี้ได้ mean IoU 0.65 เห็นชัดว่ากรอบส้มทั้งสามใหญ่เกินและเยื้องลงล่าง จึงยังไม่ถือว่าแนบดี</figcaption>
+</figure>
+<p>ภาพจะถูกเขียนไว้ที่ <code>Lab3_CustomDataset\compare\</code> เปิดดูทีละรูปได้เลย</p>
+
+<div class="tip"><b>เป้าหมายที่ควรทำให้ได้:</b> ไม่มี <code>MISSED</code> เลย, ไม่มี <code>WRONG CLASS</code> และ mean IoU รวม <b>≥ 0.85</b><br>
+ถ้ายังไม่ถึง ให้กลับไปแก้กรอบใน labelImg แล้วรันเทียบใหม่ได้เรื่อย ๆ — <b>นี่คือหัวใจของ Lab นี้</b> ไม่ใช่การ label ให้เสร็จ ๆ ไป</div>
+
+<div class="warn"><b>บทเรียนที่ต้องจำไปใช้ตอนทำโครงงาน:</b> ตอนทำ dataset ของตัวเองจะ<b>ไม่มีเฉลยให้เทียบ</b>
+สิ่งที่ทำได้คือให้เพื่อนในกลุ่มสุ่มตรวจงานของกันและกัน และตกลงกติกาให้ชัดก่อนเริ่ม เช่น
+"วัตถุที่ถูกบังเกินครึ่งจะ label หรือไม่" — ถ้าแต่ละคนตัดสินใจไม่เหมือนกัน โมเดลจะสับสนทันที</div>
+</div>
+
 <div class="step"><span class="n">Step 5</span>
 <h3>แบ่งข้อมูล Train/Val</h3>
 <pre>.\split_dataset.bat</pre>
 <p>สคริปต์จะแบ่งภาพ 80% เป็น train, 20% เป็น val แล้ว<b>เขียน <code>data.yaml</code> ให้อัตโนมัติ</b>จาก <code>classes.txt</code> — ไม่ต้องแก้ <code>nc</code>/<code>names</code> เองแล้ว</p>
-<pre>Done. train=5 val=1
-Classes (2): bottle, can
-WARNING: 1 image(s) have no .txt label and will count as background:
-  - img5.jpg
-data.yaml written to ...\dataset\data.yaml</pre>
-<p>ได้ <code>data.yaml</code> หน้าตาแบบนี้:</p>
-<pre>train: images/train
+<pre class="out">Done. train=16 val=4
+Classes (4): buffalo, elephant, rhino, zebra
+data.yaml written to C:\dev\Yolo_tain\Lab3_CustomDataset\dataset\data.yaml</pre>
+<p>ถ้ามีรูปที่ยังไม่ได้ label สคริปต์จะเตือนให้ด้วย:</p>
+<pre class="out">WARNING: 1 image(s) have no .txt label and will count as background:
+  - wild_20.jpg</pre>
+<p>ได้ <code>data.yaml</code> หน้าตาแบบนี้ — <b>ไฟล์นี้คือสิ่งที่ Lab 4 จะเอาไปใช้เทรน</b>:</p>
+<pre class="out">train: images/train
 val: images/val
 
-nc: 2
-names: ['bottle', 'can']</pre>
+nc: 4
+names: ['buffalo', 'elephant', 'rhino', 'zebra']</pre>
 <div class="tip">เพิ่มรูปทีหลังได้เรื่อย ๆ — วางใน <code>raw_images\</code>, label, แล้วรัน <code>split_dataset.bat</code> ใหม่ สคริปต์จะล้าง <code>dataset\</code> แล้วแบ่งใหม่ทั้งหมดให้</div>
 </div>
 
@@ -285,7 +341,9 @@ names: ['bottle', 'can']</pre>
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>Dataset ของกลุ่ม พร้อมภาพและ label ครบ อยู่ในโครงสร้าง YOLO ที่ถูกต้อง</li>
+<li>label ครบทั้ง 20 รูป อยู่ในโครงสร้าง YOLO ที่ถูกต้อง</li>
+<li><b>ผลจาก <code>compare_labels.bat</code></b> ที่ไม่มี <code>MISSED</code> / <code>WRONG CLASS</code> และ mean IoU ≥ 0.85</li>
+<li>อธิบายได้ว่า IoU คืออะไร และทำไมกรอบที่หลวมถึงทำให้โมเดลแย่ลง</li>
 <li>ไฟล์ <code>data.yaml</code> ที่มี <code>nc</code>/<code>names</code> ตรงกับคลาสที่ label ไว้ (สคริปต์สร้างให้จาก <code>classes.txt</code>)</li>
 </ul>
 </div>

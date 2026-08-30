@@ -28,5 +28,6 @@ if not exist dataset\data.yaml (
 )
 
 echo Dataset structure created under Lab3_CustomDataset\dataset
-echo Put your photos in Lab3_CustomDataset\raw_images and edit raw_images\classes.txt
+echo Images to label go in Lab3_CustomDataset\raw_images
+echo (run get_practice_images.bat first, or drop your own photos there)
 pause

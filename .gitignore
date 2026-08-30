@@ -15,3 +15,7 @@ Lab2_Inference/samples/
 # Lab 3 student data (photos, labels, generated dataset)
 Lab3_CustomDataset/raw_images/
 Lab3_CustomDataset/dataset/
+
+# Lab 3 practice set + answer key + comparison output (regenerate with get_practice_images.bat)
+Lab3_CustomDataset/answer_key/
+Lab3_CustomDataset/compare/
