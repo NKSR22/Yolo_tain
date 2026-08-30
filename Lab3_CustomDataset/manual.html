@@ -69,56 +69,113 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </ul>
 </div>
 
-<div class="step"><span class="n">Step 1</span>
-<h3>เก็บภาพ (Data Collection)</h3>
-<ul>
-<li>ถ่ายภาพวัตถุที่จะ detect อย่างน้อย <b>100-200 ภาพ</b> ต่อคลาส</li>
-<li>ถ่ายหลายมุม หลายแสง หลายพื้นหลัง เพื่อให้โมเดล generalize ได้ดี</li>
-<li>วางไฟล์ภาพทั้งหมดไว้ที่ <code>dataset\raw_images\</code></li>
-</ul>
+<div class="card">
+<h2>🗺️ ภาพรวมขั้นตอน</h2>
+<p>หัวใจของ Lab นี้คือ <b>ทำงานทุกอย่างในโฟลเดอร์ <code>raw_images\</code> แล้วปล่อยให้สคริปต์จัดของลง <code>dataset\</code> ให้</b> — อย่าไปวางหรือแก้ไฟล์ใน <code>dataset\</code> เองเพราะจะถูกเขียนทับ</p>
+<div class="filetree">raw_images\        &lt;- ถ่ายรูปมาวางที่นี่ + label ที่นี่ (คุณทำงานตรงนี้)
+   │
+   │  split_dataset.bat
+   v
+dataset\           &lt;- สคริปต์สร้างให้ทั้งหมด (images/labels/data.yaml)</div>
 </div>
 
-<div class="step"><span class="n">Step 2</span>
+<div class="step"><span class="n">Step 1</span>
 <h3>สร้างโครงสร้างโฟลเดอร์ Dataset</h3>
 <pre>cd Lab3_CustomDataset\scripts
 make_dataset_structure.bat</pre>
 <p>จะได้โครงสร้าง:</p>
-<div class="filetree">Lab3_CustomDataset\dataset\
-├── images\train\
-├── images\val\
-├── labels\train\
-├── labels\val\
-└── data.yaml</div>
+<div class="filetree">Lab3_CustomDataset\
+├── raw_images\
+│   └── classes.txt      # รายชื่อคลาส 1 บรรทัด/1 คลาส
+└── dataset\
+    ├── images\train\  images\val\
+    ├── labels\train\  labels\val\
+    └── data.yaml</div>
+</div>
+
+<div class="step"><span class="n">Step 2</span>
+<h3>เก็บภาพ (Data Collection)</h3>
+<ul>
+<li>ถ่ายภาพวัตถุที่จะ detect อย่างน้อย <b>100-200 ภาพ</b> ต่อคลาส</li>
+<li>ถ่ายหลายมุม หลายแสง หลายพื้นหลัง เพื่อให้โมเดล generalize ได้ดี</li>
+<li>วางไฟล์ภาพทั้งหมดไว้ที่ <code>Lab3_CustomDataset\raw_images\</code></li>
+</ul>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>ติดตั้งและเปิดโปรแกรม Label (labelImg)</h3>
-<pre>install_labelimg.bat
-run_labelimg.bat</pre>
-<ol>
-<li>เปิดโฟลเดอร์ภาพ (Open Dir) ไปที่ <code>dataset\images\train</code></li>
-<li>เลือกโหมด <b>YOLO</b> ที่มุมซ้ายล่าง (ไม่ใช่ PascalVOC)</li>
-<li>กด <code>W</code> เพื่อวาดกรอบ ใส่ชื่อคลาส แล้วกด <code>Ctrl+S</code> เพื่อบันทึก (.txt จะถูกสร้างข้างไฟล์ภาพ)</li>
-<li>กด <code>D</code> เพื่อไปภาพถัดไป</li>
-</ol>
-<div class="tip">ทางเลือกอื่น: ใช้เว็บ <b>Roboflow</b> (roboflow.com) label ผ่านเบราว์เซอร์แล้ว Export เป็นฟอร์แมต "YOLOv8" ก็ได้เช่นกัน — สะดวกเมื่อทำงานเป็นกลุ่ม</div>
+<h3>กำหนดชื่อคลาสใน classes.txt</h3>
+<p>เปิด <code>raw_images\classes.txt</code> ด้วย Notepad แล้วใส่ชื่อคลาสของกลุ่ม <b>บรรทัดละ 1 คลาส</b> เช่น</p>
+<pre>bottle
+can</pre>
+<div class="warn"><b>ลำดับบรรทัดสำคัญมาก</b> — บรรทัดแรกคือ class id 0, บรรทัดที่สองคือ 1 ไปเรื่อย ๆ ทั้ง labelImg และ <code>data.yaml</code> ใช้ลำดับนี้ร่วมกัน ถ้าสลับบรรทัดทีหลัง label เดิมทั้งหมดจะเพี้ยน</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
-<h3>แบ่งข้อมูล Train/Val และแก้ data.yaml</h3>
-<pre>split_dataset.bat</pre>
-<p>สคริปต์จะแบ่งภาพ 80% เป็น train, 20% เป็น val โดยอัตโนมัติ จากนั้นแก้ไขไฟล์ <code>dataset\data.yaml</code> ให้ระบุจำนวนคลาส (<code>nc</code>) และชื่อคลาส (<code>names</code>) ให้ตรงกับที่ label ไว้</p>
-<pre>nc: 2
-names: ['bottle', 'can']</pre>
+<h3>ติดตั้งและเปิดโปรแกรม Label (labelImg)</h3>
+<pre>install_labelimg.bat
+run_labelimg.bat</pre>
+<p>สคริปต์จะเปิด labelImg มาที่โฟลเดอร์ <code>raw_images\</code> ให้เลย พร้อมโหลดชื่อคลาสจาก <code>classes.txt</code></p>
+<ol>
+<li>เลือกโหมด <b>YOLO</b> ที่ปุ่มมุมซ้ายล่าง (ค่าเริ่มต้นคือ PascalVOC ซึ่งเป็นคนละฟอร์แมต)</li>
+<li>กด <code>W</code> เพื่อวาดกรอบ เลือกชื่อคลาส แล้วกด <code>Ctrl+S</code> บันทึก (ได้ไฟล์ <code>.txt</code> ชื่อเดียวกับภาพ วางข้างกัน)</li>
+<li>กด <code>D</code> ไปภาพถัดไป, <code>A</code> ย้อนกลับ</li>
+</ol>
+<div class="tip">ทางเลือกอื่น: ใช้เว็บ <b>Roboflow</b> (roboflow.com) label ผ่านเบราว์เซอร์แล้ว Export เป็นฟอร์แมต "YOLOv8" — สะดวกเมื่อทำงานเป็นกลุ่มหลายคนพร้อมกัน</div>
 </div>
 
-<div class="warn">ตรวจสอบเสมอว่าทุกไฟล์ภาพ (.jpg) มีไฟล์ label (.txt) ชื่อเดียวกันคู่กัน ถ้าไม่มี label เลย แปลว่าภาพนั้นไม่มีวัตถุ (background) ซึ่งใส่ไว้บ้างได้แต่ไม่ควรมีมากเกินไป</div>
+<div class="step"><span class="n">Step 5</span>
+<h3>แบ่งข้อมูล Train/Val</h3>
+<pre>split_dataset.bat</pre>
+<p>สคริปต์จะแบ่งภาพ 80% เป็น train, 20% เป็น val แล้ว<b>เขียน <code>data.yaml</code> ให้อัตโนมัติ</b>จาก <code>classes.txt</code> — ไม่ต้องแก้ <code>nc</code>/<code>names</code> เองแล้ว</p>
+<pre>Done. train=5 val=1
+Classes (2): bottle, can
+WARNING: 1 image(s) have no .txt label and will count as background:
+  - img5.jpg
+data.yaml written to ...\dataset\data.yaml</pre>
+<p>ได้ <code>data.yaml</code> หน้าตาแบบนี้:</p>
+<pre>train: images/train
+val: images/val
+
+nc: 2
+names: ['bottle', 'can']</pre>
+<div class="tip">เพิ่มรูปทีหลังได้เรื่อย ๆ — วางใน <code>raw_images\</code>, label, แล้วรัน <code>split_dataset.bat</code> ใหม่ สคริปต์จะล้าง <code>dataset\</code> แล้วแบ่งใหม่ทั้งหมดให้</div>
+</div>
+
+<div class="warn">ตรวจสอบเสมอว่าทุกไฟล์ภาพ (.jpg) มีไฟล์ label (.txt) ชื่อเดียวกันคู่กัน ถ้าไม่มี label เลย แปลว่าภาพนั้นไม่มีวัตถุ (background) ซึ่งใส่ไว้บ้างได้แต่ไม่ควรมีมากเกินไป — <code>split_dataset.bat</code> จะเตือนให้ว่ามีภาพไหนบ้างที่ยังไม่ได้ label</div>
+
+<h2>🛠️ หมายเหตุ &amp; แก้ปัญหา (Troubleshooting)</h2>
+<table>
+<thead><tr><th>อาการ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+  <td>labelImg เด้งปิดตอนลากกรอบ พร้อมข้อความ<br><code>TypeError: arguments did not match any overloaded call: drawLine(...)</code></td>
+  <td>labelImg 1.8.6 หยุดพัฒนาตั้งแต่ปี 2021 และเข้ากันไม่ได้กับ PyQt5 รุ่นใหม่ — <code>install_labelimg.bat</code> จะรัน <code>patch_labelimg.py</code> แก้ให้อัตโนมัติแล้ว ถ้ายังเจอ ให้รัน <code>python patch_labelimg.py</code> ซ้ำ (รันซ้ำได้ไม่มีผลข้างเคียง)</td>
+</tr>
+<tr>
+  <td>Train ใน Lab 4 แล้วขึ้น<br><code>Dataset ... images not found, missing path 'C:\...\dataset\images\val'</code> เป็น path แปลก ๆ ที่ไม่มีอยู่จริง</td>
+  <td>เกิดจากใส่คีย์ <code>path:</code> แบบ relative ใน <code>data.yaml</code> — Ultralytics จะ resolve จาก <code>datasets_dir</code> ส่วนกลาง (ดูได้ที่ <code>%APPDATA%\Ultralytics\settings.json</code>) ไม่ใช่จากที่ตั้งไฟล์ yaml <b>วิธีแก้: ไม่ต้องมีบรรทัด <code>path:</code> เลย</b> แล้ว train/val จะอิงตำแหน่งของ data.yaml เอง (สคริปต์เขียนให้ถูกอยู่แล้ว)</td>
+</tr>
+<tr>
+  <td>label แล้วแต่ <code>split_dataset.bat</code> บอก <code>No images found</code></td>
+  <td>วางรูปผิดที่ — ต้องอยู่ใน <code>Lab3_CustomDataset\raw_images\</code> ไม่ใช่ <code>dataset\images\train\</code></td>
+</tr>
+<tr>
+  <td>ไฟล์ label ออกมาเป็น <code>.xml</code></td>
+  <td>ยังอยู่โหมด PascalVOC — กดปุ่มมุมซ้ายล่างใน labelImg ให้เป็น <b>YOLO</b> แล้ว label ใหม่</td>
+</tr>
+<tr>
+  <td><code>pip install labelImg</code> ไม่ผ่าน</td>
+  <td>ใช้ Roboflow ผ่านเบราว์เซอร์แทนได้เลย แล้ว Export เป็น "YOLOv8" มาแตกไฟล์ลง <code>dataset\</code> โดยตรง</td>
+</tr>
+</tbody>
+</table>
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> (Python 3.13 / PyQt5 5.15.11): ติดตั้ง+patch labelImg แล้ววาดกรอบได้ไม่เด้ง; <code>split_dataset.bat</code> กับภาพทดสอบ 6 ใบ (จงใจไม่ label 1 ใบ) แบ่งได้ train=5/val=1 เตือนภาพที่ไม่มี label ถูกต้อง และ <code>data.yaml</code> ที่ได้เอาไป <code>yolo detect train</code> ต่อได้จริง (<code>Overriding model.yaml nc=80 with nc=2</code>, scan เจอ <code>4 images, 1 backgrounds</code>)</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
 <li>Dataset ของกลุ่ม พร้อมภาพและ label ครบ อยู่ในโครงสร้าง YOLO ที่ถูกต้อง</li>
-<li>ไฟล์ <code>data.yaml</code> ที่แก้ไขค่าคลาสถูกต้องแล้ว</li>
+<li>ไฟล์ <code>data.yaml</code> ที่มี <code>nc</code>/<code>names</code> ตรงกับคลาสที่ label ไว้ (สคริปต์สร้างให้จาก <code>classes.txt</code>)</li>
 </ul>
 </div>
 

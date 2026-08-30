@@ -11,3 +11,7 @@ datasets/
 
 # Lab 2 sample media (regenerate with Lab2_Inference/scripts/get_samples.bat)
 Lab2_Inference/samples/
+
+# Lab 3 student data (photos, labels, generated dataset)
+Lab3_CustomDataset/raw_images/
+Lab3_CustomDataset/dataset/
