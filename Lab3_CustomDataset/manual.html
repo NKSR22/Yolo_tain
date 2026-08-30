@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -164,11 +172,59 @@ can</pre>
 <pre>.\install_labelimg.bat
 .\run_labelimg.bat</pre>
 <p>สคริปต์จะเปิด labelImg มาที่โฟลเดอร์ <code>raw_images\</code> ให้เลย พร้อมโหลดชื่อคลาสจาก <code>classes.txt</code></p>
-<ol>
-<li>เลือกโหมด <b>YOLO</b> ที่ปุ่มมุมซ้ายล่าง (ค่าเริ่มต้นคือ PascalVOC ซึ่งเป็นคนละฟอร์แมต)</li>
-<li>กด <code>W</code> เพื่อวาดกรอบ เลือกชื่อคลาส แล้วกด <code>Ctrl+S</code> บันทึก (ได้ไฟล์ <code>.txt</code> ชื่อเดียวกับภาพ วางข้างกัน)</li>
-<li>กด <code>D</code> ไปภาพถัดไป, <code>A</code> ย้อนกลับ</li>
-</ol>
+
+<figure>
+  <img src="../docs/images/lab3_labelimg_main.png" alt="หน้าต่างหลักของ labelImg แสดงรูปกลางจอและรายชื่อไฟล์ 10 ไฟล์ทางขวา">
+  <figcaption>หน้าจอที่ควรเห็นตอนเปิด — รูปแรกขึ้นกลางจอ, <b>File List</b> ทางขวามีไฟล์ครบ, หัวหน้าต่างบอก <code>[1 / 10]</code></figcaption>
+</figure>
+<p>เช็ก 2 อย่างทันทีที่เปิด: <b>File List ทางขวาต้องมีรายชื่อรูปครบ</b> และ<b>หัวหน้าต่างต้องขึ้นเลข <code>[1 / N]</code></b> ถ้าว่างเปล่าแปลว่าสคริปต์ชี้ path ผิด (ดู Troubleshooting ท้ายหน้า)</p>
+
+<h4>ขั้นที่ 1 — สลับเป็นโหมด YOLO ก่อนเสมอ</h4>
+<figure>
+  <img src="../docs/images/lab3_format_toggle.png" alt="เปรียบเทียบปุ่มมุมซ้ายล่างระหว่างโหมด PascalVOC กับ YOLO">
+  <figcaption>ปุ่มมุมซ้ายล่างของหน้าต่าง — คลิกที่มันเพื่อสลับโหมด</figcaption>
+</figure>
+<div class="danger"><b>นี่คือจุดที่พลาดกันมากที่สุดใน Lab นี้</b> — labelImg เปิดมาเป็น <code>PascalVOC</code> เสมอ ซึ่งเซฟเป็นไฟล์ <code>.xml</code> คนละฟอร์แมตกับที่ YOLO ใช้<br>
+ถ้าลืมกด แล้ว label ไป 200 รูป จะได้ไฟล์ <code>.xml</code> ที่ <code>split_dataset.bat</code> มองไม่เห็นเลยสักไฟล์ — เสียเวลาฟรีทั้งหมด <b>ตรวจให้แน่ใจว่าขึ้นคำว่า <code>YOLO</code> ก่อนเริ่มลากกรอบแรก</b> และค่านี้จะรีเซ็ตกลับทุกครั้งที่เปิดโปรแกรมใหม่</div>
+
+<h4>ขั้นที่ 2 — กด <code>W</code> เข้าโหมดวาดกรอบ</h4>
+<figure>
+  <img src="../docs/images/lab3_labelimg_draw.png" alt="หน้าต่าง labelImg ในโหมดวาดกรอบ มีเส้นกากบาทพาดผ่านรูป">
+  <figcaption>เมื่ออยู่ในโหมดวาด จะมี<b>เส้นกากบาท</b>พาดทั้งภาพตามตำแหน่งเมาส์ ไว้เล็งขอบวัตถุให้ตรง — มุมขวาล่างบอกพิกัด <code>X: 316; Y: 221</code> ตามเมาส์ไปด้วย</figcaption>
+</figure>
+<p>ลากคลุมวัตถุ: <b>กดเมาส์ค้างที่มุมหนึ่ง → ลากไปมุมตรงข้าม → ปล่อย</b> ลากให้กรอบชิดขอบวัตถุพอดี อย่าเผื่อพื้นที่ว่างเยอะ เพราะโมเดลจะเรียนพื้นหลังไปด้วย</p>
+
+<h4>ขั้นที่ 3 — เลือกชื่อคลาส</h4>
+<figure>
+  <img src="../docs/images/lab3_labelimg_label_dialog.png" alt="กล่องเลือกคลาสของ labelImg แสดงรายการ person และ animal">
+  <figcaption>พอปล่อยเมาส์ กล่องนี้จะเด้งขึ้นมา — รายการ <code>person</code> / <code>animal</code> มาจาก <code>classes.txt</code> ที่สคริปต์ส่งให้ ส่วนแถบล่างของหน้าต่างบอกขนาดกรอบที่เพิ่งวาด <code>Width: 184, Height: 122</code></figcaption>
+</figure>
+<div class="warn"><b>ให้คลิกเลือกจากรายการ อย่าพิมพ์ชื่อคลาสเอง</b> — พิมพ์เองมีโอกาสสะกดผิดหรือพิมพ์ชื่อที่ไม่มีใน <code>classes.txt</code> ซึ่งจะทำให้เลข class id เพี้ยนทั้งชุด ถ้าในรายการไม่มีคลาสที่ต้องการ ให้ปิดโปรแกรม ไปเพิ่มบรรทัดใน <code>classes.txt</code> ก่อน แล้วค่อยเปิดใหม่</div>
+
+<h4>ขั้นที่ 4 — บันทึกแล้วไปรูปถัดไป</h4>
+<table>
+<thead><tr><th>ปุ่ม</th><th>ทำอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>W</code></td><td>เริ่มวาดกรอบใหม่ (ต้องกดทุกครั้งก่อนวาดแต่ละกรอบ)</td></tr>
+<tr><td><code>Ctrl + S</code></td><td><b>บันทึก</b> — ได้ไฟล์ <code>.txt</code> ชื่อเดียวกับภาพ วางข้างกันใน <code>raw_images\</code></td></tr>
+<tr><td><code>D</code> / <code>A</code></td><td>ไปรูปถัดไป / ย้อนกลับ</td></tr>
+<tr><td><code>Del</code></td><td>ลบกรอบที่เลือกอยู่</td></tr>
+<tr><td><code>Ctrl + +</code> / <code>Ctrl + -</code></td><td>ซูมเข้า/ออก (ช่วยมากตอนวัตถุเล็ก)</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>ต้องกด <code>Ctrl+S</code> ทุกรูป</b> — labelImg ไม่บันทึกให้อัตโนมัติ ถ้ากด <code>D</code> ข้ามไปเลยโดยไม่เซฟ งานที่วาดไว้จะหายทันที<br>วิธีเช็กว่าเซฟจริง: เปิดโฟลเดอร์ <code>raw_images\</code> ดูว่ามีไฟล์ <code>.txt</code> ชื่อเดียวกับรูปโผล่มาคู่กันหรือยัง</div>
+
+<p>ไฟล์ <code>.txt</code> ที่ได้จะหน้าตาแบบนี้ — 1 บรรทัด = 1 กรอบ:</p>
+<pre class="out">0 0.481250 0.523611 0.287500 0.338889
+1 0.712500 0.455556 0.181250 0.216667</pre>
+<table>
+<thead><tr><th>ตำแหน่ง</th><th>ความหมาย</th></tr></thead>
+<tbody>
+<tr><td>เลขตัวแรก</td><td><b>class id</b> — ตรงกับลำดับบรรทัดใน <code>classes.txt</code> (บรรทัดแรก = 0)</td></tr>
+<tr><td>4 เลขถัดมา</td><td><code>x_center y_center width height</code> ของกรอบ <b>หารด้วยขนาดภาพแล้ว</b> จึงอยู่ระหว่าง 0-1 เสมอ</td></tr>
+</tbody>
+</table>
+<p>ที่เก็บเป็นสัดส่วน 0-1 แทนพิกเซล เพราะจะได้ย่อ/ขยายภาพยังไงค่าก็ยังถูก — ตอน Train ที่ YOLO ย่อทุกภาพเป็น 640x640 ค่าพวกนี้จึงใช้ได้เลยโดยไม่ต้องแปลง</p>
 <div class="tip">ทางเลือกอื่น: ใช้เว็บ <b>Roboflow</b> (roboflow.com) label ผ่านเบราว์เซอร์แล้ว Export เป็นฟอร์แมต "YOLOv8" — สะดวกเมื่อทำงานเป็นกลุ่มหลายคนพร้อมกัน</div>
 </div>
 
@@ -196,6 +252,12 @@ names: ['bottle', 'can']</pre>
 <table>
 <thead><tr><th>อาการ</th><th>วิธีแก้</th></tr></thead>
 <tbody>
+<tr>
+  <td><b>เปิด labelImg มาแล้วช่องกลางว่าง</b> ไม่มีรูป และ <b>File List ทางขวาก็ว่าง</b> — ทั้งที่หัวหน้าต่างขึ้นชื่อไฟล์กับ <code>[1 / 10]</code> แล้ว</td>
+  <td>เป็นอาการหน้าต่างไม่ยอมวาดใหม่ (repaint) ตอนเปิด ไม่ใช่ path ผิด — สังเกตว่าหัวหน้าต่างรู้จำนวนไฟล์อยู่แล้ว แปลว่าโปรแกรมอ่านโฟลเดอร์เจอครบ<br>
+  <b>วิธีแก้: ปิดแล้วเปิด <code>.\run_labelimg.bat</code> ใหม่</b> (ได้ผลเกือบทุกครั้ง) หรือลองขยายหน้าต่างเต็มจอ/ลากขอบหน้าต่างให้ Qt คำนวณขนาดใหม่<br>
+  ถ้าเปิดใหม่แล้ว File List ยัง<b>ว่างจริง ๆ และหัวหน้าต่างไม่มีเลข <code>[1 / N]</code></b> ค่อยสงสัยเรื่อง path — เช็กว่ามีรูปอยู่ใน <code>Lab3_CustomDataset\raw_images\</code> จริงไหม</td>
+</tr>
 <tr>
   <td>labelImg เด้งปิดตอนลากกรอบ พร้อมข้อความ<br><code>TypeError: arguments did not match any overloaded call: drawLine(...)</code></td>
   <td>labelImg 1.8.6 หยุดพัฒนาตั้งแต่ปี 2021 และเข้ากันไม่ได้กับ PyQt5 รุ่นใหม่ — <code>install_labelimg.bat</code> จะรัน <code>patch_labelimg.py</code> แก้ให้อัตโนมัติแล้ว ถ้ายังเจอ ให้รัน <code>python patch_labelimg.py</code> ซ้ำ (รันซ้ำได้ไม่มีผลข้างเคียง)</td>
