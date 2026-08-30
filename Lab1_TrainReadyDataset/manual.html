@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -90,16 +98,150 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .\train.bat</pre>
 <p>สคริปต์นี้เทียบเท่าคำสั่ง:</p>
 <pre>yolo detect train data=coco8.yaml model=yolo11n.pt epochs=20 imgsz=640</pre>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>train.bat</code></h4>
+<pre>@echo off
+cd /d "%~dp0\..\.."
+call venv\Scripts\activate.bat
+
+yolo detect train data=coco8.yaml model=yolo11n.pt epochs=20 imgsz=640
+
+echo Training finished. Check runs\detect\train\weights\best.pt
+pause</pre>
+<table>
+<tbody>
+<tr><td>cd /d "%~dp0\..\.."</td><td><code>%~dp0</code> คือโฟลเดอร์ที่ไฟล์ <code>.bat</code> วางอยู่ แล้ว <code>..\..</code> ถอยขึ้น 2 ชั้นไปที่โฟลเดอร์หลัก <code>Yolo_tain</code> — ทำให้<b>ดับเบิลคลิกจากที่ไหนก็ทำงานถูก</b> และผลลัพธ์ลงที่เดียวกันเสมอ</td></tr>
+<tr><td>call venv\...\<wbr>activate.bat</td><td>เข้า Virtual Environment ต้องมี <code>call</code> นำหน้า ไม่งั้นบรรทัดที่เหลือจะไม่ถูกรัน</td></tr>
+<tr><td>data=coco8.yaml</td><td>ชื่อ dataset สำเร็จรูปของ Ultralytics — ไม่ใช่ไฟล์ในเครื่องเรา ถ้ายังไม่มีมันจะ<b>ดาวน์โหลดให้เองอัตโนมัติ</b> (~1 MB)</td></tr>
+<tr><td>model=yolo11n.pt</td><td>โมเดลตั้งต้น <b>ที่เทรนมาแล้วจาก COCO</b> — เราไม่ได้เริ่มจากศูนย์ แต่เอาของที่เก่งอยู่แล้วมาปรับต่อ (เรียกว่า transfer learning) นี่คือเหตุผลที่เทรนด้วยภาพแค่ 8 ใบแล้วยังได้ผลใช้ได้</td></tr>
+<tr><td>epochs=20</td><td>วนดูข้อมูลทั้งชุดซ้ำ 20 รอบ</td></tr>
+<tr><td>imgsz=640</td><td>ย่อ/ขยายทุกภาพเป็น 640x640 ก่อนป้อนเข้าโมเดล</td></tr>
+<tr><td>ไม่มี project= / name=</td><td>ตั้งใจไม่ใส่ ปล่อยให้ผลลงที่ค่าเริ่มต้น <code>runs\detect\train\</code> — ถ้าใส่ <code>project=</code> เป็น path แบบ relative ผลลัพธ์จะไปซ้อนกันเป็น <code>runs\detect\&lt;project&gt;\...</code> ซึ่งทำให้ Lab ถัดไปหาไฟล์ไม่เจอ</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>สิ่งที่จะเห็นบนหน้าจอ (ช่วงเริ่มต้น)</h4>
+<pre class="out">Ultralytics 8.4.131  Python-3.13.14 torch-2.6.0+cu124 CUDA:0 (NVIDIA GeForce RTX 3050 Ti Laptop GPU, 4096MiB)
+engine\trainer: agnostic_nms=False, amp=True, ... epochs=20, ... imgsz=640, ...
+
+                   from  n    params  module                          arguments
+  0                  -1  1       464  ultralytics.nn.modules.conv.Conv [3, 16, 3, 2]
+  ...
+Freezing layer 'model.23.dfl.conv.weight'
+AMP: running Automatic Mixed Precision (AMP) checks...
+AMP: checks passed
+train: Scanning ...\coco8\labels\train.cache... 4 images, 0 backgrounds, 0 corrupt
+val: Scanning ...\coco8\labels\val.cache... 4 images, 0 backgrounds, 0 corrupt
+optimizer: 'optimizer=auto' found, ignoring 'lr0=0.01' and 'momentum=0.937' ...
+optimizer: AdamW(lr=0.000119, momentum=0.9) with parameter groups 81 weight(decay=0.0), ...
+Using 4 train, 4 val images for fraction=1.0 at imgsz=640
+Logging results to C:\dev\Yolo_tain\runs\detect\train
+Starting training for 20 epochs...</pre>
+<table>
+<thead><tr><th>บรรทัด</th><th>บอกอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>engine\trainer: ...</code></td><td>รายการ<b>ค่าตั้งต้นทั้งหมด</b>ที่ใช้เทรนรอบนี้ (ยาวมาก) — ค่าที่เราไม่ได้ระบุ Ultralytics เติมค่า default ให้ ค่าเดียวกันนี้ถูกเซฟไว้ที่ <code>runs\detect\train\args.yaml</code> ด้วย ไว้ย้อนดูทีหลังว่ารอบนั้นตั้งอะไรไว้</td></tr>
+<tr><td><code>from n params module</code></td><td>ตารางโครงสร้างโมเดลทีละเลเยอร์ ปกติไม่ต้องอ่าน</td></tr>
+<tr><td><code>AMP: checks passed</code></td><td>เปิดใช้ <b>Automatic Mixed Precision</b> — คำนวณบางส่วนด้วยเลขทศนิยม 16 บิตแทน 32 บิต ทำให้เร็วขึ้นและกิน VRAM น้อยลง โดยความแม่นยำแทบไม่ต่าง (ถ้าการ์ดจอไม่รองรับ มันจะข้ามไปเอง)</td></tr>
+<tr><td><code>Scanning ... 4 images, 0 backgrounds, 0 corrupt</code></td><td><b>บรรทัดที่ต้องดูทุกครั้ง</b> — บอกว่าเจอภาพกี่ใบ, กี่ใบไม่มี label (<code>backgrounds</code>), กี่ใบไฟล์เสีย ถ้าตัวเลขไม่ตรงกับที่คิด แปลว่า dataset มีปัญหา ให้หยุดแก้ก่อน<br><code>.cache</code> ต่อท้ายแปลว่าเคยสแกนแล้ว รอบนี้อ่านจากแคช</td></tr>
+<tr><td><code>optimizer=auto</code> → <code>AdamW(lr=0.000119)</code></td><td>Ultralytics <b>เลือก optimizer และ learning rate ให้เอง</b> จึงมองข้ามค่า <code>lr0</code>/<code>momentum</code> ที่ตั้งมา — ถ้าอยากคุมเอง ต้องระบุ <code>optimizer=SGD</code> หรือ <code>optimizer=AdamW</code> ตรง ๆ (จะได้ลองใน Lab 4)</td></tr>
+</tbody>
+</table>
+
+<h4>ระหว่างเทรน</h4>
+<pre class="out">      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+      13/20     0.705G      1.073      2.439      1.378         13        640: 100% 1/1
+                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95)
+                   all          4         17       0.59       0.85      0.854      0.635</pre>
+<table>
+<thead><tr><th>คอลัมน์</th><th>ความหมาย</th></tr></thead>
+<tbody>
+<tr><td><code>13/20</code></td><td>รอบที่ 13 จาก 20</td></tr>
+<tr><td><code>GPU_mem</code></td><td>VRAM ที่ใช้อยู่ — <b>ตัวเลขที่ต้องจับตา</b> ถ้าใกล้เต็มการ์ด (เช่น 3.9G บนการ์ด 4GB) ให้ลด <code>batch</code> หรือ <code>imgsz</code> ก่อนเจอ CUDA out of memory</td></tr>
+<tr><td><code>box_loss</code></td><td>ตำแหน่ง/ขนาดกรอบยังผิดอยู่เท่าไร</td></tr>
+<tr><td><code>cls_loss</code></td><td>ทายคลาสผิดอยู่เท่าไร</td></tr>
+<tr><td><code>dfl_loss</code></td><td>ความคลาดเคลื่อนของขอบกรอบแบบละเอียด</td></tr>
+<tr><td><code>Instances</code></td><td>จำนวนวัตถุใน batch นั้น (ไม่ใช่จำนวนภาพ)</td></tr>
+<tr><td colspan="2"><b>ทั้ง 3 loss ควรมีแนวโน้มลดลง</b> — ขึ้น ๆ ลง ๆ ระหว่างทางเป็นเรื่องปกติ โดยเฉพาะ dataset เล็ก ให้ดู<b>แนวโน้มรวม</b> ไม่ใช่ค่าราย epoch</td></tr>
+<tr><td><code>Box(P)</code> Precision</td><td>ในกรอบที่โมเดลทายมา ถูกจริงกี่ % (ทายมั่วเยอะ = ค่านี้ต่ำ)</td></tr>
+<tr><td><code>R</code> Recall</td><td>ในของจริงทั้งหมด โมเดลหาเจอกี่ % (มองข้ามเยอะ = ค่านี้ต่ำ)</td></tr>
+<tr><td><code>mAP50</code></td><td><b>ตัวเลขหลักที่ใช้เทียบโมเดล</b> — ความแม่นยำเมื่อถือว่ากรอบทับกับของจริงเกิน 50% ก็นับว่าถูก</td></tr>
+<tr><td><code>mAP50-95</code></td><td>เข้มงวดกว่า เฉลี่ยตั้งแต่เกณฑ์ 50% ถึง 95% — ค่านี้จะต่ำกว่า <code>mAP50</code> เสมอ</td></tr>
+</tbody>
+</table>
+
+<h4>เมื่อเทรนเสร็จ</h4>
+<pre class="out">20 epochs completed in 0.003 hours.
+Optimizer stripped from ...\weights\last.pt, 5.5MB
+Optimizer stripped from ...\weights\best.pt, 5.5MB
+Validating ...\weights\best.pt...
+YOLO11n summary (fused): 101 layers, 2,616,248 parameters, 0 gradients, 6.5 GFLOPs
+                   all          4         17      0.578       0.85      0.855      0.654
+                person          3         10      0.613        0.6      0.608      0.307
+                   dog          1          1      0.386          1      0.995      0.796
+                 horse          1          2      0.701          1      0.995      0.671
+              elephant          1          2      0.412        0.5       0.54      0.257
+              umbrella          1          1      0.545          1      0.995      0.995
+          potted plant          1          1      0.808          1      0.995      0.895
+Speed: 0.4ms preprocess, 4.3ms inference, 0.0ms loss, 1.1ms postprocess per image
+Results saved to C:\dev\Yolo_tain\runs\detect\train</pre>
+<table>
+<tbody>
+<tr><td><code>Optimizer stripped</code></td><td>ตัดข้อมูลที่ใช้เฉพาะตอนเทรนออกจากไฟล์โมเดล ทำให้ไฟล์เล็กลงเหลือ 5.5MB — ไฟล์ที่ได้เอาไปใช้ทำนายได้เลย แต่<b>เอาไปเทรนต่อจากจุดเดิมไม่ได้</b></td></tr>
+<tr><td><code>Validating best.pt</code></td><td>วัดผลรอบสุดท้ายด้วยโมเดลที่ดีที่สุด (ไม่ใช่โมเดลของ epoch สุดท้าย)</td></tr>
+<tr><td><b>ตารางแยกรายคลาส</b></td><td><b>ส่วนที่มีประโยชน์ที่สุด</b> — เห็นว่าคลาสไหนอ่อน เช่นในตัวอย่างนี้ <code>person</code> ได้ mAP50 แค่ 0.608 ทั้งที่มีตัวอย่างเยอะสุด (10 ชิ้น) ส่วน <code>umbrella</code> ที่มีแค่ชิ้นเดียวกลับได้ 0.995<br>เหตุผลคือคนในภาพมีหลายท่า หลายขนาด บางคนถูกบัง จึงยากกว่ามาก — <b>ในโครงงานจริง ให้ดูตารางนี้เพื่อรู้ว่าควรไปเก็บภาพเพิ่มของคลาสไหน</b></td></tr>
+<tr><td><code>Speed: ... 4.3ms inference</code></td><td>เร็วกว่าตอน predict ภาพเดี่ยว เพราะวัดจากการรันเป็น batch และโมเดลอุ่นเครื่องแล้ว</td></tr>
+</tbody>
+</table>
+<div class="warn">ตัวเลขที่คุณได้จะ<b>ไม่ตรงกับตัวอย่างนี้เป๊ะ</b> และรันสองครั้งบนเครื่องเดียวกันก็ยังต่างกันเล็กน้อย เพราะการสุ่มลำดับข้อมูลและการแต่งภาพ (augmentation) ในแต่ละรอบ — ดูที่ลำดับความมากน้อยระหว่างคลาส สำคัญกว่าตัวเลขตรง ๆ</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
 <h3>ดูผลลัพธ์การ Train</h3>
-<p>ผลลัพธ์จะถูกเก็บไว้ที่ <code>runs\detect\train\</code> ให้เปิดไฟล์เหล่านี้ดู:</p>
-<ul>
-<li><code>weights\best.pt</code> — โมเดลที่ดีที่สุด (ใช้ต่อในแล็บถัดไป)</li>
-<li><code>results.png</code> — กราฟ loss/mAP ระหว่าง Train</li>
-<li><code>confusion_matrix.png</code>, <code>val_batch0_pred.jpg</code></li>
-</ul>
+<p>ผลลัพธ์ทั้งหมดอยู่ที่ <code>runs\detect\train\</code>:</p>
+<div class="filetree">runs\detect\train\
+├── weights\
+│   ├── best.pt              # โมเดลที่ mAP ดีที่สุด <- ใช้ต่อใน Lab 2
+│   └── last.pt              # โมเดลของ epoch สุดท้าย
+├── args.yaml                # ค่าตั้งต้นทั้งหมดของรอบนี้
+├── results.csv / results.png  # ตัวเลข + กราฟรายรอบ
+├── confusion_matrix.png
+├── labels.jpg               # สถิติของ label ในชุดข้อมูล
+├── train_batch0.jpg ...     # ภาพที่ป้อนเข้าเทรนจริง (หลังแต่งภาพแล้ว)
+└── val_batch0_labels.jpg / val_batch0_pred.jpg</div>
+
+<h4>1. <code>results.png</code> — กราฟ loss และ mAP รายรอบ</h4>
+<figure>
+  <img src="../docs/images/lab1_results.png" alt="กราฟ 10 ช่อง แสดง loss ของ train และ val พร้อม precision recall mAP50 และ mAP50-95">
+  <figcaption>แถวบน = loss ฝั่ง train และ metric, แถวล่าง = loss ฝั่ง val และ mAP — เส้นทึบคือค่าจริง เส้นประคือค่าที่ทำให้เรียบแล้ว (smooth)</figcaption>
+</figure>
+<table>
+<thead><tr><th>สิ่งที่เห็น</th><th>อ่านว่าอย่างไร</th></tr></thead>
+<tbody>
+<tr><td><b>loss ฝั่ง train ทั้ง 3 ตัวลดลง</b> แต่กระโดดขึ้นลงแรง</td><td>ปกติสำหรับ dataset จิ๋วแค่ 4 ภาพ — แต่ละรอบเห็นภาพชุดเดิมที่ถูกแต่งต่างกัน ค่าเลยเหวี่ยง ดูแนวโน้มรวมว่าลดลงก็พอ</td></tr>
+<tr><td><b><code>val/cls_loss</code> ลดลงถึงรอบ ~11 แล้วกลับ<u>เพิ่มขึ้น</u></b></td><td><b>นี่คือสัญญาณ overfitting</b> — โมเดลเริ่มจำภาพ 4 ใบนั้นได้แทนที่จะเรียนรู้ลักษณะทั่วไป ค่าฝั่ง train ยังดูดีขึ้นแต่ฝั่ง val แย่ลง<br>ในงานจริงถ้าเห็นแบบนี้ ให้<b>ลด epochs</b> หรือ<b>เพิ่มจำนวนภาพ</b> — และนี่คือเหตุผลที่ต้องแบ่ง val ออกมาต่างหาก ถ้าดูแต่ค่าฝั่ง train จะไม่มีวันเห็นปัญหานี้เลย</td></tr>
+<tr><td><b><code>mAP50</code> นิ่งที่ ~0.80 แล้วกระโดดขึ้น 0.85 ตอนรอบ 12-13</b></td><td>การเรียนรู้ไม่ได้ค่อย ๆ ดีขึ้นเป็นเส้นตรง มักนิ่งไปพักหนึ่งแล้วขยับทีเดียว — อย่าเพิ่งด่วนสรุปว่าไม่เวิร์กแล้วหยุดกลางคัน</td></tr>
+<tr><td><b><code>metrics/recall</code> เป็นเส้นตรงแบน 0.85</b></td><td>เป็นผลของการมีภาพ val แค่ 4 ใบ (17 วัตถุ) จำนวนที่หาเจอเลยไม่เปลี่ยนเลยทั้ง 20 รอบ — เห็นชัดว่า<b>ชุด val ที่เล็กเกินไปทำให้ตัวเลขไม่มีความหมาย</b></td></tr>
+</tbody>
+</table>
+
+<h4>2. <code>val_batch0_pred.jpg</code> — โมเดลทายอะไรบ้าง</h4>
+<figure>
+  <img src="../docs/images/lab1_val_pred.jpg" alt="ภาพชุด validation 4 ภาพ พร้อมกรอบที่โมเดลทำนายและค่า confidence">
+  <figcaption>ผลทำนายบนชุด val — เทียบกับ <code>val_batch0_labels.jpg</code> ในโฟลเดอร์เดียวกันที่เป็น<b>เฉลย</b></figcaption>
+</figure>
+<div class="tip"><b>เปิดสองไฟล์นี้ขึ้นมาเทียบกันเสมอ</b> (<code>val_batch0_labels.jpg</code> = เฉลย, <code>val_batch0_pred.jpg</code> = คำตอบของโมเดล) เป็นวิธีที่เร็วที่สุดในการดูว่าโมเดลพลาดแบบไหน — กรอบเบี้ยว? ทายคลาสสลับกัน? หรือมองข้ามวัตถุไปเลย? ตัวเลข mAP บอกแค่ว่า "แย่" แต่ภาพคู่นี้บอกว่า "แย่ยังไง"</div>
+
+<h4>3. <code>confusion_matrix.png</code> — สับสนระหว่างคลาสไหน</h4>
+<figure>
+  <img src="../docs/images/lab1_confusion_matrix.png" alt="ตาราง confusion matrix ของคลาสใน COCO8">
+  <figcaption>แกนนอน = ของจริง, แกนตั้ง = สิ่งที่โมเดลทาย — ช่องแนวทแยงคือทายถูก</figcaption>
+</figure>
+<p>คอลัมน์/แถว <code>background</code> คือจุดที่ควรดูเป็นพิเศษ: ช่องแถว <code>background</code> = <b>ของจริงมีแต่โมเดลมองไม่เห็น</b> (missed) ส่วนช่องคอลัมน์ <code>background</code> = <b>โมเดลทายกรอบขึ้นมาทั้งที่ไม่มีอะไร</b> (false positive) — สองช่องนี้บอกทิศทางแก้ได้ตรงกว่าตัวเลข mAP</p>
+
+<div class="warn">ตารางนี้จะดูมีความหมายก็ต่อเมื่อ dataset ใหญ่พอ — ของ COCO8 ที่มีแค่ 4 ภาพ val ตัวเลขจะเบาบางมากจนอ่านอะไรไม่ค่อยได้ ให้ถือว่ารอบนี้แค่ทำความรู้จักไฟล์ไว้ก่อน ของจริงจะได้ใช้ใน Lab 5</div>
 </div>
 
 <div class="tip">ลองเปลี่ยน <code>model=yolo11n.pt</code> เป็น <code>yolo11s.pt</code> เพื่อเปรียบเทียบขนาดโมเดลกับความแม่นยำ (n=nano เร็วสุด, s=small แม่นขึ้นแต่ช้าลง)</div>
