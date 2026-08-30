@@ -102,6 +102,55 @@ make_dataset_structure.bat</pre>
 </ul>
 </div>
 
+<div class="card">
+<h2>📥 แหล่งดาวน์โหลดรูปภาพ</h2>
+<p><b>โครงงานจริงควรถ่ายรูปเอง</b> เพราะโมเดลจะเจอสภาพแสง มุมกล้อง และพื้นหลังแบบเดียวกับตอนใช้งานจริง แต่ถ้าอยาก<b>ลองรัน Lab ให้ครบขั้นตอนก่อน</b> หรือต้องการรูปมาเสริม ใช้แหล่งเหล่านี้ได้</p>
+
+<h3>1. ชุดรูปที่มีอยู่ในเครื่องแล้ว (เร็วที่สุด)</h3>
+<p>หลังทำ Lab 1 เสร็จ Ultralytics จะโหลดชุด COCO8 (8 ภาพ) ไว้ในเครื่องแล้ว หา path ได้จาก:</p>
+<pre>yolo settings</pre>
+<p>ดูค่า <code>datasets_dir</code> แล้วรูปจะอยู่ที่ <code>&lt;datasets_dir&gt;\coco8\images\train\</code> และ <code>...\val\</code> — ก๊อปมาวางใน <code>raw_images\</code> ได้เลย (ก๊อปเฉพาะ <code>.jpg</code> ไม่ต้องเอา <code>.txt</code> จะได้ฝึกลากกรอบเอง)</p>
+<p>อีกชุดคือภาพตัวอย่างของ Lab 2 ที่ <code>Lab2_Inference\samples\</code></p>
+
+<h3>2. ดาวน์โหลดภาพตัวอย่างของ Ultralytics</h3>
+<table>
+<thead><tr><th>ลิงก์</th><th>ในภาพมีอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>https://ultralytics.com/images/bus.jpg</code></td><td>คน 4 คน + รถบัส</td></tr>
+<tr><td><code>https://ultralytics.com/images/zidane.jpg</code></td><td>คน 2 คน</td></tr>
+<tr><td><code>https://github.com/ultralytics/assets/releases/download/v0.0.0/coco8.zip</code></td><td>ชุด COCO8 ทั้งก้อน (8 ภาพ + label, ~1 MB)</td></tr>
+</tbody>
+</table>
+<p>โหลดผ่าน Python ได้เลยโดยไม่ต้องเปิดเบราว์เซอร์ (สั่งใน venv ที่ activate แล้ว):</p>
+<pre>python -c "import urllib.request as u; u.urlretrieve('https://ultralytics.com/images/bus.jpg', 'Lab3_CustomDataset/raw_images/bus.jpg')"</pre>
+
+<h3>3. คลังชุดข้อมูลสาธารณะ (เมื่อต้องการรูปเยอะ ๆ)</h3>
+<table>
+<thead><tr><th>แหล่ง</th><th>ลิงก์</th><th>จุดเด่น</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>Roboflow Universe</b></td>
+  <td><a href="https://universe.roboflow.com/">universe.roboflow.com</a></td>
+  <td>ชุดข้อมูล <b>ที่ label มาแล้ว</b> หลายแสนชุด เลือก Export เป็นฟอร์แมต "YOLOv8" ได้ตรง ๆ — ถ้าใช้แหล่งนี้ข้าม Step 3-4 ไปได้เลย แค่แตกไฟล์ลง <code>dataset\</code></td>
+</tr>
+<tr>
+  <td><b>Kaggle Datasets</b></td>
+  <td><a href="https://www.kaggle.com/datasets">kaggle.com/datasets</a></td>
+  <td>ชุดข้อมูลหลากหลายมาก ต้องสมัครสมาชิก (ฟรี); บางชุดเป็นรูปเปล่าต้อง label เอง</td>
+</tr>
+<tr>
+  <td><b>Open Images Dataset</b></td>
+  <td><a href="https://storage.googleapis.com/openimages/web/index.html">openimages (Google)</a></td>
+  <td>ภาพหลายล้านใบพร้อม bounding box ครอบคลุม 600 คลาส เหมาะเวลาอยากได้คลาสทั่วไป เช่น คน/รถ/ขวด</td>
+</tr>
+</tbody>
+</table>
+
+<div class="warn"><b>เรื่องลิขสิทธิ์</b> — รูปจาก Google Images ส่วนใหญ่มีลิขสิทธิ์ ห้ามนำไปใช้ในรายงานหรือเผยแพร่โดยไม่ตรวจสอบสัญญาอนุญาตก่อน ถ้าจะใช้ให้เลือกชุดที่ระบุ license ชัดเจน (เช่น CC-BY บน Roboflow Universe / Open Images) และอ้างอิงแหล่งที่มาในรายงานเสมอ</div>
+
+<div class="tip"><b>รูปกี่ใบถึงพอ?</b> ลองรันให้ครบขั้นตอนใช้ 10-20 ใบก็เห็นภาพแล้ว แต่โมเดลที่ใช้งานได้จริงควรมี <b>100-200 ใบต่อคลาส</b> ขึ้นไป และจำนวนภาพของแต่ละคลาสควรใกล้เคียงกัน ไม่ใช่คลาสหนึ่ง 300 อีกคลาส 20</div>
+</div>
+
 <div class="step"><span class="n">Step 3</span>
 <h3>กำหนดชื่อคลาสใน classes.txt</h3>
 <p>เปิด <code>raw_images\classes.txt</code> ด้วย Notepad แล้วใส่ชื่อคลาสของกลุ่ม <b>บรรทัดละ 1 คลาส</b> เช่น</p>

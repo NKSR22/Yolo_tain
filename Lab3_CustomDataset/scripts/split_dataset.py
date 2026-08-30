@@ -19,7 +19,8 @@ def read_classes():
     if not CLASSES_FILE.exists():
         print(f"WARNING: {CLASSES_FILE.name} not found, falling back to a single class 'object'")
         return ["object"]
-    names = [line.strip() for line in CLASSES_FILE.read_text(encoding="utf-8").splitlines() if line.strip()]
+    # utf-8-sig: Notepad บางรุ่นเซฟไฟล์พร้อม BOM ถ้าอ่านแบบ utf-8 เฉย ๆ คลาสแรกจะกลายเป็น "﻿person"
+    names = [line.strip() for line in CLASSES_FILE.read_text(encoding="utf-8-sig").splitlines() if line.strip()]
     if not names:
         print(f"WARNING: {CLASSES_FILE.name} is empty, falling back to a single class 'object'")
         return ["object"]
