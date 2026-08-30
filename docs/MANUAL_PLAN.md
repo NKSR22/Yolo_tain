@@ -64,12 +64,13 @@ cd C:\dev\Yolo_tain\LabN_xxx\scripts
 
 ### ขั้นที่ 2 — เก็บภาพประกอบ
 
-- **ภาพผลลัพธ์ที่โปรแกรมสร้างเอง** (predict output, กราฟ, confusion matrix)
-  → ก๊อปจาก `runs\` แล้วย่อด้วยสคริปต์ (ดูข้อ 5)
-- **ภาพหน้าต่าง GUI** → ต้องให้ผู้ใช้แคปให้
-  - แคปปกติ: `Win+Shift+S` แล้วรัน `python docs/save_screenshot.py <ชื่อ>` ดึงจาก clipboard
-  - แคปที่ต้องคาเมาส์ไว้ที่เดิม: `python docs/capture_window.py labelImg <ชื่อ> 10`
-    (นับถอยหลังแล้วจับภาพหน้าต่างเอง)
+ใช้ `docs/shoot.py` ทุกกรณี (รายละเอียดข้อ 5)
+
+- **ภาพ terminal** → `shoot.py run` หรือ `shoot.py text` — **ทำเองได้ 100% ไม่ต้องรบกวนผู้ใช้**
+- **ภาพผลลัพธ์ที่โปรแกรมสร้างเอง** (predict output, กราฟ, confusion matrix) → `shoot.py pick`
+- **ภาพหน้าต่าง GUI** → ต้องให้ผู้ใช้ช่วย เป็นกรณีเดียวที่เหลือ
+  - แคปปกติ: ให้ผู้ใช้กด `Win+Shift+S` แล้วเรารัน `shoot.py clip <ชื่อ>`
+  - แคปที่ต้องคาเมาส์ไว้ที่เดิม: `shoot.py grab labelImg <ชื่อ> -d 10`
   - อย่าใช้ `Alt+PrintScreen` กับโปรแกรม Qt — ปุ่ม `Alt` ไปเปิดแถบเมนู ทำให้ภาพที่ต้องการหาย
 
 ### ขั้นที่ 3 — เขียนคู่มือ
@@ -138,21 +139,37 @@ figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
 
 ## 5. เครื่องมือช่วย
 
-| ไฟล์ | ใช้ทำอะไร |
+ทุกอย่างรวมอยู่ใน **`docs/shoot.py`** ตัวเดียว ทุกโหมดเซฟลง `docs/images/` ให้อัตโนมัติ
+(ย่อขนาดให้เอง ตั้งชื่อตามที่ระบุ)
+
+| โหมด | ใช้ทำอะไร |
 |---|---|
-| `docs/save_screenshot.py <ชื่อ>` | ดึงภาพจาก clipboard (หลังกด `Win+Shift+S`) เซฟลง `docs/images/` พร้อมย่อขนาด |
-| `docs/capture_window.py <ชื่อหน้าต่าง> <ชื่อ> [วินาที]` | นับถอยหลังแล้วจับภาพหน้าต่างเอง สำหรับเคสที่ต้องคาเมาส์ไว้ที่เดิม |
+| `run <ชื่อ> -t "หัวข้อ" -- <คำสั่ง>` | **รันคำสั่งแล้วเรนเดอร์ output เป็นภาพหน้าต่าง terminal** — ไม่ต้องพึ่งคนแคปเลย |
+| `text <ชื่อ> -f <ไฟล์log> -t "หัวข้อ"` | เรนเดอร์ log ที่เก็บไว้แล้วเป็นภาพ (ใช้กับคำสั่งที่รันนานอย่างการ train) |
+| `pick <ไฟล์ต้นทาง> <ชื่อ> -w 900` | ก๊อปภาพผลลัพธ์จาก `runs\` มาย่อขนาด |
+| `grab <ชื่อหน้าต่าง> <ชื่อ> -d 8` | นับถอยหลังแล้วจับภาพหน้าต่าง สำหรับเคสที่ต้องคาเมาส์ไว้ที่เดิม |
+| `clip <ชื่อ>` | ดึงภาพจาก clipboard (หลังผู้ใช้กด `Win+Shift+S`) |
 
-ย่อภาพผลลัพธ์จาก `runs\` — เขียนสคริปต์ชั่วคราวใช้แล้วทิ้ง:
+ตัวอย่าง:
 
-```python
-import cv2
-img = cv2.imread("runs/detect/train/results.png")
-h, w = img.shape[:2]
-W = 900
-img = cv2.resize(img, (W, int(h * W / w)), interpolation=cv2.INTER_AREA)
-cv2.imwrite("docs/images/labN_xxx.png", img)
+```powershell
+# ภาพ terminal จากการรันจริง - อัตโนมัติทั้งหมด
+python docs/shoot.py run lab4_train_baseline -t "> .	rain_baseline.bat" -- venv/Scripts/yolo.exe detect train data=african-wildlife.yaml epochs=50
+
+# คำสั่งที่รันนาน: เก็บ log ก่อนแล้วค่อยเรนเดอร์
+python docs/shoot.py text lab4_train_baseline -f log.txt -t "> .	rain_baseline.bat" --max-lines 30
+
+# ภาพผลลัพธ์ที่โปรแกรมสร้างเอง
+python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 ```
+
+**โหมด `run` / `text` แทนการแคปหน้าจอ terminal ได้ทั้งหมด** — รองรับสี ANSI ของ ultralytics,
+รวมบรรทัด progress bar ที่เขียนทับกันด้วย `
+` ให้เหลือสถานะสุดท้าย, ตัดบรรทัดยาวที่ขอบ
+และย่อ log ยาว ๆ ด้วยเครื่องหมาย `... (N lines omitted) ...` ตรงกลาง
+
+เหลือแค่ **หน้าต่างโปรแกรม GUI** (labelImg, หน้าต่าง webcam) ที่ยังต้องใช้ `grab` / `clip`
+ซึ่งต้องรบกวนผู้ใช้ — ส่วนนี้ของ Lab 0-3 เก็บครบแล้ว
 
 ---
 
