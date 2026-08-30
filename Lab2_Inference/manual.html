@@ -256,11 +256,49 @@ name=predict_video                       (เดิมเป็น predict_image
 
 <h4>สิ่งที่จะเห็นบนหน้าจอ</h4>
 <p>จะมี<b>หน้าต่างวิดีโอเปิดขึ้นมาแยกต่างหาก</b> วาดกรอบทับภาพสดแบบ real-time ส่วนใน terminal บรรทัดจะไหลไม่หยุดจนกว่าจะกดหยุด:</p>
-<pre class="out">0: 480x640 1 person, 8.8ms
-0: 480x640 1 person, 9.1ms
-0: 480x640 1 person, 8.5ms
-...</pre>
+<figure>
+  <img src="../docs/images/lab2_webcam_terminal.png" alt="หน้าต่าง terminal แสดงผลการตรวจจับจาก webcam ไหลต่อเนื่อง">
+  <figcaption>ภาพจริงจาก terminal ขณะ <code>predict_webcam.bat</code> ทำงาน</figcaption>
+</figure>
 <p>เลข <code>0:</code> ข้างหน้าคือหมายเลข source (webcam ตัวที่ 0) — ต่างจากภาพนิ่งที่ขึ้นเป็น <code>image 1/1</code> เพราะกล้องเป็นสตรีมที่ไม่มีจุดจบ</p>
+
+<h4>3 อย่างที่ควรสังเกตจากภาพนี้</h4>
+<table>
+<thead><tr><th>ที่เห็น</th><th>อธิบาย</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>ผลตรวจไม่นิ่ง</b><br><code>1 person, 1 cell phone, 1 clock</code><br>สลับกับ<br><code>1 person, 1 cell phone</code></td>
+  <td>คลาส <code>clock</code> โผล่ ๆ หาย ๆ ระหว่างเฟรม ทั้งที่ในภาพไม่มีนาฬิกา — เป็น false positive ที่ confidence วิ่งอยู่แถว ๆ เส้นแบ่ง 0.25 พอดี เฟรมไหนเกินก็โผล่ เฟรมไหนไม่ถึงก็หาย<br><b>YOLO ตัดสินใจใหม่ทุกเฟรมโดยไม่จำเฟรมก่อนหน้าเลย</b> — งานจริงจึงมักต้องเพิ่มตรรกะกรองเอง เช่น ต้องเจอติดกัน 3 เฟรมถึงนับว่าเจอจริง — เก็บไว้คิดตอน Lab 9 ที่ต้องเอาผลตรวจไปสั่งมอเตอร์ เพราะถ้าสั่งตามผลดิบทุกเฟรม มอเตอร์จะกระตุกตามกรอบที่โผล่ ๆ หาย ๆ แบบนี้</td>
+</tr>
+<tr>
+  <td><code>WARNING Waiting for stream 0</code></td>
+  <td>ไม่ใช่ error — แปลว่า<b>โมเดลประมวลผลเร็วกว่ากล้องส่งภาพมา</b> เลยต้องรอเฟรมถัดไป เป็นสัญญาณที่ดีว่าคอขวดอยู่ที่กล้อง (30 fps) ไม่ใช่ที่ GPU</td>
+</tr>
+<tr>
+  <td><b>เวลาไม่คงที่</b><br>8.7ms → 13.4ms → 19.6ms → 28.2ms</td>
+  <td>เวลาต่อเฟรมแกว่งได้ 3 เท่าตัวบนเครื่องเดียวกัน เพราะ GPU ถูกงานอื่นแย่งใช้ และมี thermal throttling<br>เวลาวัดประสิทธิภาพจึงต้อง<b>เฉลี่ยหลาย ๆ เฟรม</b> ไม่ใช่หยิบเฟรมเดียวมาอ้าง — เป็นเหตุผลที่ <code>benchmark.py</code> ใน Lab 6 รันซ้ำ 20 รอบแล้วหาค่าเฉลี่ย</td>
+</tr>
+</tbody>
+</table>
+
+<h4>หน้าต่างที่จะเห็น</h4>
+<figure>
+  <img src="../docs/images/lab2_webcam.jpg" alt="หน้าต่าง webcam แสดงผล detect แบบ real-time เจอ person, cell phone และ tie">
+  <figcaption>ภาพจริงจากการรัน <code>predict_webcam.bat</code> — กรอบและตัวเลขถูกวาดทับภาพสดแบบ real-time</figcaption>
+</figure>
+
+<div class="card">
+<h3>🔎 ชวนสังเกตจากภาพนี้</h3>
+<table>
+<thead><tr><th>ที่เห็น</th><th>อธิบาย</th></tr></thead>
+<tbody>
+<tr><td><code>person 0.78</code><br><code>cell phone 0.87</code></td><td>โมเดลรู้จัก <b>คลาสของ COCO ทั้ง 80 คลาส</b> ไม่ใช่แค่ person กับ bus — เพราะ <code>best.pt</code> ต่อยอดมาจาก <code>yolo11n.pt</code> ที่เทรนมาจาก COCO เต็มชุดแล้ว การ Train ใน Lab 1 แค่ปรับต่ออีกนิดเดียวด้วยภาพ 8 ใบ<br>น่าสนใจว่ามือถือได้ 0.87 <b>สูงกว่า</b>คนที่ 0.78 เพราะวัตถุอยู่ใกล้กล้อง ขอบชัด และไม่ถูกบัง</td></tr>
+<tr><td><code>tie 0.35</code></td><td><b>นี่คือการตรวจผิด (false positive)</b> — โมเดลเห็นคอเสื้อแล้วเดาว่าเป็นเนกไท แต่สังเกตว่า confidence ต่ำมาก (0.35) เทียบกับอีกสองอันที่ 0.78-0.87<br>นี่คือเหตุผลที่มีค่า <code>conf</code> ให้ปรับ — ลองรันด้วย <code>conf=0.5</code> ดู กรอบ <code>tie</code> จะหายไปทันที ส่วน person กับ cell phone ยังอยู่:
+<pre>yolo detect predict model=runs\detect\train\weights\best.pt source=0 show=True conf=0.5</pre></td></tr>
+</tbody>
+</table>
+<div class="tip"><b>บทเรียนสำคัญ:</b> โมเดลไม่เคยตอบว่า "ไม่รู้" — มันจะเดาเสมอ พร้อมแนบระดับความมั่นใจมาให้ หน้าที่ของเราคือ<b>เลือกเส้นแบ่ง (threshold) ที่เหมาะกับงาน</b> งานที่พลาดไม่ได้เลย (เช่น คัดของเสียออกจากสายพานใน Lab 9) ควรตั้ง <code>conf</code> สูง ส่วนงานที่ยอมให้ผิดพลาดได้บ้างแต่ห้ามพลาดของจริง ควรตั้งต่ำ</div>
+</div>
 <div class="tip">กด <code>q</code> ในหน้าต่างวิดีโอเพื่อหยุดการทำงาน — ต้อง<b>คลิกที่หน้าต่างวิดีโอก่อน</b>ให้มันเป็นหน้าต่าง active กดใน terminal ไม่มีผล (ถ้าไม่ได้จริง ๆ กด <code>Ctrl+C</code> ใน terminal)</div>
 
 <div class="walk">
