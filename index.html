@@ -64,7 +64,7 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <h2>📖 เกี่ยวกับคอร์สนี้</h2>
 <p>ชุดแบบฝึกนี้ออกแบบมาเพื่อเตรียมความพร้อมนักศึกษาก่อนเริ่มทำโครงงานที่ใช้ YOLO Object Detection
 ตั้งแต่การเตรียมเครื่อง การ Train โมเดล การสร้าง Dataset เอง ไปจนถึงการนำโมเดลไปใช้งานจริงบน Raspberry Pi
-ร่วมกับ AI HAT และระบบ Conveyor + GPIO</p>
+ร่วมกับ AI HAT และชุดสายพานที่ควบคุมผ่าน Arduino</p>
 <p>แต่ละ Lab มีโฟลเดอร์แยกของตัวเอง พร้อมสคริปต์สำหรับรันงาน (<code>.bat</code> สำหรับ Windows, <code>.sh</code> สำหรับ Raspberry Pi ใน Lab 7-9) และคู่มือฉบับเต็มแบบ HTML</p>
 </div>
 
@@ -100,14 +100,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </tr><tr>
 <td>3-4 ชม.</td>
 <td><b>Lab 3</b></td>
-<td>สร้าง Dataset เองและ Label ข้อมูล</td>
+<td>ฝึก Label ข้อมูลเอง แล้วเทียบกับเฉลย</td>
 <td>Dataset ของกลุ่ม</td>
 <td><a href="Lab3_CustomDataset/manual.html">เปิดคู่มือ &rarr;</a></td>
 </tr><tr>
 <td>3-4 ชม.</td>
 <td><b>Lab 4</b></td>
-<td>ปรับแต่งการ Train (epochs, imgsz, model)</td>
-<td>โมเดลที่เหมาะสม</td>
+<td>เทรน 2 รอบเทียบกัน: ชุดที่ label เอง vs ชุดเต็ม</td>
+<td>เห็นว่าข้อมูลชนะการปรับค่า</td>
 <td><a href="Lab4_TrainTuning/manual.html">เปิดคู่มือ &rarr;</a></td>
 </tr><tr>
 <td>2-3 ชม.</td>
@@ -136,7 +136,7 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </tr><tr>
 <td>3-4 ชม.</td>
 <td><b>Lab 9</b></td>
-<td>เชื่อม AI เข้ากับ Conveyor + Sensor ผ่าน GPIO</td>
+<td>เชื่อม AI เข้ากับสายพาน + Sensor ผ่าน Arduino (USB)</td>
 <td>AI + Embedded</td>
 <td><a href="Lab9_ConveyorGPIO/manual.html">เปิดคู่มือ &rarr;</a></td>
 </tr><tr>
@@ -154,12 +154,12 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <div class="step"><span class="n">3</span><p>ทำ Lab ตามลำดับ 0 → 10 โดยแต่ละ Lab จะใช้ผลลัพธ์ (โมเดล/ไฟล์) ต่อจาก Lab ก่อนหน้า</p></div>
 
 <h2>📁 โครงสร้างโปรเจกต์</h2>
-<div class="filetree">Yolo_training/
+<div class="filetree">Yolo_tain/
 ├── venv/                        (สร้างจาก Lab 0)
 ├── index.html                   (หน้านี้)
 ├── Lab0_Setup/
 │   ├── manual.html
-│   └── scripts/  setup_env.bat, check_env.py
+│   └── scripts/  setup_env.bat, prefetch.bat, check_env.py
 ├── Lab1_TrainReadyDataset/
 │   ├── manual.html
 │   └── scripts/  train.bat
@@ -170,10 +170,10 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 ├── Lab6_Export/ ...
 ├── Lab7_RaspberryPi/            (สคริปต์ .sh รันบน Raspberry Pi OS)
 ├── Lab8_AIHat/                  (สคริปต์ .sh รันบน Raspberry Pi OS)
-├── Lab9_ConveyorGPIO/           (สคริปต์ .sh/.py รันบน Raspberry Pi OS)
+├── Lab9_ConveyorGPIO/           (สคริปต์รันบน Pi + โปรเจค PlatformIO ของ Arduino)
 └── Lab10_MiniProject/           (โครงงานย่อยรวมทุก Lab)</div>
 
-<div class="tip">Lab 0-6 และ 10 (ส่วนเตรียมโมเดล) ออกแบบให้รันบน <b>Windows</b> เป็นหลัก ส่วน Lab 7-9 (และการรันจริงของ Lab 10) ต้องใช้ <b>Raspberry Pi OS</b> เนื่องจากต้องเข้าถึงฮาร์ดแวร์ (กล้อง, AI HAT, GPIO) โดยตรง — ไฟล์โมเดล/Dataset ที่เตรียมจาก Windows จะถูกโอนไปยัง Pi ตามที่อธิบายไว้ใน Lab 7</div>
+<div class="tip">Lab 0-6 และ 10 (ส่วนเตรียมโมเดล) ออกแบบให้รันบน <b>Windows</b> เป็นหลัก ส่วน Lab 7-9 (และการรันจริงของ Lab 10) ต้องใช้ <b>Raspberry Pi OS</b> เนื่องจากต้องเข้าถึงฮาร์ดแวร์ (กล้อง, AI HAT, บอร์ด Arduino) โดยตรง — ไฟล์โมเดล/Dataset ที่เตรียมจาก Windows จะถูกโอนไปยัง Pi ตามที่อธิบายไว้ใน Lab 7</div>
 
 <footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
 </div>
