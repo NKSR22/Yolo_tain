@@ -138,7 +138,7 @@ fi</pre>
 ./run_detect_hailo.sh yolov8s</pre>
 <figure>
   <img src="../docs/images/lab8_download_run.png" alt="ผลการเตรียมไฟล์ hef และวัดความเร็วบน Hailo">
-  <figcaption>YOLOv8s บน Hailo-8 — <b>latency 6.66 ms</b> ได้ <b>309.5 FPS</b></figcaption>
+  <figcaption>YOLOv8s บน Hailo-8 — <b>latency 6.66 ms</b> ได้ <b>309.4 FPS</b></figcaption>
 </figure>
 
 <div class="card">
@@ -193,7 +193,7 @@ done</pre>
 <div class="step"><span class="n">Step 3</span>
 <h3>เทียบกับตัวเลข CPU ที่วัดเองใน Lab 7</h3>
 <pre>./run_detect_hailo.sh
-python3 compare_speed.py --cpu 148.7 --hailo 3.18</pre>
+python3 compare_speed.py --cpu 149.1 --hailo 3.18</pre>
 <figure>
   <img src="../docs/images/lab8_compare.png" alt="เทียบความเร็ว CPU กับ Hailo AI HAT">
   <figcaption>ใส่ตัวเลขที่<b>วัดเองจากเครื่องตัวเอง</b> ไม่ใช่ลอกจากคู่มือ</figcaption>
@@ -201,9 +201,9 @@ python3 compare_speed.py --cpu 148.7 --hailo 3.18</pre>
 <table>
 <thead><tr><th>โมเดล</th><th>รันบน</th><th>latency</th><th>FPS</th></tr></thead>
 <tbody>
-<tr><td>YOLO11n @640 (ของเรา)</td><td>Pi 5 CPU</td><td>148.7 ms</td><td>6.1</td></tr>
-<tr><td>YOLOv6n @640</td><td><b>Hailo-8</b></td><td><b>3.18 ms</b></td><td><b>586.5</b></td></tr>
-<tr><td>YOLOv8s @640</td><td><b>Hailo-8</b></td><td>6.66 ms</td><td>309.5</td></tr>
+<tr><td>YOLO11n @640 (ของเรา)</td><td>Pi 5 CPU</td><td>149.1 ms</td><td>6.1</td></tr>
+<tr><td>YOLOv6n @640</td><td><b>Hailo-8</b></td><td><b>3.18 ms</b></td><td><b>586.6</b></td></tr>
+<tr><td>YOLOv8s @640</td><td><b>Hailo-8</b></td><td>6.66 ms</td><td>309.4</td></tr>
 </tbody>
 </table>
 <div class="danger"><b>ตัวเลข "เร็วขึ้น 47 เท่า" นี้เกินจริง ต้องอ่านให้เป็น</b> เพราะสองฝั่งไม่ยุติธรรมกันอยู่ 2 ข้อ:
@@ -221,9 +221,9 @@ python3 compare_speed.py --cpu 148.7 --hailo 3.18</pre>
 <thead><tr><th>ท่อน</th><th>บน CPU ล้วน</th><th>ถ้ายก inference ไปให้ NPU</th></tr></thead>
 <tbody>
 <tr><td>preprocess</td><td>10.9 ms</td><td>10.9 ms (ยังอยู่บน CPU)</td></tr>
-<tr><td>inference</td><td>148.7 ms</td><td><b>~3.2 ms</b></td></tr>
+<tr><td>inference</td><td>149.1 ms</td><td><b>~3.2 ms</b></td></tr>
 <tr><td>postprocess</td><td>4.1 ms</td><td>4.1 ms (ยังอยู่บน CPU)</td></tr>
-<tr><td><b>รวม</b></td><td><b>163.6 ms (6.1 FPS)</b></td><td><b>~18.2 ms (~55 FPS)</b></td></tr>
+<tr><td><b>รวม</b></td><td><b>164.1 ms (6.1 FPS)</b></td><td><b>~18.2 ms (~55 FPS)</b></td></tr>
 </tbody>
 </table>
 <p>เร่งเฉพาะ inference ได้ 47 เท่า แต่ทั้งระบบเร็วขึ้นราว <b>9 เท่า</b> เท่านั้น
@@ -284,8 +284,8 @@ LAT=$(awk -F'= *' '/Latency +\(hw\)/{print $2}' "$LOG" | awk '{print $1}')</pre>
 
 <div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> — Raspberry Pi 5 Model B Rev 1.1 + Hailo-8 บน PCIe (<code>0001:01:00.0</code>),
 <code>hailo-all</code> 5.1.1, HailoRT/เฟิร์มแวร์ 4.23.0, Device Architecture <code>HAILO8</code>:
-<code>yolov6n_h8.hef</code> ได้ <b>586.5 FPS / latency 3.18 ms</b> และ <code>yolov8s_h8.hef</code> ได้ <b>309.5 FPS / latency 6.66 ms</b>
-เทียบกับ CPU ของ Pi เครื่องเดียวกันใน Lab 7 ที่ inference 148.7 ms
+<code>yolov6n_h8.hef</code> ได้ <b>586.6 FPS / latency 3.18 ms</b> และ <code>yolov8s_h8.hef</code> ได้ <b>309.4 FPS / latency 6.66 ms</b>
+เทียบกับ CPU ของ Pi เครื่องเดียวกันใน Lab 7 ที่ inference 149.1 ms
 การวัดพลังงานด้วย <code>--measure-power</code> ใช้กับบอร์ดตัวนี้ไม่ได้</div>
 
 <div class="deliverable">

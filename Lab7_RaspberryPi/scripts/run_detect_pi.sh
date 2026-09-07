@@ -1,20 +1,24 @@
 #!/bin/bash
 # Lab 7 - ตรวจจับวัตถุแบบ real-time บน Raspberry Pi ด้วยโมเดล ONNX จาก Lab 6
 # ต้องรันบนหน้าจอที่ต่อกับ Pi โดยตรง (ผ่าน SSH เปล่า ๆ จะเปิดหน้าต่างไม่ได้)
+#
+# ข้อความที่ echo ออกจอเป็น ASCII ทั้งหมดตามธรรมเนียมของรีโปนี้
+# console ที่ไม่ใช่ codepage ไทยจะแสดงภาษาไทยเป็น ? และตัวเรนเดอร์ภาพประกอบ
+# (docs/shoot.py) ก็วาดสระ/วรรณยุกต์ไทยไม่ได้
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MODEL="${1:-model/best.onnx}"
 if [ ! -f "$MODEL" ]; then
-    echo "ไม่พบโมเดลที่ $MODEL"
-    echo "คัดลอกมาจากเครื่อง Windows ด้วย Lab7_RaspberryPi\scripts\copy_to_pi.bat ก่อน"
+    echo "Model not found at $MODEL"
+    echo "Copy it from Windows first with Lab7_RaspberryPi\scripts\copy_to_pi.bat"
     exit 1
 fi
 
 if [ ! -e /dev/video0 ]; then
-    echo "ไม่พบกล้องที่ /dev/video0"
-    echo "  - เสียบกล้อง USB แล้วเช็คด้วย:  lsusb"
-    echo "  - ถ้าใช้ Pi Camera ให้เช็คด้วย:   rpicam-hello --list-cameras"
+    echo "No camera at /dev/video0"
+    echo "  - plug in a USB camera, then check:  lsusb"
+    echo "  - for a Pi Camera check instead:     rpicam-hello --list-cameras"
     exit 1
 fi
 

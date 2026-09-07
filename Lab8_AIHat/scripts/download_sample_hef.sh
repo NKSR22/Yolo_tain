@@ -12,17 +12,17 @@ mkdir -p model
 
 ZOO=/usr/share/hailo-models
 if [ ! -d "$ZOO" ]; then
-    echo "ไม่พบ $ZOO - ยังไม่ได้ติดตั้ง hailo-all ให้รัน ./setup_hailo.sh ก่อน"
+    echo "$ZOO not found - hailo-all is not installed. Run ./setup_hailo.sh first."
     exit 1
 fi
 
 # Hailo-8 กับ Hailo-8L ใช้ไฟล์ .hef คนละตัว ใส่ผิดจะรันไม่ขึ้น
 ARCH=$(hailortcli fw-control identify | awk -F': *' '/Device Architecture/{print $2}' | tr -d ' ')
-echo "ชิปที่ตรวจพบ: $ARCH"
+echo "Detected chip: $ARCH"
 case "$ARCH" in
     HAILO8)  SUFFIX=h8  ;;
     HAILO8L) SUFFIX=h8l ;;
-    *) echo "ไม่รู้จักสถาปัตยกรรม '$ARCH'"; exit 1 ;;
+    *) echo "Unknown architecture '$ARCH'"; exit 1 ;;
 esac
 
 copied=0
@@ -30,17 +30,17 @@ for name in yolov6n yolov8s; do
     src="$ZOO/${name}_${SUFFIX}.hef"
     if [ -f "$src" ]; then
         cp -f "$src" "model/${name}.hef"
-        printf "  คัดลอกแล้ว  model/%-12s (%s MB)\n" "${name}.hef" \
+        printf "  copied  model/%-14s (%s MB)\n" "${name}.hef" \
                "$(du -m "$src" | cut -f1)"
         copied=$((copied + 1))
     fi
 done
 
 if [ "$copied" -eq 0 ]; then
-    echo "ไม่พบไฟล์ .hef ที่ตรงกับ $ARCH ใน $ZOO"
-    echo "ดูรายการที่มี:  ls $ZOO"
+    echo "No .hef matching $ARCH found in $ZOO"
+    echo "See what is available:  ls $ZOO"
     exit 1
 fi
 
 echo
-echo "เสร็จแล้ว รันวัดความเร็วต่อด้วย: ./run_detect_hailo.sh"
+echo "Done. Measure the speed next with: ./run_detect_hailo.sh"

@@ -4,30 +4,30 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-echo "[1/4] ติดตั้งแพ็กเกจระบบ"
+echo "[1/4] Installing system packages"
 sudo apt-get update
 sudo apt-get install -y python3-venv python3-pip
 # ไม่ต้องติดตั้ง libopencv-dev: ล้อ opencv-python สำหรับ aarch64 มี OpenCV
 # มาให้ในตัวแล้ว (49.8 MB) การลง libopencv-dev เปลืองพื้นที่เกือบ 1 GB ฟรี ๆ
 
-echo "[2/4] สร้าง virtual environment"
+echo "[2/4] Creating the virtual environment"
 python3 -m venv venv
 ./venv/bin/pip install --quiet --upgrade pip
 
-echo "[3/4] ติดตั้ง PyTorch รุ่น CPU"
+echo "[3/4] Installing the CPU build of PyTorch"
 # จุดที่พลาดกันบ่อยที่สุดของแล็บนี้
 # torch สำหรับ aarch64 บน PyPI เป็นรุ่นที่ผูกกับ CUDA ถ้าปล่อยให้ pip เลือกเอง
 # มันจะโหลด torch 454 MB พ่วงไลบรารี NVIDIA (cuBLAS, cuDNN, NCCL, triton ...)
 # อีกหลาย GB ลงเครื่องที่ไม่มีการ์ดจอ NVIDIA ต้องชี้ไป index รุ่น CPU เสมอ
 ./venv/bin/pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
-echo "[4/4] ติดตั้ง ultralytics + opencv + onnxruntime"
+echo "[4/4] Installing ultralytics + opencv + onnxruntime"
 # ต้องมี onnx ด้วย ไม่งั้นตอนรัน fps_test.py ครั้งแรก ultralytics จะแอบติดตั้งให้เอง
 # (ขึ้นข้อความ AutoUpdate) ซึ่งพังถ้าเน็ตไม่มีตอนนั้น
 ./venv/bin/pip install ultralytics opencv-python onnxruntime onnx
 
 echo
-echo "=================== ตรวจผลการติดตั้ง ==================="
+echo "=================== install check ==================="
 ./venv/bin/python - <<'PY'
 import importlib, shutil, sys
 from pathlib import Path
@@ -50,20 +50,20 @@ ok &= check("onnxruntime", lambda: importlib.import_module("onnxruntime").__vers
 # torch ต้องเป็นรุ่น CPU ถ้าลงท้ายด้วยเลข CUDA แสดงว่าดึงผิด index มา
 import torch
 if "+cpu" not in torch.__version__ and torch.version.cuda:
-    print(f"  [WARN] torch รุ่นนี้ผูกกับ CUDA {torch.version.cuda} - Pi ใช้ไม่ได้")
-    print("         ลบ venv แล้วรันสคริปต์นี้ใหม่")
+    print(f"  [WARN] this torch is a CUDA build ({torch.version.cuda}) - unusable on a Pi")
+    print("         delete venv/ and run this script again")
     ok = False
 
 model = Path("model/best.onnx")
 if model.exists():
     print(f"  [OK]   model/best.onnx: {model.stat().st_size/1e6:.1f} MB")
 else:
-    print("  [ ]    model/best.onnx: ยังไม่มี - คัดลอกมาจาก Lab 6 ก่อนรัน detection")
+    print("  [ ]    model/best.onnx: missing - copy it from Lab 6 before detecting")
 
 cams = sorted(Path("/dev").glob("video[0-9]"))
-print(f"  [{'OK' if cams else ' ' }]   กล้อง: {', '.join(p.name for p in cams) if cams else 'ไม่พบ /dev/video* - เสียบกล้องแล้วเช็คด้วย lsusb'}")
+print(f"  [{'OK' if cams else ' ' }]   camera: {', '.join(p.name for p in cams) if cams else 'no /dev/video* - plug a camera in, then check lsusb'}")
 
 sys.exit(0 if ok else 1)
 PY
 echo "========================================================"
-echo "เสร็จแล้ว ใช้งานด้วย: source venv/bin/activate"
+echo "Done. Activate with: source venv/bin/activate"

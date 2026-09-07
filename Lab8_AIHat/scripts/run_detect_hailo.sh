@@ -7,13 +7,13 @@ cd "$(dirname "$0")/.."
 NAME="${1:-yolov6n}"
 MODEL="model/${NAME}.hef"
 if [ ! -f "$MODEL" ]; then
-    echo "ไม่พบ $MODEL - รัน ./download_sample_hef.sh ก่อน"
-    echo "โมเดลที่มีอยู่ตอนนี้:"
-    ls model/*.hef 2>/dev/null || echo "  (ยังไม่มีเลย)"
+    echo "$MODEL not found - run ./download_sample_hef.sh first"
+    echo "Models available right now:"
+    ls model/*.hef 2>/dev/null || echo "  (none yet)"
     exit 1
 fi
 
-echo "กำลังวัดความเร็ว $MODEL บนชิป Hailo (ใช้เวลาประมาณ 30 วินาที)"
+echo "Measuring $MODEL on the Hailo chip (takes about 30 seconds)"
 echo
 LOG=$(mktemp)
 trap 'rm -f "$LOG"' EXIT
@@ -24,10 +24,10 @@ FPS=$(awk -F'= *' '/FPS +\(hw_only\)/{print $2}' "$LOG")
 LAT=$(awk -F'= *' '/Latency +\(hw\)/{print $2}' "$LOG" | awk '{print $1}')
 
 printf '====================================================\n'
-printf '  โมเดล            : %s\n' "$NAME"
-printf '  latency ของชิป   : %7.2f ms   <-- จดตัวนี้ไปใช้ใน compare_speed.py\n' "$LAT"
-printf '  FPS (เฉพาะชิป)   : %7.1f\n' "$FPS"
+printf '  model             : %s\n' "$NAME"
+printf '  chip latency      : %7.2f ms   <-- note this for compare_speed.py\n' "$LAT"
+printf '  FPS (chip only)   : %7.1f\n' "$FPS"
 printf '====================================================\n'
 echo
-echo "หมายเหตุ: ตัวเลขนี้คือเวลาที่ใช้ในชิปอย่างเดียว ยังไม่รวมเวลาอ่านภาพจากกล้อง"
-echo "และวาดผลลงจอ ซึ่งยังทำบน CPU อยู่ ระบบจริงจึงได้ FPS ต่ำกว่านี้"
+echo "Note: this is time inside the chip only. Reading frames from the camera"
+echo "and drawing results still run on the CPU, so a real system gets fewer FPS."

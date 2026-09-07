@@ -88,7 +88,7 @@ figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
 <li>กล้อง USB หรือ Pi Camera เสียบไว้กับ Pi</li>
 </ul>
 
-<div class="danger"><b>เตรียมพื้นที่และเวลาไว้ให้พอ</b> — ขั้นตอนติดตั้งบน Pi ใช้เวลาราว <b>8 นาที</b> และกินพื้นที่ <b>1.4 GB</b>
+<div class="danger"><b>เตรียมพื้นที่และเวลาไว้ให้พอ</b> — ขั้นตอนติดตั้งบน Pi ใช้เวลาราว <b>7 นาที</b> และกินพื้นที่ <b>1.4 GB</b>
 อย่าเพิ่งเริ่มถ้าเหลือเวลาคาบไม่ถึงครึ่งชั่วโมง</div>
 
 <div class="step"><span class="n">Step 1</span>
@@ -223,20 +223,20 @@ python3 -m venv venv
 ./venv/bin/python scripts/fps_test.py --source samples --frames 30</pre>
 <figure>
   <img src="../docs/images/lab7_fps_640.png" alt="ผลวัดความเร็วบน Raspberry Pi 5 ที่ขนาดภาพ 640">
-  <figcaption>YOLO11n ONNX ที่ 640×640 บน Pi 5 — <b>inference 148.7 ms</b> ต่อเฟรม ได้ราว <b>6 FPS</b></figcaption>
+  <figcaption>YOLO11n ONNX ที่ 640×640 บน Pi 5 — <b>inference 149.1 ms</b> ต่อเฟรม ได้ราว <b>6 FPS</b></figcaption>
 </figure>
 <table>
 <thead><tr><th>ค่าที่วัดได้</th><th>คืออะไร</th><th>ทำไมต้องดู</th></tr></thead>
 <tbody>
 <tr><td><code>preprocess 10.9 ms</code></td><td>ย่อภาพ ใส่ letterbox แปลงเป็น tensor</td><td>งานของ CPU ล้วน ๆ ยิ่งภาพเข้าใหญ่ยิ่งนาน</td></tr>
-<tr><td><b><code>inference 148.7 ms</code></b></td><td>เวลาที่โมเดลคิดจริง ๆ</td><td><b>ตัวหลักที่ต้องจด</b> เอาไปเทียบกับ AI HAT ใน Lab 8</td></tr>
+<tr><td><b><code>inference 149.1 ms</code></b></td><td>เวลาที่โมเดลคิดจริง ๆ</td><td><b>ตัวหลักที่ต้องจด</b> เอาไปเทียบกับ AI HAT ใน Lab 8</td></tr>
 <tr><td><code>postprocess 4.1 ms</code></td><td>ถอดกล่อง ทำ NMS</td><td>เล็กน้อยเมื่อเทียบกับ inference บนเครื่องนี้</td></tr>
-<tr><td><code>FPS (เฉพาะโมเดล) 6.1</code></td><td><code>1000 / 163.6</code></td><td>เพดานทางทฤษฎีถ้าอ่านภาพเข้ามาได้ฟรี</td></tr>
-<tr><td><code>FPS (ทั้งระบบ) 6.2</code></td><td>วัดจากเวลาจริงทั้งวง</td><td><b>ตัวเลขที่ผู้ใช้เห็นจริง</b> รวมเวลาอ่านภาพเข้ามาด้วย</td></tr>
+<tr><td><code>FPS (model only) 6.1</code></td><td><code>1000 / 164.1</code></td><td>เพดานทางทฤษฎีถ้าอ่านภาพเข้ามาได้ฟรี</td></tr>
+<tr><td><code>FPS (end to end) 6.2</code></td><td>วัดจากเวลาจริงทั้งวง</td><td><b>ตัวเลขที่ผู้ใช้เห็นจริง</b> รวมเวลาอ่านภาพเข้ามาด้วย</td></tr>
 </tbody>
 </table>
 <div class="tip"><b>เทียบกับ Lab 6:</b> โน้ตบุ๊ก RTX 3050 Ti รัน <code>.onnx</code> บน CPU ได้ 40.4 ms
-ส่วน Pi 5 ใช้ 148.7 ms — <b>ช้ากว่าราว 3.7 เท่า</b> นี่คือราคาของการย้ายลง Edge</div>
+ส่วน Pi 5 ใช้ 149.1 ms — <b>ช้ากว่าราว 3.7 เท่า</b> นี่คือราคาของการย้ายลง Edge</div>
 
 <div class="walk">
 <h4>🔍 ในสคริปต์มีอะไร — <code>fps_test.py</code></h4>
@@ -266,22 +266,24 @@ for n, frame in enumerate(frames):
 <h3>รันกับกล้องจริง</h3>
 <p>วัดด้วยกล้องก่อน (สั่งผ่าน SSH ได้ ไม่ต้องมีหน้าจอ):</p>
 <pre>./venv/bin/python scripts/fps_test.py --source 0 --frames 20</pre>
-<pre class="out">แหล่งภาพ: กล้อง index 0
+<pre class="out">Source: camera index 0
 Loading /home/admin/Lab7_RaspberryPi/model/best.onnx for ONNX Runtime inference...
 Using ONNX Runtime 1.29.0 with CPUExecutionProvider
-  วัดแล้ว  10 เฟรม | inference ล่าสุด  145.2 ms
-  วัดแล้ว  20 เฟรม | inference ล่าสุด  144.6 ms
+  measured  10 frames | last inference  151.4 ms
+  measured  20 frames | last inference  148.8 ms
 
-====================================================
-  เฟรมที่วัด        : 20 (ทิ้งรอบอุ่นเครื่อง 5)
-  preprocess เฉลี่ย :     9.8 ms
-  inference เฉลี่ย  :   145.6 ms   &lt;-- จดตัวนี้ไปใช้ใน Lab 8
-  postprocess เฉลี่ย:     2.8 ms
-  รวมต่อเฟรม        :   158.2 ms
-====================================================</pre>
+==========================================================
+  frames measured   : 20 (warmup 5 discarded)
+  preprocess  avg   :     9.6 ms
+  inference   avg   :   149.9 ms   &lt;-- note this for Lab 8
+  postprocess avg   :     4.2 ms
+  total per frame   :   163.7 ms
+  FPS (model only)  :     6.1   = 1000 / 163.7
+  FPS (end to end)  :     6.4   includes reading each frame
+==========================================================</pre>
 <p>ถ้าอยาก<b>เห็นภาพพร้อมกรอบ</b> ต้องรันที่หน้าจอที่ต่อกับ Pi โดยตรง (ผ่าน SSH เปล่า ๆ เปิดหน้าต่างไม่ได้):</p>
 <pre>./run_detect_pi.sh</pre>
-<div class="tip"><b>ตัวเลขจากกล้องใกล้เคียงกับจากภาพนิ่งมาก</b> (145.6 เทียบกับ 148.7 ms)
+<div class="tip"><b>ตัวเลขจากกล้องใกล้เคียงกับจากภาพนิ่งมาก</b> (149.9 เทียบกับ 149.1 ms)
 แปลว่าคอขวดอยู่ที่<b>ตัวโมเดล</b> ไม่ใช่ที่กล้อง — ซื้อกล้องแพงขึ้นก็ไม่ช่วย</div>
 </div>
 
@@ -301,16 +303,16 @@ Using ONNX Runtime 1.29.0 with CPUExecutionProvider
 <p>แล้วโอนไฟล์ไป Pi และวัดใหม่:</p>
 <figure>
   <img src="../docs/images/lab7_fps_320.png" alt="ผลวัดความเร็วที่ขนาดภาพ 320">
-  <figcaption>ที่ 320×320 — <b>inference 32.4 ms</b> ได้ <b>24.9 FPS</b></figcaption>
+  <figcaption>ที่ 320×320 — <b>inference 32.7 ms</b> ได้ <b>24.8 FPS</b></figcaption>
 </figure>
 
 <h4>ตารางแลกเปลี่ยน: เร็วขึ้นแลกกับอะไร</h4>
 <table>
 <thead><tr><th>ขนาดภาพเข้า</th><th>inference</th><th>FPS</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
 <tbody>
-<tr><td>640 × 640</td><td>148.7 ms</td><td>6.1</td><td><b>0.9750</b></td><td><b>0.8311</b></td></tr>
-<tr><td><b>320 × 320</b></td><td><b>32.4 ms</b></td><td><b>24.9</b></td><td>0.9471</td><td>0.7795</td></tr>
-<tr><td>ต่างกัน</td><td><b>เร็วขึ้น 4.6 เท่า</b></td><td>+18.8</td><td>−0.028</td><td>−0.052</td></tr>
+<tr><td>640 × 640</td><td>149.1 ms</td><td>6.1</td><td><b>0.9750</b></td><td><b>0.8311</b></td></tr>
+<tr><td><b>320 × 320</b></td><td><b>32.7 ms</b></td><td><b>24.8</b></td><td>0.9471</td><td>0.7795</td></tr>
+<tr><td>ต่างกัน</td><td><b>เร็วขึ้น 4.6 เท่า</b></td><td>+18.7</td><td>−0.028</td><td>−0.052</td></tr>
 </tbody>
 </table>
 <div class="tip"><b>อ่านตารางนี้ให้เป็น</b> — ลดขนาดภาพครึ่งหนึ่ง งานคำนวณลดลงราว 4 เท่า (เพราะเป็นพื้นที่ ไม่ใช่ความยาว)
@@ -380,8 +382,8 @@ Using ONNX Runtime 1.29.0 with CPUExecutionProvider
 
 <div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> — Raspberry Pi 5 Model B Rev 1.1 (RAM 4 GB, Raspberry Pi OS บน Debian 13 trixie, Python 3.13.5, aarch64 4 คอร์)
 กล้อง Logitech C270 ผ่าน USB ที่ <code>/dev/video0</code>:
-<code>setup_pi.sh</code> ใช้เวลา <b>7 นาที 38 วินาที</b> ได้ venv ขนาด <b>1.4 GB</b> —
-โมเดล YOLO11n ONNX ที่ 640 ได้ <b>inference 148.7 ms (6.1 FPS)</b> และที่ 320 ได้ <b>32.4 ms (24.9 FPS)</b>
+<code>setup_pi.sh</code> ใช้เวลา <b>7 นาที 9 วินาที</b> (โหลดสด ไม่ใช้แคช) ได้ venv ขนาด <b>1.4 GB</b> —
+โมเดล YOLO11n ONNX ที่ 640 ได้ <b>inference 149.1 ms (6.1 FPS)</b> และที่ 320 ได้ <b>32.7 ms (24.8 FPS)</b>
 ตัวเลข mAP มาจากการ <code>val</code> บน test split ของ african-wildlife (227 ภาพ)</div>
 
 <div class="deliverable">

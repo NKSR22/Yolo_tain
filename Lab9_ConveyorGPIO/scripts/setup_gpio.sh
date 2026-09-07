@@ -13,14 +13,14 @@ cd "$(dirname "$0")/.."
 
 VENV=../Lab7_RaspberryPi/venv
 
-echo "[1/3] ติดตั้งไลบรารี GPIO จาก apt"
+echo "[1/3] Installing the GPIO libraries from apt"
 sudo apt-get update
 sudo apt-get install -y python3-gpiozero python3-lgpio
 
-echo "[2/3] เปิดให้ venv ของ Lab 7 มองเห็นแพ็กเกจของระบบ"
+echo "[2/3] Letting the Lab 7 venv see the system packages"
 if [ ! -d "$VENV" ]; then
-    echo "  ไม่พบ venv ของ Lab 7 ที่ $VENV"
-    echo "  ให้กลับไปรัน Lab7_RaspberryPi/scripts/setup_pi.sh ก่อน"
+    echo "  Lab 7 venv not found at $VENV"
+    echo "  Go back and run Lab7_RaspberryPi/scripts/setup_pi.sh first"
     exit 1
 fi
 # venv ที่ Lab 7 สร้างไว้ถูกปิดกั้นจากแพ็กเกจของระบบ เปิดสวิตช์ใน pyvenv.cfg
@@ -29,16 +29,16 @@ sed -i 's/^include-system-site-packages *=.*/include-system-site-packages = true
     "$VENV/pyvenv.cfg"
 grep '^include-system-site-packages' "$VENV/pyvenv.cfg"
 
-echo "[3/3] ตรวจว่า gpiozero จับ backend ได้ถูกตัว"
+echo "[3/3] Checking that gpiozero picked the right backend"
 "$VENV/bin/python" - <<'PY'
 from gpiozero import Device
 Device.ensure_pin_factory()
 name = type(Device.pin_factory).__name__
-print(f"  pin factory ที่ใช้: {name}")
+print(f"  pin factory in use: {name}")
 if name != "LGPIOFactory":
     raise SystemExit(
-        f"  คาดว่าจะได้ LGPIOFactory แต่ได้ {name}\n"
-        "  ถ้ามี RPi.GPIO ค้างอยู่ใน venv ให้ถอนออกก่อน: pip uninstall RPi.GPIO"
+        f"  Expected LGPIOFactory but got {name}\n"
+        "  If RPi.GPIO is still in the venv, remove it: pip uninstall RPi.GPIO"
     )
-print("  พร้อมใช้งาน GPIO แล้ว")
+print("  GPIO is ready")
 PY

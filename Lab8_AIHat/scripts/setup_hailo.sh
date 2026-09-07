@@ -2,28 +2,28 @@
 # Lab 8 - ติดตั้ง/ตรวจซอฟต์แวร์ของ Hailo AI HAT บน Raspberry Pi OS
 set -euo pipefail
 
-echo "[1/3] ตรวจว่า Pi มองเห็นบอร์ด Hailo บน PCIe หรือยัง"
+echo "[1/3] Checking that the Pi can see the Hailo board on PCIe"
 if lspci | grep -qi hailo; then
     lspci | grep -i hailo
 else
-    echo "  ไม่พบบอร์ด Hailo บน PCIe"
-    echo "  - ปิดเครื่องแล้วเช็คสาย FPC ของ HAT ว่าเสียบแน่นและถูกด้าน"
-    echo "  - Pi 5 ต้องเปิด PCIe ก่อน: sudo raspi-config -> Advanced -> PCIe Speed"
+    echo "  No Hailo board found on PCIe"
+    echo "  - power off and check the HAT FPC cable is seated the right way round"
+    echo "  - on a Pi 5 enable PCIe first: sudo raspi-config -> Advanced -> PCIe Speed"
     exit 1
 fi
 
-echo "[2/3] ติดตั้งชุดซอฟต์แวร์ Hailo"
+echo "[2/3] Installing the Hailo software stack"
 sudo apt-get update
 sudo apt-get install -y hailo-all
 
-echo "[3/3] ตรวจการเชื่อมต่อกับตัวชิป"
+echo "[3/3] Talking to the chip"
 # ถ้าเพิ่งติดตั้งครั้งแรก ไดรเวอร์ยังไม่ถูกโหลด คำสั่งนี้จะล้มเหลว -> ต้อง reboot ก่อน
 if hailortcli fw-control identify; then
     echo
-    echo "พร้อมใช้งาน ไปต่อที่ ./download_sample_hef.sh ได้เลย"
+    echo "Ready. Next run ./download_sample_hef.sh"
 else
     echo
-    echo "ติดตั้งเสร็จแล้วแต่ยังคุยกับชิปไม่ได้ - ต้องรีบูตก่อน:  sudo reboot"
-    echo "รีบูตเสร็จแล้วรันสคริปต์นี้ซ้ำอีกรอบ"
+    echo "Installed, but cannot reach the chip yet - reboot first:  sudo reboot"
+    echo "After the reboot, run this script again"
     exit 1
 fi
