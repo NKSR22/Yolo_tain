@@ -5,3 +5,8 @@
 
 # สคริปต์ที่รันบน Windows ต้องเป็น CRLF ตามเดิม
 *.bat text eol=crlf
+
+# ไฟล์ของโปรเจค PlatformIO ที่ build บนตัว Pi - ให้เป็น LF เหมือน *.sh
+*.cpp text eol=lf
+*.h   text eol=lf
+platformio.ini text eol=lf

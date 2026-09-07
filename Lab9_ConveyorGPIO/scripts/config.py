@@ -1,11 +1,44 @@
-# Lab 9 - GPIO pin configuration (BCM numbering)
-# แก้เลขขาให้ตรงกับวงจรจริงของกลุ่มก่อนใช้งาน
+# Lab 9 - ค่าตั้งของชุดสายพาน
+#
+# สถาปัตยกรรมของแล็บนี้:
+#     Raspberry Pi  = กล้อง + YOLO + ตัดสินใจ
+#     Arduino Uno   = ขับมอเตอร์ + อ่านเซ็นเซอร์
+#     คุยกันผ่านสาย USB เส้นเดียว
+#
+# ที่ไม่ได้ต่อมอเตอร์เข้าขา GPIO ของ Pi ตรง ๆ เพราะ AI HAT ของ Lab 8
+# เสียบทับหัว GPIO ไปแล้ว ไม่เหลือขาว่าง
 
-MOTOR_IN1 = 17
-MOTOR_IN2 = 27
-MOTOR_ENABLE = 22
+# ---- ฝั่ง Raspberry Pi ----
 
-SENSOR_PIN = 23        # IR sensor / limit switch (input)
-SORTER_PIN = 24        # relay/servo for sorting action (output)
+# Arduino Uno เสียบ USB บน Pi จะขึ้นเป็น /dev/ttyACM0
+# เช็คด้วย: ls -l /dev/ttyACM*
+SERIAL_PORT = "/dev/ttyACM0"
+
+# ต้องตรงกับค่า BAUD ใน arduino/src/main.cpp
+SERIAL_BAUD = 115200
+
+# วินาทีที่ยอมรอคำตอบจาก Arduino หนึ่งบรรทัด
+SERIAL_TIMEOUT = 2.0
+
+# Uno จะรีเซ็ตตัวเองทุกครั้งที่มีคนเปิดพอร์ตอนุกรม (สาย DTR ดึงขา reset)
+# ต้องรอให้บูตจบก่อนส่งคำสั่งแรก ไม่งั้นคำสั่งจะหายไปกับ bootloader
+RESET_WAIT = 2.0
 
 CAMERA_INDEX = 0
+
+# คลาสที่เจอแล้วให้ตัวคัดแยกทำงาน - ต้องเป็นชื่อที่มีอยู่ในโมเดลจริง
+# ค่าเริ่มต้นใช้คลาสจากชุด african-wildlife ที่ทำมาตั้งแต่ Lab 4
+# ตอนทำโครงงานจริงให้เปลี่ยนเป็นคลาสของกลุ่มตัวเอง
+SORT_CLASS = "zebra"
+
+# เชื่อผลก็ต่อเมื่อมั่นใจเกินค่านี้ กัน sorter ทำงานมั่วจากการทายที่ไม่แน่ใจ
+MIN_CONFIDENCE = 0.5
+
+# ---- ฝั่ง Arduino (แก้ที่ arduino/src/main.cpp) ----
+# เขียนไว้ตรงนี้เพื่อให้เห็นภาพรวมที่เดียว แต่ตัวจริงอยู่ในไฟล์ firmware
+#     D4  MOTOR_IN1     ทิศทางมอเตอร์ (L298N IN1)
+#     D5  MOTOR_IN2     ทิศทางมอเตอร์ (L298N IN2)
+#     D9  MOTOR_PWM     ความเร็วมอเตอร์ ต้องเป็นขา PWM (L298N ENA)
+#     D2  SENSOR        เซ็นเซอร์ IR (ขา 2 รองรับ interrupt)
+#     D8  SORTER        รีเลย์/โซลินอยด์ของตัวคัดแยก
+#     D13 LED บนบอร์ด   สะท้อนสถานะมอเตอร์ ใช้ทดสอบตอนยังไม่ได้ต่ออุปกรณ์

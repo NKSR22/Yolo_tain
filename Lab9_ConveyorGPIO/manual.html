@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Lab 9: เชื่อม AI เข้ากับ Conveyor + Sensor ผ่าน GPIO</title>
+<title>Lab 9: ควบคุมสายพานด้วย Arduino ผ่าน USB</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root{
@@ -50,71 +50,305 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="hero">
-  <span class="badge">LAB 9 · Embedded</span>
-  <h1>Lab 9: เชื่อม AI เข้ากับ Conveyor + Sensor ผ่าน GPIO</h1>
+  <span class="badge">LAB 9 · Actuator</span>
+  <h1>Lab 9: ควบคุมสายพานด้วย Arduino ผ่าน USB</h1>
   <div class="meta"><span>⏱ ระยะเวลา: 3-4 ชั่วโมง</span><span>📁 โฟลเดอร์: Lab9_ConveyorGPIO</span></div>
 </header>
 
 <div class="card">
 <h2>🎯 วัตถุประสงค์</h2>
 <ul>
-<li>เชื่อมผลลัพธ์จาก YOLO เข้ากับอุปกรณ์จริง: มอเตอร์สายพาน (Conveyor), เซนเซอร์ และขา GPIO ของ Raspberry Pi</li>
-<li>เข้าใจแนวคิด AI + Embedded System (Sense → Think → Act)</li>
+<li>ต่อผลจาก YOLO เข้ากับ<b>การเคลื่อนไหวจริง</b> — จากกล่องบนจอ กลายเป็นแขนกลที่ผลักของออก</li>
+<li>เข้าใจว่าทำไมงานคุมฮาร์ดแวร์ถึงต้องแยกออกจากเครื่องที่รัน AI</li>
+<li>ออกแบบ<b>โปรโตคอลสื่อสาร</b>ระหว่างสองบอร์ดให้ดีบักได้ ไม่ใช่เดาด้วยการ <code>sleep</code></li>
 </ul>
 </div>
 
-<div class="warn">แล็บนี้รันบน Raspberry Pi OS ต่อจาก Lab 7/8 ต้องมี Motor Driver (เช่น L298N), Relay หรือ Servo, และ Sensor (เช่น IR sensor / Limit switch) ต่อพ่วงตามวงจรที่ผู้สอนกำหนด — <b>ตรวจสอบวงจรกับผู้สอนก่อนจ่ายไฟทุกครั้ง</b></div>
+<h2>✅ ก่อนเริ่ม</h2>
+<ul>
+<li>ทำ <b>Lab 7</b> จบแล้ว มี venv และไฟล์ <code>best.onnx</code> อยู่บน Pi</li>
+<li>มี <b>Arduino Uno</b> กับสาย USB ต่อเข้ากับ Raspberry Pi</li>
+<li>ชุดสายพาน + ไดรเวอร์มอเตอร์ (L298N) + เซ็นเซอร์ IR — <b>ถ้ายังไม่มีก็เริ่มได้</b> ดูกล่องสีเหลืองด้านล่าง</li>
+</ul>
+
+<div class="warn"><b>ยังไม่มีอุปกรณ์ต่อพ่วงก็ทำแล็บนี้ได้ถึง Step 5</b> — เพราะ firmware สั่งไฟบนบอร์ด Arduino (ขา 13)
+ให้สะท้อนสถานะมอเตอร์ไว้ด้วย เห็นไฟติดดับตามคำสั่ง = สายสัญญาณทั้งเส้นใช้ได้จริง
+ค่อยไปต่อวงจรทีหลังโดยไม่ต้องแก้โค้ดอะไรเลย</div>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>ต่อวงจร GPIO</h3>
-<ul>
-<li>Motor Driver ควบคุมสายพาน ต่อกับขา GPIO ตามที่กำหนดใน <code>config.py</code></li>
-<li>Sensor ตรวจจับวัตถุผ่าน (trigger ให้กล้องถ่ายภาพ) ต่อกับขา Input</li>
-<li>Relay/Servo สำหรับ "คัดแยก" วัตถุ ต่อกับขา Output</li>
-</ul>
-<div class="tip">แก้เลขขา GPIO ให้ตรงกับวงจรจริงของกลุ่มในไฟล์ <code>scripts/config.py</code> ก่อนรันทุกครั้ง</div>
+<h3>ทำไมไม่ต่อมอเตอร์เข้าขา GPIO ของ Pi ตรง ๆ</h3>
+<p>ถ้าคุณอ่านคู่มือ Raspberry Pi ทั่วไป จะเห็นเขาต่อมอเตอร์เข้าขา GPIO ของ Pi แล้วสั่งด้วย
+<code>gpiozero</code> ซึ่งทำได้จริงและง่ายกว่านี้มาก แต่<b>ในคอร์สนี้ทำแบบนั้นไม่ได้</b> ด้วยเหตุผล 2 ข้อ:</p>
+<table>
+<thead><tr><th>เหตุผล</th><th>รายละเอียด</th></tr></thead>
+<tbody>
+<tr><td><b>ขาไม่พอ</b></td><td>AI HAT ของ Lab 8 เสียบทับหัว GPIO ไปแล้ว ไม่เหลือขาให้ต่อ</td></tr>
+<tr><td><b>Linux ไม่ใช่ระบบเรียลไทม์</b></td><td>Pi ต้องรัน YOLO ที่กินซีพียูเต็มอยู่แล้ว ถ้าให้มันคุมจังหวะมอเตอร์ด้วย จังหวะจะเพี้ยนเมื่อระบบไปทำอย่างอื่น — Arduino ไม่มีระบบปฏิบัติการมาแย่ง จังหวะจึงแน่นอนกว่า</td></tr>
+</tbody>
+</table>
+<p>เราเลยแบ่งงานกันใหม่:</p>
+<pre class="out">Raspberry Pi 5                              Arduino Uno
+--------------                              -----------
+กล้อง -&gt; YOLO -&gt; ตัดสินใจ   ==USB serial==&gt;  ขับมอเตอร์ / อ่านเซ็นเซอร์ / ดันตัวคัดแยก
+   "งานที่ต้องใช้สมอง"                          "งานที่ต้องตรงเวลา"</pre>
+<div class="tip"><b>รูปแบบนี้ใช้กันจริงในอุตสาหกรรม</b> — เครื่องจักรที่มี AI แทบทุกตัวแยกเป็นสองส่วนแบบนี้
+คือส่วนคิด (คอมพิวเตอร์) กับส่วนคุม (PLC หรือไมโครคอนโทรลเลอร์) ด้วยเหตุผลเดียวกันเป๊ะ</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>ติดตั้งไลบรารี GPIO</h3>
-<pre>chmod +x setup_gpio.sh
-./setup_gpio.sh</pre>
+<h3>ออกแบบโปรโตคอลก่อนเขียนโค้ด</h3>
+<p>สองบอร์ดจะคุยกันด้วย<b>ข้อความบรรทัดต่อบรรทัด</b> ไม่ใช่ไบต์ดิบ:</p>
+<table>
+<thead><tr><th>Pi ส่งไป</th><th>Arduino ตอบ</th><th>ความหมาย</th></tr></thead>
+<tbody>
+<tr><td><code>PING</code></td><td><code>PONG</code></td><td>เช็คว่ายังคุยกันรู้เรื่อง</td></tr>
+<tr><td><code>ID?</code></td><td><code>ID conveyor-uno v1</code></td><td>ถามว่าปลายสายเป็นบอร์ดอะไร เวอร์ชันไหน</td></tr>
+<tr><td><code>M1</code> / <code>M0</code></td><td><code>OK M1</code></td><td>เดิน / หยุดสายพาน</td></tr>
+<tr><td><code>S1</code> / <code>S0</code></td><td><code>OK S1</code></td><td>ดัน / ดึงตัวคัดแยกกลับ</td></tr>
+<tr><td><code>SENSOR?</code></td><td><code>SENSOR 0</code></td><td>ถามค่าเซ็นเซอร์ตอนนี้</td></tr>
+<tr><td><code>STATUS?</code></td><td><code>STATUS motor=0 sorter=0 sensor=0</code></td><td>ถามสถานะทั้งหมดทีเดียว</td></tr>
+<tr><td>—</td><td><code>EVENT OBJECT</code></td><td>Arduino ส่งเอง เมื่อเซ็นเซอร์เพิ่งเจอวัตถุ</td></tr>
+</tbody>
+</table>
+<div class="card">
+<h4>📚 ทฤษฎี: ทำไมต้องออกแบบให้ "ทุกคำสั่งมีคำตอบ"</h4>
+<p>โค้ดคุมฮาร์ดแวร์ที่มือใหม่เขียน มักหน้าตาแบบนี้:</p>
+<pre class="out">ser.write(b"M1\n")
+time.sleep(0.5)        # เดาว่า 0.5 วินาทีน่าจะพอ
+ser.write(b"S1\n")</pre>
+<p>ปัญหาคือ <code>sleep</code> เป็น<b>การเดา</b> ถ้าเดาสั้นไปคำสั่งจะหาย ถ้าเดายาวไปก็ช้าโดยไม่จำเป็น
+และที่แย่ที่สุดคือมัน<b>ผิดเป็นบางครั้ง</b> — วันที่ทดสอบผ่าน วันสาธิตจริงพัง แล้วหาสาเหตุไม่เจอ</p>
+<p>ถ้าออกแบบให้ทุกคำสั่งต้องมีคำตอบ โค้ดจะกลายเป็น:</p>
+<pre class="out">link.motor(True)       # ส่ง M1 แล้วรอจนได้ OK M1 จริง ๆ ถึงจะไปบรรทัดถัดไป
+link.sorter(True)</pre>
+<p>ไม่มีการเดาเวลาเหลืออยู่เลย ถ้าไม่ได้คำตอบภายในเวลาที่กำหนด โปรแกรมจะ<b>ฟ้องทันทีว่าคุยไม่รู้เรื่อง</b>
+แทนที่จะทำงานต่อไปแบบผิด ๆ — หลักการเดียวกับที่ Lab 7 ใส่ <code>set -euo pipefail</code> ในสคริปต์</p>
+<p>อีกข้อคือ<b>ทำไมต้องเป็นข้อความ ไม่ใช่ไบต์</b> — เพราะเปิด Serial Monitor พิมพ์ <code>M1</code> ทดสอบเองได้เลย
+ไม่ต้องเขียนโปรแกรมฝั่ง Pi ก่อน เวลาแยกปัญหาว่าพังฝั่งไหน จะแยกได้ในสิบวินาที</p>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>ทดสอบมอเตอร์และเซนเซอร์แยกส่วนก่อน</h3>
-<pre>python3 test_motor.py
-python3 test_sensor.py</pre>
-<p>ต้องเห็นสายพานหมุนได้ และค่าจาก sensor เปลี่ยนเมื่อมีวัตถุผ่าน ก่อนไปขั้นตอนถัดไป</p>
+<h3>เตรียม Pi ให้โปรแกรม Arduino ได้</h3>
+<pre>cd ~/Lab9_ConveyorGPIO/scripts
+chmod +x *.sh
+./setup_link.sh</pre>
+<figure>
+  <img src="../docs/images/lab9_setup_link.png" alt="ผลการรัน setup_link.sh บน Raspberry Pi">
+  <figcaption>บรรทัดที่ต้องเห็นคือ <code>Arduino SA Uno R3</code> และ <code>this user is in the dialout group</code></figcaption>
+</figure>
+<table>
+<thead><tr><th>ขั้นตอน</th><th>ทำอะไร และทำไม</th></tr></thead>
+<tbody>
+<tr><td><code>[1/4]</code> หา <code>/dev/ttyACM0</code></td><td>Arduino Uno เสียบ USB จะโผล่มาเป็นไฟล์นี้ ถ้าไม่มีแปลว่าสายหลวมหรือบอร์ดเสีย <b>ไม่ต้องไปแก้โค้ด</b></td></tr>
+<tr><td><code>[2/4]</code> กลุ่ม <code>dialout</code></td><td>Linux ให้สิทธิ์เปิดพอร์ตอนุกรมเฉพาะคนในกลุ่มนี้ ถ้าไม่อยู่จะต้องใช้ <code>sudo</code> ทุกครั้ง ซึ่งไม่ควร</td></tr>
+<tr><td><code>[3/4]</code> ติดตั้ง PlatformIO</td><td>ตัวคอมไพล์และอัปโหลดแบบบรรทัดคำสั่ง — ใช้แทน Arduino IDE ที่ต้องมีหน้าจอ</td></tr>
+<tr><td><code>[4/4]</code> ติดตั้ง <code>pyserial</code></td><td>ไลบรารีฝั่ง Python สำหรับเปิดพอร์ต ลงในvenv เดียวกับ Lab 7 ไม่ต้องสร้างใหม่</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>ทำไมใช้ PlatformIO ไม่ใช่ Arduino IDE</b> — เราทำงานกับ Pi ผ่าน SSH เป็นหลัก ไม่มีหน้าจอให้เปิด IDE
+และค่าตั้งของโปรเจคอยู่ในไฟล์ <code>platformio.ini</code> ที่ commit เข้า git ได้ เพื่อนในกลุ่มจึง build ได้ผลเหมือนกัน
+โดยไม่ต้องมานั่งตั้งค่าใน IDE ให้ตรงกันทีละคน</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
-<h3>เชื่อม YOLO เข้ากับ Sensor + Motor</h3>
-<pre>python3 conveyor_ai_demo.py</pre>
-<p>Flow การทำงาน:</p>
-<ol>
-<li>สายพานหมุน (Motor ON)</li>
-<li>Sensor ตรวจพบวัตถุ → สั่งหยุดสายพาน + ถ่ายภาพจากกล้อง</li>
-<li>ส่งภาพเข้าโมเดล YOLO → ได้ผลลัพธ์คลาสของวัตถุ</li>
-<li>สั่ง Relay/Servo ทำงานตามคลาสที่ตรวจพบ (เช่น ผลัก/ไม่ผลัก)</li>
-<li>สายพานหมุนต่อ (Motor ON) วนซ้ำ</li>
-</ol>
+<h3>อัปโหลด firmware ลง Arduino จากบนตัว Pi</h3>
+<pre>./upload_arduino.sh</pre>
+<figure>
+  <img src="../docs/images/lab9_upload.png" alt="ผลการคอมไพล์และอัปโหลด firmware ลง Arduino Uno">
+  <figcaption>ครั้งแรกจะนานกว่านี้มาก (ราว 70 วินาที) เพราะต้องโหลด toolchain ของ AVR ก่อน ครั้งต่อไปเหลือไม่ถึง 4 วินาที</figcaption>
+</figure>
+<table>
+<thead><tr><th>บรรทัด</th><th>บอกอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>RAM: 10.3% (used 211 bytes from 2048)</code></td><td><b>บรรทัดที่ต้องจับตาที่สุด</b> — Uno มี RAM แค่ 2 KB ถ้าใช้เกิน 70-80% โปรแกรมจะเริ่มมีอาการแปลก ๆ แบบไม่มี error (สาเหตุคือ stack ไปทับ heap)</td></tr>
+<tr><td><code>Flash: 16.8% (used 5404 bytes from 32256)</code></td><td>พื้นที่เก็บโปรแกรม เหลือเยอะ ยังเพิ่มฟีเจอร์ได้อีกมาก</td></tr>
+<tr><td><code>5404 bytes of flash verified</code></td><td>อ่านกลับมาเทียบแล้วตรง — เขียนสำเร็จจริง ไม่ใช่แค่ส่งไป</td></tr>
+</tbody>
+</table>
+<div class="danger"><b>ถ้าขึ้นว่าอัปโหลดไม่ได้เพราะพอร์ตไม่ว่าง</b> ให้ปิด Serial Monitor หรือสคริปต์ที่รันค้างอยู่ก่อน
+พอร์ตอนุกรมเปิดได้ทีละโปรแกรมเดียวเท่านั้น — สคริปต์เช็คให้แล้วและบอกว่าโปรแกรมไหนถืออยู่</div>
 </div>
+
+<div class="step"><span class="n">Step 5</span>
+<h3>ทดสอบสายสัญญาณ — ยังไม่ต้องต่ออุปกรณ์อะไรเลย</h3>
+<pre>~/Lab7_RaspberryPi/venv/bin/python test_link.py</pre>
+<figure>
+  <img src="../docs/images/lab9_test_link.png" alt="ผลการทดสอบสายสัญญาณระหว่าง Pi กับ Arduino">
+  <figcaption>ระหว่างขั้นที่ 3 <b>ให้มองไฟบนบอร์ด Arduino</b> — มันจะติดค้าง 2 วินาทีแล้วดับ นั่นคือคำสั่งจาก Pi เดินทางถึงจริง</figcaption>
+</figure>
+<table>
+<thead><tr><th>ผลที่เห็น</th><th>แปลว่า</th></tr></thead>
+<tbody>
+<tr><td><code>PING -&gt; PONG</code></td><td>เปิดพอร์ตได้ ส่งได้ รับได้ — สามอย่างพร้อมกัน</td></tr>
+<tr><td><code>ID conveyor-uno v1</code></td><td>ปลายสายคือ firmware ของเราจริง ไม่ใช่โปรแกรมเก่าที่ค้างอยู่ในบอร์ด</td></tr>
+<tr><td><code>{'motor': 1, ...}</code> ตอนขั้นที่ 3</td><td>Arduino <b>ยืนยันสถานะที่เปลี่ยนไปจริง</b> ไม่ใช่แค่รับคำสั่งไปเฉย ๆ</td></tr>
+<tr><td><code>object present: False</code></td><td>ถูกต้องเมื่อยังไม่ต่อเซ็นเซอร์ เพราะขาถูกดึงขึ้นด้วย pull-up ในตัว ทำให้อ่านได้ว่า "ไม่มีของ"</td></tr>
+</tbody>
+</table>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>conveyor_link.py</code></h4>
+<pre>def open(self):
+    self.ser = serial.Serial(self.port, self.baud, timeout=self.timeout)
+    # เปิดพอร์ตแล้ว Uno จะรีเซ็ตตัวเองเสมอ (สาย DTR ไปดึงขา reset)
+    time.sleep(RESET_WAIT)
+    self.ser.reset_input_buffer()
+
+def command(self, cmd, expect_prefix=None):
+    self.ser.write((cmd + "\n").encode("ascii"))
+    for _ in range(10):
+        reply = self._readline()
+        if not reply.startswith("EVENT"):
+            break
+    if reply.startswith("ERR"):
+        raise ConveyorError(f"Arduino rejected '{cmd}': {reply}")</pre>
+<table>
+<tbody>
+<tr><td>time.sleep(RESET_WAIT)</td><td><b>จุดที่คนพลาดกันมากที่สุดของ Arduino Uno</b> — พอมีโปรแกรมเปิดพอร์ต บอร์ดจะรีบูตตัวเองทันที ถ้าส่งคำสั่งแรกเร็วเกินไป มันจะหายไปกับ bootloader แล้วคุณจะงงว่าทำไมคำสั่งแรกไม่ทำงาน แต่คำสั่งที่สองทำงาน</td></tr>
+<tr><td>ข้าม EVENT</td><td>Arduino ส่ง <code>EVENT OBJECT</code> เองได้ทุกเมื่อ ถ้ามันแทรกเข้ามาตอนเรารอคำตอบ ต้องข้ามไปหาคำตอบจริง ไม่งั้นจะอ่านสลับกันไปทั้งโปรแกรม</td></tr>
+<tr><td>raise เมื่อเจอ ERR</td><td><b>ให้พังเสียงดังดีกว่าทำงานต่อแบบผิด ๆ</b> — หลักการเดียวกับที่ Lab 10 เคยกลืน error ด้วย <code>2&gt;nul</code> แล้วหาสาเหตุไม่เจอ</td></tr>
+<tr><td>close() สั่ง M0 S0</td><td>ปิดโปรแกรมแล้ว<b>ต้องไม่ปล่อยให้มอเตอร์ค้างหมุน</b> — เรื่องความปลอดภัยที่ต้องคิดตั้งแต่ออกแบบ ไม่ใช่มาเติมทีหลัง</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="step"><span class="n">Step 6</span>
+<h3>ต่อ YOLO เข้ากับสายพาน</h3>
+<p>ทดสอบตรรกะทั้งวงด้วยภาพจากโฟลเดอร์ก่อน (ยังไม่ต้องมีของวางบนสายพาน):</p>
+<pre>~/Lab7_RaspberryPi/venv/bin/python conveyor_ai_demo.py \
+    --trigger timer --interval 1 \
+    --source ~/Lab7_RaspberryPi/samples \
+    --sort-class buffalo</pre>
+<figure>
+  <img src="../docs/images/lab9_demo.png" alt="ผลการรันสายพานคัดแยกด้วย YOLO">
+  <figcaption>สังเกตรอบที่ 6 — โมเดลมั่นใจแค่ 0.28 จึง<b>ไม่สั่งคัดแยก</b> แทนที่จะเดาแล้วผลักของผิด</figcaption>
+</figure>
+<table>
+<thead><tr><th>อาร์กิวเมนต์</th><th>ทำไมต้องมี</th></tr></thead>
+<tbody>
+<tr><td><code>--trigger timer</code></td><td>ใช้เวลาแทนสัญญาณเซ็นเซอร์ <b>ทำให้ไล่ดูตรรกะได้ตั้งแต่ยังไม่มีวงจร</b> พอต่อเซ็นเซอร์แล้วเปลี่ยนเป็น <code>sensor</code></td></tr>
+<tr><td><code>--source</code></td><td>ป้อนภาพจากโฟลเดอร์แทนกล้อง ทำให้ผลออกมาเหมือนเดิมทุกครั้ง เอาไว้ยืนยันว่าตรรกะถูก</td></tr>
+<tr><td><code>--sort-class</code></td><td>คลาสที่เจอแล้วให้ดันออก ต้องเป็นชื่อที่โมเดลรู้จักจริง — สคริปต์เตือนให้ถ้าใส่ชื่อที่ไม่มี</td></tr>
+<tr><td><code>--min-conf</code></td><td>เชื่อผลเมื่อมั่นใจเกินค่านี้เท่านั้น <b>กันไม่ให้แขนกลทำงานจากการทายที่ไม่แน่ใจ</b></td></tr>
+</tbody>
+</table>
+<div class="card">
+<h4>📚 ทฤษฎี: ความมั่นใจของโมเดล กับความเสียหายในโลกจริง</h4>
+<p>ใน Lab 5 การทายผิดหนึ่งครั้งแค่ทำให้ตัวเลข mAP ลดลง แต่ใน Lab นี้ การทายผิดหนึ่งครั้งคือ
+<b>แขนกลผลักของดีทิ้ง หรือปล่อยของเสียผ่านไป</b> ราคาของความผิดพลาดไม่เท่ากันแล้ว</p>
+<p>เพราะฉะนั้นการตั้งค่า <code>MIN_CONFIDENCE</code> ไม่ใช่เรื่องเทคนิค แต่เป็น<b>การตัดสินใจเชิงธุรกิจ</b>:</p>
+<table>
+<thead><tr><th>ตั้งค่า</th><th>ผลที่ตามมา</th><th>เหมาะกับงานแบบไหน</th></tr></thead>
+<tbody>
+<tr><td>ต่ำ (0.25)</td><td>จับได้เยอะ แต่ผลักของดีทิ้งบ่อย</td><td>ของเสียหลุดไปแล้วอันตราย เช่น คัดชิ้นส่วนเบรก</td></tr>
+<tr><td>สูง (0.7)</td><td>ผลักของดีทิ้งน้อย แต่ปล่อยของเสียผ่านมากขึ้น</td><td>ของมีราคาแพง ทิ้งผิดแล้วเสียหายหนัก</td></tr>
+</tbody>
+</table>
+<p>นี่คือ <b>operating point</b> ที่พูดถึงใน Lab 5 นั่นเอง — แต่คราวนี้เห็นราคาของมันเป็นของจริงที่จับต้องได้
+ไม่ใช่แค่จุดบนกราฟ</p>
+</div>
+</div>
+
+<div class="step"><span class="n">Step 7</span>
+<h3>ต่อวงจรจริง</h3>
+<div class="warn"><b>ส่วนนี้ยังไม่ได้ทดสอบกับวงจรจริง</b> — ตอนเขียนคู่มือนี้มีแค่บอร์ด Arduino เปล่า ๆ ยังไม่มีมอเตอร์ เซ็นเซอร์ หรือชุดสายพาน
+ทุกอย่างตั้งแต่ Step 1-6 ทดสอบจริงหมดแล้ว แต่ตารางขาด้านล่างเป็น<b>ค่าตั้งต้นที่เลือกไว้</b> ไม่ใช่ค่าที่ยืนยันกับของจริง
+ให้ตรวจกับ datasheet ของอุปกรณ์กลุ่มตัวเองก่อนต่อทุกครั้ง</div>
+<table>
+<thead><tr><th>ขา Arduino</th><th>ต่อกับ</th><th>หมายเหตุ</th></tr></thead>
+<tbody>
+<tr><td><code>D4</code></td><td>L298N IN1</td><td>ทิศทางมอเตอร์</td></tr>
+<tr><td><code>D5</code></td><td>L298N IN2</td><td>ทิศทางมอเตอร์</td></tr>
+<tr><td><code>D9</code></td><td>L298N ENA</td><td><b>ต้องเป็นขา PWM</b> เพราะใช้คุมความเร็ว</td></tr>
+<tr><td><code>D2</code></td><td>เซ็นเซอร์ IR (OUT)</td><td>เลือกขา 2 เพราะรองรับ interrupt ถ้าจะพัฒนาต่อ</td></tr>
+<tr><td><code>D8</code></td><td>รีเลย์ของตัวคัดแยก</td><td></td></tr>
+<tr><td><code>D13</code></td><td>ไฟบนบอร์ด</td><td>สะท้อนสถานะมอเตอร์ ไม่ต้องต่ออะไร</td></tr>
+<tr><td><code>GND</code></td><td>GND ร่วมทุกตัว</td><td><b>ข้อนี้พลาดแล้วหาสาเหตุนานที่สุด</b> — ดูกล่องแดงด้านล่าง</td></tr>
+</tbody>
+</table>
+<div class="danger"><b>อย่าจ่ายไฟมอเตอร์จากขา 5V ของ Arduino</b> — มอเตอร์กินกระแสเกินที่บอร์ดจ่ายได้มาก
+ต้องใช้แหล่งจ่ายแยกเข้าที่ไดรเวอร์ L298N แล้ว<b>ต่อ GND ของทั้งสองแหล่งเข้าด้วยกัน</b>
+ถ้าลืมต่อ GND ร่วม อาการที่ได้คือมอเตอร์กระตุกเป็นพัก ๆ หรือ Arduino รีบูตเอง โดยไม่มี error อะไรให้ดูเลย</div>
+<p>ต่อวงจรเสร็จแล้วเช็คทีละชิ้นก่อนรันทั้งระบบ:</p>
+<pre>python3 test_link.py                # มอเตอร์ต้องหมุนจริงตอนขั้นที่ 3
+python3 test_sensor.py              # เอามือบังหน้าเซ็นเซอร์ ค่าต้องเปลี่ยน
+python3 conveyor_ai_demo.py         # ของจริงทั้งวง ใช้เซ็นเซอร์เป็นตัวสั่งงาน</pre>
+<div class="tip"><b>ถ้าค่าเซ็นเซอร์กลับด้าน</b> (ไม่มีของแต่ขึ้น 1) ให้แก้ <code>SENSOR_ACTIVE_LOW</code>
+ใน <code>arduino/src/main.cpp</code> เป็น <code>false</code> แล้วอัปโหลดใหม่ — แก้ที่เดียวจบ ไม่ต้องไปกลับตรรกะทั้งโปรแกรม</div>
+</div>
+
+<h2>🔧 ปัญหาที่เจอจริงตอนทดสอบ</h2>
+<table>
+<thead><tr><th>อาการ / ข้อความที่ขึ้น</th><th>สาเหตุ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+<td><code>RuntimeError: Cannot determine SOC peripheral base address</code></td>
+<td>ลอง <code>pip install RPi.GPIO</code> แล้วใช้กับ Pi 5 — Pi 5 เปลี่ยนไปใช้ชิป RP1 คุม GPIO ไลบรารีตัวเดิมอ่านที่อยู่ฮาร์ดแวร์แบบเก่าไม่เจอ</td>
+<td>แล็บนี้ไม่ใช้ GPIO ของ Pi แล้ว ถ้าโปรเจคอื่นต้องใช้จริง ให้ลง <code>python3-lgpio</code> จาก apt แล้วสร้าง venv ด้วย <code>--system-site-packages</code> (ลง <code>lgpio</code> ผ่าน pip ตรง ๆ ไม่ได้ ต้องมี <code>swig</code>)</td>
+</tr>
+<tr>
+<td>สคริปต์ค้างไม่มีอะไรออกจอเลยตอนต่อ pipe</td>
+<td>Python พัก output ไว้ในบัฟเฟอร์เมื่อปลายทางไม่ใช่หน้าจอ พอโดนตัดจบก็หายไปทั้งก้อน</td>
+<td>รันด้วย <code>python3 -u</code> เวลาจะเก็บ log</td>
+</tr>
+<tr>
+<td>คำสั่งแรกไม่ทำงาน แต่คำสั่งที่สองทำงาน</td>
+<td>Uno รีเซ็ตตัวเองทุกครั้งที่มีโปรแกรมเปิดพอร์ต คำสั่งแรกเลยหายไปกับ bootloader</td>
+<td>รอราว 2 วินาทีหลังเปิดพอร์ตก่อนส่งคำสั่งแรก (<code>RESET_WAIT</code> ใน <code>config.py</code> ทำให้แล้ว)</td>
+</tr>
+<tr>
+<td>อัปโหลดไม่ได้ ค้างที่ <code>avrdude</code></td>
+<td>มีโปรแกรมอื่นเปิดพอร์ตค้างอยู่ (Serial Monitor หรือสคริปต์เดโม)</td>
+<td>ปิดโปรแกรมนั้นก่อน — <code>upload_arduino.sh</code> เช็คให้แล้วและบอกว่าโปรแกรมไหนถืออยู่</td>
+</tr>
+<tr>
+<td><code>Cannot open /dev/ttyACM0: Permission denied</code></td>
+<td>ผู้ใช้ไม่ได้อยู่ในกลุ่ม <code>dialout</code></td>
+<td><code>sudo usermod -aG dialout $USER</code> แล้ว<b>ออกจากระบบเข้าใหม่</b> (แค่เปิดเทอร์มินัลใหม่ไม่พอ)</td>
+</tr>
+<tr>
+<td>สั่งคัดแยกแล้วไม่มีอะไรเกิดขึ้นเลย</td>
+<td><code>SORT_CLASS</code> เป็นชื่อคลาสที่โมเดลไม่รู้จัก</td>
+<td>สคริปต์เตือนให้ตั้งแต่ตอนเริ่มพร้อมพิมพ์รายชื่อคลาสที่โมเดลรู้จักออกมาให้</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> — Raspberry Pi 5 (Debian 13, Python 3.13.5) + Arduino Uno R3 (<code>2341:0043</code>) ต่อ USB ที่ <code>/dev/ttyACM0</code>,
+PlatformIO Core 6.2.0, pyserial 3.5:
+firmware ใช้ RAM <b>211 จาก 2048 ไบต์ (10.3%)</b> และ Flash <b>5,404 จาก 32,256 ไบต์ (16.8%)</b>
+อัปโหลดครั้งแรก 70 วินาที (รวมโหลด toolchain) ครั้งต่อไป 3.7 วินาที
+คำสั่งทุกตัวในโปรโตคอลตอบกลับถูกต้อง และเดโมทั้งวงรันจบด้วยภาพจริงจากชุด african-wildlife
+โดยตรวจเจอ <code>buffalo</code> ที่ความมั่นใจ 0.75-0.95 และข้ามรอบที่มั่นใจ 0.28 อย่างถูกต้อง
+<b>ยังไม่ได้ทดสอบกับมอเตอร์ เซ็นเซอร์ และชุดสายพานจริง</b> เพราะยังไม่มีอุปกรณ์</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>ระบบสาธิต Sense→Think→Act ทำงานครบวงจรอย่างน้อย 1 รอบ</li>
-<li>เข้าใจการเขียนโปรแกรมควบคุม GPIO ร่วมกับผลลัพธ์ AI</li>
+<li>อัปโหลด firmware ลง Arduino จากบน Pi ได้เอง พร้อมตัวเลข RAM/Flash ที่ใช้</li>
+<li>ผลจาก <code>test_link.py</code> ที่ผ่านครบทุกขั้น</li>
+<li>บันทึกการรันเดโมที่เห็นทั้งรอบที่สั่งคัดแยก และรอบที่ไม่มั่นใจพอจนไม่สั่ง</li>
+<li>อธิบายได้ว่าทำไมต้องแยกงานคุมฮาร์ดแวร์ออกจากเครื่องที่รัน AI</li>
+<li>อธิบายได้ว่าทำไม "ทุกคำสั่งต้องมีคำตอบ" ถึงดีกว่าการใช้ <code>sleep</code> เดาเวลา</li>
+<li>ตอบได้ว่ากลุ่มตัวเองควรตั้ง <code>MIN_CONFIDENCE</code> สูงหรือต่ำ <b>พร้อมเหตุผลจากโจทย์</b> ไม่ใช่ลอกค่าในคู่มือ</li>
 </ul>
 </div>
 
-<nav class="pager"><a href="../Lab8_AIHat/manual.html">&larr; เร่งความเร็วด้วย AI HAT</a><a class="next" href="../Lab10_MiniProject/manual.html">โครงงานย่อย: ระบบคัดแยกวัตถุจริง &rarr;</a></nav>
+<nav class="pager"><a href="../Lab8_AIHat/manual.html">&larr; เร่งความเร็วด้วย AI HAT</a><a class="next" href="../Lab10_MiniProject/manual.html">โครงงานย่อย &rarr;</a></nav>
 <footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
 </div>
 </body>
