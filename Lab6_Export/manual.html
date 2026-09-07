@@ -180,7 +180,7 @@ ms = (time.perf_counter() - t0) / N_RUNS * 1000</pre>
 </table>
 </div>
 
-<div class="tip">ไฟล์ <code>best.onnx</code> ที่ได้ คือไฟล์ที่จะเอาไปใช้ต่อใน <b>Lab 7</b> (Raspberry Pi) — สคริปต์ของ Lab 7 จะไปหยิบจาก <code>runs\detect\full\weights\</code> ให้เอง ไม่ต้องคัดลอกเอง</div>
+<div class="tip">ไฟล์ <code>best.onnx</code> ที่ได้ คือไฟล์ที่จะเอาไปใช้ต่อใน <b>Lab 7</b> (Raspberry Pi) — แต่ Lab 7 รันคนละเครื่อง จึงต้อง<b>โอนไฟล์ข้ามไปเอง</b> ด้วย <code>Lab7_RaspberryPi\scripts\copy_to_pi.bat</code> ซึ่งจะไปหยิบจาก <code>runs\detect\full\weights\</code> ให้อัตโนมัติ</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>

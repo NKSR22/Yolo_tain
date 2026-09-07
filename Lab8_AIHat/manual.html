@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Lab 8: เร่งความเร็วด้วย AI HAT</title>
+<title>Lab 8: เร่งความเร็วด้วย AI HAT (Hailo-8)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 :root{
@@ -50,69 +50,256 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="hero">
-  <span class="badge">LAB 8 · Accelerate</span>
-  <h1>Lab 8: เร่งความเร็วด้วย AI HAT</h1>
-  <div class="meta"><span>⏱ ระยะเวลา: 3-4 ชั่วโมง</span><span>📁 โฟลเดอร์: Lab8_AIHat</span></div>
+  <span class="badge">LAB 8 · NPU</span>
+  <h1>Lab 8: เร่งความเร็วด้วย AI HAT (Hailo-8)</h1>
+  <div class="meta"><span>⏱ ระยะเวลา: 2-3 ชั่วโมง</span><span>📁 โฟลเดอร์: Lab8_AIHat</span></div>
 </header>
 
 <div class="card">
 <h2>🎯 วัตถุประสงค์</h2>
 <ul>
-<li>ติดตั้งและใช้งาน AI HAT (เช่น Raspberry Pi AI HAT+ ที่ใช้ Hailo-8 NPU) เพื่อเร่งความเร็ว Inference</li>
-<li>เปรียบเทียบความเร็วก่อน/หลังใช้ AI HAT</li>
+<li>ติดตั้งและตรวจสอบ <b>Hailo AI HAT</b> บน Raspberry Pi 5 ให้ใช้งานได้</li>
+<li>วัดความเร็วของ NPU แล้วเทียบกับตัวเลข CPU ที่วัดเองไว้ใน Lab 7</li>
+<li>เข้าใจว่า NPU เร็วขึ้นเพราะอะไร และ<b>ต้องแลกกับอะไร</b> ที่คนมักไม่บอก</li>
 </ul>
 </div>
 
-<div class="warn">แล็บนี้รันบน Raspberry Pi OS เช่นเดียวกับ Lab 7 ต้องมีฮาร์ดแวร์ AI HAT ต่อพ่วงอยู่จริง</div>
+<h2>✅ ก่อนเริ่ม</h2>
+<ul>
+<li>ทำ <b>Lab 7</b> จบแล้ว และ<b>จดค่า <code>inference</code> เฉลี่ยบน CPU ไว้</b></li>
+<li>มี Hailo AI HAT (หรือ AI Kit) ประกอบเข้ากับ Pi 5 ผ่านช่อง PCIe เรียบร้อย</li>
+<li>เปิด PCIe บน Pi แล้ว (<code>sudo raspi-config</code> &gt; Advanced Options &gt; PCIe Speed)</li>
+</ul>
+
+<div class="danger"><b>อ่านให้จบก่อนตั้งความคาดหวัง</b> — Lab นี้<b>ไม่ได้</b>เอาโมเดล <code>best.pt</code> ของเราไปรันบนชิป
+เหตุผลอยู่ในหัวข้อทฤษฎีของ Step 2 ซึ่งเป็นบทเรียนสำคัญที่สุดของแล็บนี้</div>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>ติดตั้ง AI HAT บน Raspberry Pi 5</h3>
-<ul>
-<li>ปิดเครื่อง Pi ก่อนเสียบ HAT เข้ากับ GPIO header เสมอ</li>
-<li>ยึดสกรูให้แน่น ต่อสาย PCIe (ถ้ารุ่นต้องต่อแยก) ตามคู่มือของอุปกรณ์</li>
-<li>เปิดเครื่องแล้วตรวจสอบว่า Pi มองเห็นอุปกรณ์: <code>lspci</code> หรือ <code>hailortcli fw-control identify</code></li>
-</ul>
+<h3>ตรวจว่า Pi มองเห็นชิป Hailo</h3>
+<pre>cd ~/Lab8_AIHat/scripts
+chmod +x *.sh
+./setup_hailo.sh</pre>
+<figure>
+  <img src="../docs/images/lab8_setup_hailo.png" alt="ผลการรัน setup_hailo.sh บน Raspberry Pi">
+  <figcaption>บรรทัดที่ต้องเห็นคือ <code>Device Architecture: HAILO8</code> — ถ้าถึงตรงนี้ได้แปลว่าฮาร์ดแวร์พร้อมแล้ว</figcaption>
+</figure>
+<table>
+<thead><tr><th>บรรทัดในผลลัพธ์</th><th>แปลว่าอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>Co-processor: Hailo Technologies Ltd. Hailo-8 AI Processor</code></td><td>ระบบเห็นบอร์ดบนบัส PCIe แล้ว — เป็นด่านแรก ถ้าไม่ผ่านคือปัญหาฮาร์ดแวร์ล้วน ๆ</td></tr>
+<tr><td><code>Firmware Version: 4.23.0</code></td><td>เฟิร์มแวร์บนตัวชิป <b>ต้องเข้ากันได้กับ HailoRT</b> ที่ลงบน Pi ถ้าคนละรุ่นจะฟ้องตอนสั่งรันโมเดล</td></tr>
+<tr><td><b><code>Device Architecture: HAILO8</code></b></td><td><b>ตัวสำคัญที่สุด</b> — บอกว่าเป็นรุ่น <code>HAILO8</code> (26 TOPS) หรือ <code>HAILO8L</code> (13 TOPS) ซึ่ง<b>ใช้ไฟล์โมเดลคนละไฟล์กัน</b></td></tr>
+<tr><td><code>hailo-all is already the newest version</code></td><td>ติดตั้งไว้อยู่แล้ว ถ้าเป็นเครื่องใหม่จะเห็นการดาวน์โหลดแทน และ<b>ต้องรีบูตหนึ่งครั้ง</b>ก่อนใช้งาน</td></tr>
+</tbody>
+</table>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>setup_hailo.sh</code></h4>
+<pre>if lspci | grep -qi hailo; then
+    lspci | grep -i hailo
+else
+    echo "  ไม่พบบอร์ด Hailo บน PCIe"
+    exit 1
+fi
+
+sudo apt-get install -y hailo-all
+
+if hailortcli fw-control identify; then
+    echo "พร้อมใช้งาน"
+else
+    echo "ติดตั้งเสร็จแล้วแต่ยังคุยกับชิปไม่ได้ - ต้องรีบูตก่อน"
+    exit 1
+fi</pre>
+<table>
+<tbody>
+<tr><td>lspci | grep hailo</td><td><b>แยกปัญหาฮาร์ดแวร์ออกจากปัญหาซอฟต์แวร์ตั้งแต่บรรทัดแรก</b> ถ้า PCIe ไม่เห็นบอร์ด การไปติดตั้งซอฟต์แวร์ต่อก็เสียเวลาเปล่า</td></tr>
+<tr><td>hailo-all</td><td>แพ็กเกจรวม ลงให้ครบทั้งไดรเวอร์ PCIe, HailoRT, TAPPAS และไฟล์โมเดลตัวอย่าง ไม่ต้องไล่ลงทีละตัว</td></tr>
+<tr><td>if hailortcli ...</td><td>หลังติดตั้งครั้งแรกไดรเวอร์ยังไม่ถูกโหลด คำสั่งนี้จะล้มเหลว สคริปต์จึง<b>บอกให้รีบูต</b> แทนที่จะจบเงียบ ๆ แล้วปล่อยให้ไปงงเอาเองใน Step ถัดไป</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>ติดตั้ง Driver และ Hailo Software Suite</h3>
-<pre>cd Lab8_AIHat/scripts
-chmod +x setup_hailo.sh
-./setup_hailo.sh</pre>
-<p>สคริปต์นี้ติดตั้ง <code>hailo-all</code> package ตามคำแนะนำของ Raspberry Pi Foundation สำหรับ AI HAT</p>
+<h3>เตรียมโมเดลสำหรับชิป แล้ววัดความเร็ว</h3>
+<pre>./download_sample_hef.sh
+./run_detect_hailo.sh yolov8s</pre>
+<figure>
+  <img src="../docs/images/lab8_download_run.png" alt="ผลการเตรียมไฟล์ hef และวัดความเร็วบน Hailo">
+  <figcaption>YOLOv8s บน Hailo-8 — <b>latency 6.66 ms</b> ได้ <b>309.5 FPS</b></figcaption>
+</figure>
+
+<div class="card">
+<h4>📚 ทฤษฎี: ทำไมถึงเอา <code>best.pt</code> ของเราไปรันไม่ได้</h4>
+<p>ชิป Hailo ไม่ได้รันโมเดลแบบที่ CPU รัน มันรันได้เฉพาะไฟล์ <code>.hef</code>
+(Hailo Executable Format) ซึ่งไม่ใช่แค่ "อีกนามสกุลหนึ่ง" แต่เป็น<b>ผังการเดินข้อมูลที่ถูกวางลงบนตัวชิปแล้ว</b></p>
+<p>ลำดับการแปลงเต็ม ๆ เป็นแบบนี้:</p>
+<pre class="out">best.pt  --(Lab 6)-->  best.onnx  --(Hailo Dataflow Compiler)-->  best.hef
+   PyTorch                มาตรฐานกลาง                  ผังสำหรับชิปตัวนี้โดยเฉพาะ</pre>
+<p>ตัวที่ทำขั้นสุดท้ายคือ <b>Hailo Dataflow Compiler (DFC)</b> ซึ่ง:</p>
+<ul>
+<li>ทำงานได้บน <b>x86 Linux เท่านั้น</b> — คอมไพล์บนตัว Pi (ARM) ไม่ได้</li>
+<li>ต้องมี<b>ชุดภาพสำหรับปรับเทียบ</b> (calibration set) เพราะต้องแปลงน้ำหนักจาก float32 เป็น int8</li>
+<li>ใช้เวลาคอมไพล์เป็นสิบนาทีถึงหลายชั่วโมงต่อโมเดลหนึ่งตัว</li>
+</ul>
+<p>บนตัว Pi มีแค่ <b>HailoRT</b> ซึ่งเป็นตัว "รัน" ไม่ใช่ตัว "แปลง" ตรวจได้เองด้วย:</p>
+<pre class="out">$ hailo --help
+usage: hailo [-h] [--version]
+             {fw-update,fw-control,scan,run,benchmark,monitor,parse-hef,measure-power,...}</pre>
+<p>สังเกตว่าไม่มีคำสั่งอย่าง <code>compile</code> หรือ <code>optimize</code> เลย</p>
+<p><b>Lab นี้จึงวัดความสามารถของฮาร์ดแวร์ด้วยโมเดลมาตรฐานที่คอมไพล์มาแล้ว</b>
+ซึ่งติดมากับแพ็กเกจ <code>hailo-models</code> อยู่ที่ <code>/usr/share/hailo-models/</code></p>
+<div class="warn"><b>นี่คือบทเรียนของแล็บ ไม่ใช่ข้อจำกัดที่น่าเสียดาย</b> — ตัวเร่งความเร็วเฉพาะทางทุกยี่ห้อ
+(Hailo, Coral TPU, Jetson TensorRT, Rockchip NPU) บังคับให้ต้องผ่านตัวคอมไพล์ของตัวเองหมด
+เวลาเลือกฮาร์ดแวร์ให้โครงงาน ต้องถามตั้งแต่ต้นว่า<b>ขั้นตอนแปลงโมเดลต้องใช้อะไรบ้าง</b>
+ไม่ใช่ดูแค่ตัวเลข TOPS บนกล่อง</div>
+</div>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>download_sample_hef.sh</code></h4>
+<pre>ARCH=$(hailortcli fw-control identify \
+       | awk -F': *' '/Device Architecture/{print $2}' | tr -d ' ')
+case "$ARCH" in
+    HAILO8)  SUFFIX=h8  ;;
+    HAILO8L) SUFFIX=h8l ;;
+esac
+
+for name in yolov6n yolov8s; do
+    src="$ZOO/${name}_${SUFFIX}.hef"
+    [ -f "$src" ] &amp;&amp; cp -f "$src" "model/${name}.hef"
+done</pre>
+<table>
+<tbody>
+<tr><td>ARCH=$(...)</td><td><b>ถามตัวชิปเองว่าเป็นรุ่นไหน</b> แทนที่จะให้นักศึกษาเดา — Hailo-8 กับ Hailo-8L ใช้ไฟล์คนละตัว ใส่ผิดจะรันไม่ขึ้นพร้อม error ที่อ่านไม่รู้เรื่อง</td></tr>
+<tr><td>SUFFIX=h8 / h8l</td><td>ชื่อไฟล์ในคลังโมเดลลงท้ายด้วยรหัสรุ่น เช่น <code>yolov8s_h8.hef</code> กับ <code>yolov8s_h8l.hef</code></td></tr>
+<tr><td>$ZOO</td><td><code>/usr/share/hailo-models/</code> ที่แพ็กเกจ <code>hailo-models</code> ลงไว้ให้ — <b>ไม่ต้องต่อเน็ตโหลดใหม่</b> ต่างจากสคริปต์เดิมที่แค่พิมพ์ลิงก์ให้ไปหาเอง</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>แปลงโมเดล ONNX เป็น Hailo (.hef)</h3>
-<p>การแปลงเป็น <code>.hef</code> ต้องใช้ Hailo Dataflow Compiler ซึ่งปกติทำบนเครื่อง PC/Server (Linux) ที่แรงกว่า ไม่ใช่บน Pi โดยตรง — สำหรับแล็บนี้ให้ใช้โมเดลตัวอย่างที่ Hailo Model Zoo เตรียมไว้ก่อน แล้วศึกษาขั้นตอน custom-compile เพิ่มเติมได้ในคู่มือของ Hailo</p>
-<pre>./download_sample_hef.sh</pre>
+<h3>เทียบกับตัวเลข CPU ที่วัดเองใน Lab 7</h3>
+<pre>./run_detect_hailo.sh
+python3 compare_speed.py --cpu 148.7 --hailo 3.18</pre>
+<figure>
+  <img src="../docs/images/lab8_compare.png" alt="เทียบความเร็ว CPU กับ Hailo AI HAT">
+  <figcaption>ใส่ตัวเลขที่<b>วัดเองจากเครื่องตัวเอง</b> ไม่ใช่ลอกจากคู่มือ</figcaption>
+</figure>
+<table>
+<thead><tr><th>โมเดล</th><th>รันบน</th><th>latency</th><th>FPS</th></tr></thead>
+<tbody>
+<tr><td>YOLO11n @640 (ของเรา)</td><td>Pi 5 CPU</td><td>148.7 ms</td><td>6.1</td></tr>
+<tr><td>YOLOv6n @640</td><td><b>Hailo-8</b></td><td><b>3.18 ms</b></td><td><b>586.5</b></td></tr>
+<tr><td>YOLOv8s @640</td><td><b>Hailo-8</b></td><td>6.66 ms</td><td>309.5</td></tr>
+</tbody>
+</table>
+<div class="danger"><b>ตัวเลข "เร็วขึ้น 47 เท่า" นี้เกินจริง ต้องอ่านให้เป็น</b> เพราะสองฝั่งไม่ยุติธรรมกันอยู่ 2 ข้อ:
+<ul>
+<li><b>คนละโมเดล</b> — ฝั่ง CPU รัน YOLO11n ของเรา ส่วนฝั่ง NPU รัน YOLOv6n ที่คอมไพล์มาแล้ว</li>
+<li><b>นับคนละอย่าง</b> — <code>hailortcli benchmark</code> จับเวลาเฉพาะที่อยู่ในชิป ส่วน Lab 7 จับเวลาไปป์ไลน์ที่มี preprocess/postprocess บน CPU อยู่ด้วย</li>
+</ul>
+ตัวเลขที่ซื่อสัตย์กว่าคือ "งานส่วนที่ยกไปให้ NPU ทำ เร็วขึ้นราว 40-50 เท่า"
+แต่<b>ระบบทั้งระบบจะไม่เร็วขึ้นเท่านั้น</b> เพราะงานที่เหลือบน CPU กลายเป็นคอขวดใหม่แทน</div>
+
+<div class="card">
+<h4>📚 ทฤษฎี: กฎของอัมดาห์ล — ทำไมเร่งส่วนเดียวถึงไม่ได้เร็วทั้งระบบ</h4>
+<p>จาก Lab 7 เวลาต่อเฟรมบน CPU แยกได้เป็น 3 ท่อน:</p>
+<table>
+<thead><tr><th>ท่อน</th><th>บน CPU ล้วน</th><th>ถ้ายก inference ไปให้ NPU</th></tr></thead>
+<tbody>
+<tr><td>preprocess</td><td>10.9 ms</td><td>10.9 ms (ยังอยู่บน CPU)</td></tr>
+<tr><td>inference</td><td>148.7 ms</td><td><b>~3.2 ms</b></td></tr>
+<tr><td>postprocess</td><td>4.1 ms</td><td>4.1 ms (ยังอยู่บน CPU)</td></tr>
+<tr><td><b>รวม</b></td><td><b>163.6 ms (6.1 FPS)</b></td><td><b>~18.2 ms (~55 FPS)</b></td></tr>
+</tbody>
+</table>
+<p>เร่งเฉพาะ inference ได้ 47 เท่า แต่ทั้งระบบเร็วขึ้นราว <b>9 เท่า</b> เท่านั้น
+เพราะ 15 ms ที่เหลือบน CPU ไม่ได้หายไปไหน — และตอนนี้มันกลายเป็น<b>ส่วนที่ช้าที่สุด</b>แทน</p>
+<p>นี่คือ <b>กฎของอัมดาห์ล (Amdahl's Law)</b>: เพดานของการเร่งความเร็วถูกกำหนดโดย
+สัดส่วนงานที่<b>เร่งไม่ได้</b> ไม่ใช่โดยว่าเร่งส่วนที่เร่งได้แรงแค่ไหน</p>
+<p>ในระบบจริงจึงต้องยกงานอื่นออกจาก CPU ด้วย เช่นให้ GPU/ISP ของ Pi ย่อภาพให้
+หรือใช้ไปป์ไลน์ของ <code>rpicam-apps</code> ที่ต่อกล้องเข้ากับ Hailo โดยตรงไม่ผ่าน Python</p>
 </div>
 
-<div class="step"><span class="n">Step 4</span>
-<h3>รัน Detection ผ่าน AI HAT</h3>
-<pre>./run_detect_hailo.sh</pre>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>run_detect_hailo.sh</code></h4>
+<pre>hailortcli benchmark "$MODEL" &gt; "$LOG" 2&gt;&amp;1
+
+FPS=$(awk -F'= *' '/FPS +\(hw_only\)/{print $2}' "$LOG")
+LAT=$(awk -F'= *' '/Latency +\(hw\)/{print $2}' "$LOG" | awk '{print $1}')</pre>
+<table>
+<tbody>
+<tr><td>hailortcli benchmark</td><td>ยิงข้อมูลเข้าชิปรัว ๆ แล้ววัด 2 อย่าง: <b>throughput</b> (ทำได้กี่เฟรมต่อวินาที) กับ <b>latency</b> (หนึ่งเฟรมใช้เวลาเท่าไร) — สองค่านี้ไม่ใช่ส่วนกลับของกันและกัน เพราะชิปทำหลายเฟรมซ้อนกันได้</td></tr>
+<tr><td>&gt; "$LOG"</td><td>เก็บลงไฟล์ก่อน เพราะผลดิบมี progress bar เขียนทับกันเป็นร้อยบรรทัด อ่านบนจอไม่ไหว</td></tr>
+<tr><td>awk ... /FPS/</td><td>ดึงเฉพาะบรรทัดสรุปออกมาแสดง<b>ในรูปแบบเดียวกับ Lab 7</b> เพื่อให้วางเทียบกันได้ทันที</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
-<div class="step"><span class="n">Step 5</span>
-<h3>เปรียบเทียบความเร็ว CPU vs AI HAT</h3>
-<pre>python3 compare_speed.py</pre>
-<div class="tip">โดยทั่วไป AI HAT (Hailo-8) จะช่วยให้ inference เร็วขึ้นหลายเท่าตัวเมื่อเทียบกับ CPU ล้วนของ Raspberry Pi โดยเฉพาะกับโมเดลขนาดใหญ่ขึ้น</div>
-</div>
+<h2>🔧 ปัญหาที่เจอจริงตอนทดสอบ</h2>
+<table>
+<thead><tr><th>อาการ / ข้อความที่ขึ้น</th><th>สาเหตุ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+<td><code>ไม่พบบอร์ด Hailo บน PCIe</code> (<code>lspci</code> ไม่เจอ)</td>
+<td>สาย FPC ไม่แน่น เสียบกลับด้าน หรือยังไม่ได้เปิด PCIe</td>
+<td>ปิดเครื่องแล้วเช็คสาย จากนั้นเปิด PCIe ด้วย <code>sudo raspi-config</code> &gt; Advanced Options &gt; PCIe Speed แล้วรีบูต</td>
+</tr>
+<tr>
+<td>ติดตั้ง <code>hailo-all</code> เสร็จแล้วแต่ <code>hailortcli</code> ยังคุยกับชิปไม่ได้</td>
+<td>ไดรเวอร์ PCIe ของ Hailo ยังไม่ถูกโหลดเข้า kernel</td>
+<td><code>sudo reboot</code> หนึ่งครั้ง แล้วรัน <code>./setup_hailo.sh</code> ซ้ำ</td>
+</tr>
+<tr>
+<td>สั่งรัน <code>.hef</code> แล้วไม่ขึ้น หรือ error เรื่อง architecture</td>
+<td>ใช้ไฟล์ของ Hailo-8L บนชิป Hailo-8 (หรือกลับกัน)</td>
+<td>เช็ครุ่นด้วย <code>hailortcli fw-control identify</code> แล้วเลือกไฟล์ให้ตรง — <code>download_sample_hef.sh</code> ทำให้อัตโนมัติแล้ว</td>
+</tr>
+<tr>
+<td><code>[HailoRT CLI] [error] CHECK failed - Power measurement not supported.</code></td>
+<td>บอร์ด AI HAT บางรุ่นไม่มีวงจรวัดกระแสในตัว</td>
+<td>ข้ามการวัดพลังงานไป (ตัดตัวเลือก <code>--measure-power</code> ออก) ถ้าต้องการตัวเลขจริงต้องใช้มิเตอร์วัดที่สาย USB-C ของ Pi</td>
+</tr>
+<tr>
+<td>หาคำสั่งคอมไพล์ <code>.pt</code> เป็น <code>.hef</code> บน Pi ไม่เจอ</td>
+<td>บน Pi มีแค่ HailoRT ซึ่งเป็นตัวรัน ไม่ใช่ตัวคอมไพล์</td>
+<td>ต้องใช้ Hailo Dataflow Compiler บนเครื่อง x86 Linux แยกต่างหาก (ดูทฤษฎีใน Step 2)</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> — Raspberry Pi 5 Model B Rev 1.1 + Hailo-8 บน PCIe (<code>0001:01:00.0</code>),
+<code>hailo-all</code> 5.1.1, HailoRT/เฟิร์มแวร์ 4.23.0, Device Architecture <code>HAILO8</code>:
+<code>yolov6n_h8.hef</code> ได้ <b>586.5 FPS / latency 3.18 ms</b> และ <code>yolov8s_h8.hef</code> ได้ <b>309.5 FPS / latency 6.66 ms</b>
+เทียบกับ CPU ของ Pi เครื่องเดียวกันใน Lab 7 ที่ inference 148.7 ms
+การวัดพลังงานด้วย <code>--measure-power</code> ใช้กับบอร์ดตัวนี้ไม่ได้</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>รัน Detection ผ่าน AI HAT ได้สำเร็จ</li>
-<li>ตารางเปรียบเทียบ FPS ระหว่าง CPU-only (Lab 7) กับ AI HAT</li>
+<li>ผลจาก <code>hailortcli fw-control identify</code> ที่ระบุรุ่นชิปของกลุ่มตัวเอง</li>
+<li>ตัวเลข latency และ FPS ของ NPU ที่วัดเอง</li>
+<li>ตารางเทียบ CPU (Lab 7) กับ NPU (Lab 8) พร้อม<b>ระบุว่าเทียบกันแบบไม่ยุติธรรมตรงไหน</b></li>
+<li>คำนวณด้วยกฎของอัมดาห์ลได้ว่า ถ้ายก inference ไปให้ NPU แล้วทั้งระบบจะได้กี่ FPS</li>
+<li>อธิบายได้ว่าทำไมถึงเอาโมเดลของตัวเองไปรันบนชิปในแล็บนี้ไม่ได้ และต้องใช้อะไรถึงจะทำได้</li>
 </ul>
 </div>
 
-<nav class="pager"><a href="../Lab7_RaspberryPi/manual.html">&larr; รัน YOLO บน Raspberry Pi 5 + Camera</a><a class="next" href="../Lab9_ConveyorGPIO/manual.html">เชื่อม AI เข้ากับ Conveyor + Sensor ผ่าน GPIO &rarr;</a></nav>
+<nav class="pager"><a href="../Lab7_RaspberryPi/manual.html">&larr; รัน YOLO บน Raspberry Pi 5 + Camera</a><a class="next" href="../Lab9_ConveyorGPIO/manual.html">ควบคุมสายพานด้วย GPIO &rarr;</a></nav>
 <footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
 </div>
 </body>

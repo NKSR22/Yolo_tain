@@ -1,0 +1,7 @@
+# สคริปต์ที่รันบน Raspberry Pi (Lab 7-9) ต้องเป็น LF เท่านั้น
+# ถ้าเป็น CRLF bash จะพังทุกบรรทัดด้วย "$'\r': command not found"
+# และ `set -e` จะไม่ทำงาน ทำให้สคริปต์จบด้วย exit 0 ทั้งที่ล้มเหลว
+*.sh text eol=lf
+
+# สคริปต์ที่รันบน Windows ต้องเป็น CRLF ตามเดิม
+*.bat text eol=crlf

@@ -35,12 +35,12 @@
 | Lab 4 TrainTuning | ✅ | ✅ | ✅ | **เสร็จ** — เทรน 2 รอบเทียบกัน |
 | Lab 5 Evaluation | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** — val/test + เทียบสองโมเดล |
 | Lab 6 Export | ✅ | ✅ | ✅ 3 ใบ | **เสร็จ** — export + benchmark 3 แบบ |
-| Lab 7 RaspberryPi | ❌ | ❌ | ❌ | ต้องมีเครื่อง Pi |
-| Lab 8 AIHat | ❌ | ❌ | ❌ | ต้องมี Pi + Hailo AI HAT |
-| Lab 9 ConveyorGPIO | ❌ | ❌ | ❌ | ต้องมี Pi + ชุดสายพาน |
+| Lab 7 RaspberryPi | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** — ทดสอบบน Pi 5 จริง + กล้อง C270 |
+| Lab 8 AIHat | ✅ | ✅ | ✅ 3 ใบ | **เสร็จ** — ทดสอบบน Hailo-8 จริง |
+| Lab 9 ConveyorGPIO | ⚠️ บางส่วน | ❌ | ❌ | แก้บั๊ก GPIO แล้ว แต่ต้องออกแบบใหม่ (ดูข้อ 9) |
 | Lab 10 MiniProject | ❌ | ❌ | ❌ | ทำหลัง Lab 4-6 เสร็จ |
 
-**Lab 0-6 เสร็จครบแล้ว ไม่มีอะไรค้าง** — เหลือ Lab 7-9 ที่ต้องมี Raspberry Pi และ Lab 10 ที่ทำได้หลังจากนั้น
+**Lab 0-8 เสร็จครบแล้ว** — เหลือ Lab 9 ที่ต้องออกแบบใหม่ (ดูข้อ 9) และ Lab 10 ที่ทำหลังจากนั้น
 
 ---
 
@@ -201,7 +201,24 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
    เดิม: — คัดลอกจาก `runs\val\` ตายตัว แต่ถ้ารัน evaluate ซ้ำ
    ผลจะไปอยู่ `val2`, `val3` ทำให้ก๊อปไฟล์เก่า
 
-4. **Lab 7-9 ยังไม่ได้ตรวจเลย** ต้องมีเครื่อง Raspberry Pi (+ Hailo AI HAT, ชุดสายพาน)
+4. ~~**Lab 7-9 ยังไม่ได้ตรวจเลย**~~ **Lab 7-8 ตรวจแล้ว** บน Pi 5 + Hailo-8 ของจริง (2026-09-07)
+   บั๊กที่เจอและแก้แล้ว:
+
+   - **ไฟล์ `.sh` ทุกตัวไปถึง Pi เป็น CRLF** เพราะ `core.autocrlf=true` บน Windows
+     (blob ในรีโปเป็น LF อยู่แล้ว แต่ working tree เป็น CRLF แล้ว `scp` ก็ส่งตามนั้น)
+     bash พังทุกบรรทัด `$'
+': command not found` และ `set -e` ไม่ทำงาน
+     สคริปต์เลย**จบด้วย exit 0 ทั้งที่ไม่ได้ติดตั้งอะไรเลย** → แก้ด้วย `.gitattributes` (`*.sh text eol=lf`)
+   - **`pip install ultralytics` บน Pi ดึง torch รุ่น CUDA** 454 MB + แพ็กเกจ NVIDIA อีก 20 ตัว
+     (cuBLAS/cuDNN/NCCL/triton) ลงเครื่องที่ไม่มี GPU → ต้องใช้ `--index-url .../whl/cpu` (159 MB, NVIDIA 0 ตัว)
+   - **`imgsz=320` ใน `run_detect_pi.sh`/`fps_test.py` ทำให้พังทันที** เพราะ ONNX จาก Lab 6
+     ล็อกขนาดไว้ที่ 640 (`INVALID_ARGUMENT : Got: 320 Expected: 640`) → ถ้าอยากได้ 320 ต้อง export ใหม่
+   - `libopencv-dev` ไม่จำเป็น (ล้อ opencv-python aarch64 มี OpenCV ในตัว)
+   - `fps_test.py` ใช้ path แบบ relative กับ cwd → เปลี่ยนไปใช้ `Path(__file__)`
+   - `download_sample_hef.sh` เดิมแค่พิมพ์ลิงก์ ไม่ได้โหลดอะไร → ให้ก๊อปจาก `/usr/share/hailo-models/`
+     พร้อมเลือกไฟล์ตามรุ่นชิป (h8/h8l) อัตโนมัติ
+   - เพิ่ม `Lab7_RaspberryPi/scripts/copy_to_pi.bat` (เดิมคู่มือให้พิมพ์ `scp` เองด้วย path ที่ผิดอยู่แล้ว)
+   - แก้ Lab 6 ที่เขียนว่า "สคริปต์ Lab 7 จะไปหยิบโมเดลให้เอง" ซึ่งเป็นไปไม่ได้เพราะคนละเครื่อง
 
 ### ภาพที่ยังต้องขอให้ผู้ใช้แคป
 
@@ -325,3 +342,41 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 | 2026-08-30 | Lab 5 ครบ + แก้บั๊ก path ทั้งสาย Lab 5/6/10 | (commit นี้) |
 | 2026-08-30 | Lab 6 export ONNX + benchmark เทียบ .pt/GPU, .pt/CPU, .onnx/CPU | (commit นี้) |
 | 2026-08-30 | เพิ่มทฤษฎีใน Lab 1/2/4/5 (YOLO ทำงานยังไง, NMS, letterbox, transfer learning, loss, augmentation, class imbalance, operating point) | (commit นี้) |
+| 2026-09-07 | Lab 7 ครบ: ทดสอบบน Pi 5 จริง แก้บั๊ก CRLF/torch-CUDA/imgsz + `copy_to_pi.bat` | (commit นี้) |
+| 2026-09-07 | Lab 8 ครบ: ทดสอบบน Hailo-8 จริง เขียน `download_sample_hef.sh` ให้ใช้งานได้จริง | (commit นี้) |
+| 2026-09-07 | Lab 9 แก้บั๊ก GPIO บน Pi 5 (RPi.GPIO ใช้ไม่ได้) + บันทึกว่าต้องออกแบบใหม่ในข้อ 9 | (commit นี้) |
+
+---
+
+## 9. Lab 9 ต้องออกแบบใหม่ (ตัดสินใจ 2026-09-07)
+
+**ข้อเท็จจริงที่เพิ่งรู้จากการทดสอบบนเครื่องจริง:**
+
+1. **`setup_gpio.sh` เดิมทำให้ Lab 9 พังทั้งแล็บบน Pi 5** — สคริปต์ลง `RPi.GPIO` ผ่าน pip
+   ซึ่งใช้กับ Pi 5 ไม่ได้ (Pi 5 เปลี่ยนไปใช้ชิป RP1 คุม GPIO) พังตอนสร้างอุปกรณ์ด้วย
+   `RuntimeError: Cannot determine SOC peripheral base address`
+   **แก้แล้ว** โดยใช้ `python3-gpiozero` + `python3-lgpio` จาก apt แล้วเปิด
+   `include-system-site-packages = true` ใน venv ของ Lab 7 (ได้ `LGPIOFactory` ยืนยันแล้ว)
+   หมายเหตุ: `pip install lgpio` ตรง ๆ ไม่ได้ เพราะต้องคอมไพล์และต้องมี `swig`
+
+2. **`conveyor_ai_demo.py` ยังใช้ path เก่าที่ตกสำรวจตอนแก้ Lab 5/6/10**
+   `"../../Lab6_Export/../Lab4_TrainTuning/runs/exp/weights/best.onnx"` — ยังไม่ได้แก้
+
+3. **`SORT_CLASS = "defect"` ไม่มีอยู่ในชุดข้อมูลไหนของคอร์ส** (african-wildlife / construction-ppe)
+
+**ข้อจำกัดฮาร์ดแวร์ที่เปลี่ยนโจทย์ทั้งหมด (จากผู้ใช้ 2026-09-07):**
+
+> AI HAT เสียบทับหัว GPIO ไปแล้ว ไม่เหลือขาว่าง — แผนคือคุมอุปกรณ์ผ่าน **Arduino Uno ทาง USB** แทน
+
+แปลว่า Lab 9 ที่ออกแบบไว้บน `gpiozero` + ขา GPIO ตรง ๆ **ใช้กับชุดจริงของวิชานี้ไม่ได้**
+
+**ที่ต้องตัดสินใจก่อนลงมือ:**
+
+- เปลี่ยนเป็นสถาปัตยกรรม **Pi (YOLO + ตัดสินใจ) → serial → Arduino (ขับมอเตอร์/อ่านเซ็นเซอร์)**
+  ต้องเขียนเพิ่ม: sketch ฝั่ง Arduino, โปรโตคอลสื่อสาร (ข้อความสั้น ๆ เช่น `M1`/`S1`/`?`),
+  สคริปต์ฝั่ง Pi ด้วย `pyserial`, และคู่มือส่วนต่อวงจร
+- **ยังทดสอบไม่ได้** เพราะยังไม่มี Arduino ต่ออยู่ (`lsusb` ไม่เจอ) และยังไม่มีมอเตอร์/เซ็นเซอร์ต่อ
+- ระหว่างที่ยังไม่มีของ เขียน Lab 9 ให้รันผ่านโหมดจำลองได้ก่อน (`gpiozero` mock pin
+  หรือ serial loopback) เพื่อให้ตรรกะทดสอบได้ แต่**ต้องระบุในคู่มือให้ชัดว่าส่วนไหนยังไม่ได้ยืนยันกับวงจรจริง**
+
+**ห้ามเขียนคู่มือ Lab 9 เหมือนทดสอบแล้ว** จนกว่าจะได้ทดสอบกับ Arduino + ชุดสายพานจริง

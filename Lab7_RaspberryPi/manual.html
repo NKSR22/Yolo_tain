@@ -50,6 +50,14 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 .top-index a{color:#7dbaff;text-decoration:none}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
+figure{margin:18px 0;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:12px}
+figure img{display:block;width:100%;height:auto;border-radius:8px}
+figcaption{color:var(--muted);font-size:13px;margin-top:10px;text-align:center}
+.walk{background:var(--panel2);border:1px solid var(--border);border-left:4px solid var(--accent2);border-radius:8px;padding:14px 18px;margin:16px 0}
+.walk h4{margin:0 0 10px;font-size:15px;color:var(--accent2)}
+.walk table{font-size:13.5px}
+.walk td:first-child{white-space:nowrap;vertical-align:top;color:#7dd3fc;font-family:Consolas,monospace}
+.out{border-left:4px solid var(--muted)}
 </style>
 </head>
 <body>
@@ -63,50 +71,327 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <div class="card">
 <h2>🎯 วัตถุประสงค์</h2>
 <ul>
-<li>ติดตั้งและรันโมเดล YOLO บน Raspberry Pi 5 ร่วมกับกล้อง (Pi Camera / USB Webcam)</li>
-<li>เข้าใจข้อจำกัดของการรัน AI บนอุปกรณ์ Edge</li>
+<li>ย้ายโมเดล <code>best.onnx</code> ที่ทำมาตั้งแต่ Lab 4 ไปรันจริงบน <b>Raspberry Pi 5</b></li>
+<li>วัดด้วยตัวเลขจริงว่า Edge Device ช้ากว่าเครื่องที่เทรนแค่ไหน และช้าตรงไหน</li>
+<li>เรียนรู้การแลกเปลี่ยนที่หลีกเลี่ยงไม่ได้บน Edge — <b>ความเร็วแลกกับความแม่นยำ</b></li>
 </ul>
 </div>
 
-<div class="warn"><b>หมายเหตุสำคัญ:</b> Raspberry Pi ใช้ระบบปฏิบัติการ <b>Raspberry Pi OS (Linux)</b> ไม่ใช่ Windows ดังนั้นสคริปต์ในแล็บนี้เป็น Shell Script (<code>.sh</code>) ที่รันบนตัว Pi โดยตรง — งานเตรียมไฟล์/โมเดล (เช่น Lab 6) ยังคงทำบนเครื่อง Windows ได้ตามปกติ แล้วค่อยโอนไฟล์ไปที่ Pi</p></div>
+<div class="warn"><b>แล็บนี้ไม่ได้รันบน Windows</b> — Raspberry Pi ใช้ Linux สคริปต์จึงเป็น <code>.sh</code> ที่รันบนตัว Pi
+งานเตรียมโมเดล (Lab 6) ยังทำบน Windows เหมือนเดิม แล้วค่อยโอนไฟล์ข้ามมา</div>
+
+<h2>✅ ก่อนเริ่ม</h2>
+<ul>
+<li>ได้ไฟล์ <code>best.onnx</code> จาก <b>Lab 6</b> แล้ว (อยู่ที่ <code>runs\detect\full\weights\</code>)</li>
+<li>Raspberry Pi 5 ติดตั้ง <b>Raspberry Pi OS 64-bit</b> และต่อเน็ตได้</li>
+<li>เปิด SSH บน Pi แล้ว (<code>sudo raspi-config</code> &gt; Interface Options &gt; SSH)</li>
+<li>กล้อง USB หรือ Pi Camera เสียบไว้กับ Pi</li>
+</ul>
+
+<div class="danger"><b>เตรียมพื้นที่และเวลาไว้ให้พอ</b> — ขั้นตอนติดตั้งบน Pi ใช้เวลาราว <b>8 นาที</b> และกินพื้นที่ <b>1.4 GB</b>
+อย่าเพิ่งเริ่มถ้าเหลือเวลาคาบไม่ถึงครึ่งชั่วโมง</div>
 
 <div class="step"><span class="n">Step 1</span>
-<h3>เตรียม Raspberry Pi 5</h3>
-<ul>
-<li>ติดตั้ง Raspberry Pi OS (64-bit) ผ่าน Raspberry Pi Imager (ทำได้จากเครื่อง Windows)</li>
-<li>เชื่อมต่อกล้อง (Pi Camera Module ผ่าน ribbon cable หรือ USB Webcam)</li>
-<li>เปิด SSH หรือต่อจอ/คีย์บอร์ดโดยตรง</li>
-</ul>
+<h3>หาที่อยู่ของ Pi บนเครือข่าย</h3>
+<p>รันบน<b>ตัว Pi</b> (ต่อจอ/คีย์บอร์ด หรือ SSH เข้าไปครั้งแรก):</p>
+<pre>hostname -I
+hostname</pre>
+<pre class="out">192.168.0.34
+mIoT</pre>
+<table>
+<thead><tr><th>สิ่งที่เห็น</th><th>แปลว่า</th></tr></thead>
+<tbody>
+<tr><td><code>192.168.0.34</code></td><td>IP ของ Pi ใช้ต่อ SSH ได้ตรง ๆ แต่<b>เปลี่ยนได้</b>เมื่อรีบูตหรือย้ายเครือข่าย</td></tr>
+<tr><td><code>mIoT</code></td><td>ชื่อเครื่อง ใช้เป็น <code>mIoT.local</code> ได้ (mDNS) <b>นิ่งกว่า IP</b> แนะนำให้ใช้ตัวนี้</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>ทดสอบจากเครื่อง Windows ก่อนไปต่อ</b> — <code>ping mIoT.local</code> ถ้าไม่ตอบให้ใช้ IP แทน</div>
 </div>
 
 <div class="step"><span class="n">Step 2</span>
-<h3>โอนไฟล์จาก Windows ไปยัง Raspberry Pi</h3>
-<p>ใช้โปรแกรม เช่น WinSCP หรือคำสั่ง <code>scp</code> (ถ้าติดตั้ง OpenSSH บน Windows แล้ว):</p>
-<pre>scp Lab6_Export\Lab4_TrainTuning\runs\exp\weights\best.onnx pi@&lt;PI_IP&gt;:~/yolo_pi/model/</pre>
-<p>หรือคัดลอกทั้งโฟลเดอร์ <code>Lab7_RaspberryPi</code> ไปที่ Pi ผ่าน USB Drive / WinSCP ก็ได้</p>
+<h3>โอนโมเดลและสคริปต์ไปยัง Pi</h3>
+<p>รันบน<b>เครื่อง Windows</b> ที่โฟลเดอร์ <code>Lab7_RaspberryPi\scripts</code>:</p>
+<pre>.\copy_to_pi.bat admin@mIoT.local</pre>
+<pre class="out">[1/3] Creating target folders on the Pi
+[2/3] Copying runs\detect\full\weights\best.onnx
+best.onnx                        100%   10MB   5.8MB/s   00:01
+[3/3] Copying the Lab 7 scripts
+setup_pi.sh                      100% 2451     1.5MB/s   00:00
+run_detect_pi.sh                 100%  938     1.1MB/s   00:00
+fps_test.py                      100% 4602     3.2MB/s   00:00
+
+Done. Now SSH into the Pi and run:
+    cd ~/Lab7_RaspberryPi/scripts
+    chmod +x *.sh
+    ./setup_pi.sh</pre>
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>copy_to_pi.bat</code></h4>
+<pre>set MODEL=runs\detect\full\weights\best.onnx
+if not exist "%MODEL%" (
+    echo [ERROR] %MODEL% not found.
+    echo Run Lab6_Export\scripts\export_onnx.bat first.
+)
+
+ssh %TARGET% "mkdir -p ~/Lab7_RaspberryPi/model ~/Lab7_RaspberryPi/scripts"
+scp "%MODEL%" %TARGET%:~/Lab7_RaspberryPi/model/best.onnx</pre>
+<table>
+<tbody>
+<tr><td>if not exist</td><td><b>ตรวจว่ามีโมเดลจริงก่อนจะเริ่มโอน</b> ถ้าข้ามขั้นนี้ไป นักศึกษาที่ยังไม่ได้รัน Lab 6 จะได้ error จาก <code>scp</code> ที่อ่านไม่รู้เรื่อง แทนที่จะรู้ว่าต้องกลับไปทำอะไร</td></tr>
+<tr><td>ssh ... mkdir -p</td><td>สร้างโฟลเดอร์ปลายทางก่อน เพราะ <code>scp</code> ไม่สร้างโฟลเดอร์ให้เอง จะฟ้อง <code>No such file or directory</code> เฉย ๆ</td></tr>
+<tr><td>%TARGET%</td><td>รับ <code>user@host</code> จากบรรทัดคำสั่ง ไม่ hardcode ไว้ เพราะแต่ละกลุ่มใช้ Pi คนละเครื่อง</td></tr>
+</tbody>
+</table>
+</div>
+<div class="warn"><b>ถ้าถูกถามรหัสผ่านทุกครั้งจนรำคาญ</b> ให้ติดตั้ง SSH key ครั้งเดียวจบ — รันบน Windows:
+<pre>ssh-keygen -t ed25519
+type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh admin@mIoT.local "mkdir -p ~/.ssh; cat &gt;&gt; ~/.ssh/authorized_keys"</pre>
+บาง Pi ปิด login ด้วยรหัสผ่านไว้ตั้งแต่แรก กรณีนั้น<b>ต้อง</b>ใส่คีย์จากหน้าจอที่ต่อกับ Pi โดยตรง</div>
 </div>
 
 <div class="step"><span class="n">Step 3</span>
-<h3>ติดตั้ง Environment บน Raspberry Pi (รันบนตัว Pi)</h3>
-<pre>cd Lab7_RaspberryPi/scripts
-chmod +x setup_pi.sh
+<h3>ติดตั้ง environment บน Pi</h3>
+<p>SSH เข้า Pi แล้วรัน:</p>
+<pre>ssh admin@mIoT.local
+cd ~/Lab7_RaspberryPi/scripts
+chmod +x *.sh
 ./setup_pi.sh</pre>
-<p>สคริปต์นี้จะติดตั้ง Python venv, opencv, ultralytics บน Raspberry Pi OS</p>
+<figure>
+  <img src="../docs/images/lab7_setup_pi.png" alt="ผลการรัน setup_pi.sh บน Raspberry Pi">
+  <figcaption>สังเกตบรรทัด <code>torch-2.14.0<b>+cpu</b></code> ขนาด <b>159.3 MB</b> — เครื่องหมาย <code>+cpu</code> คือหลักฐานว่าดึงมาถูก index แล้ว</figcaption>
+</figure>
+<table>
+<thead><tr><th>บรรทัดในผลลัพธ์</th><th>ต้องดูอะไร</th></tr></thead>
+<tbody>
+<tr><td><code>[3/4] ติดตั้ง PyTorch รุ่น CPU</code></td><td>ขั้นที่นานที่สุด โหลด 159 MB ถ้าเน็ตช้าอาจกินเวลาหลายนาที</td></tr>
+<tr><td><code>torch: 2.14.0+cpu</code></td><td><b>ต้องมี <code>+cpu</code> ต่อท้าย</b> ถ้าไม่มีแปลว่าดึงรุ่น CUDA มา ให้ลบ venv แล้วรันใหม่</td></tr>
+<tr><td><code>opencv: 5.0.0</code></td><td>มาจากล้อ <code>opencv-python</code> สำหรับ aarch64 ขนาด 49.8 MB — <b>ไม่ต้องลง <code>libopencv-dev</code></b> ให้เปลืองพื้นที่</td></tr>
+<tr><td><code>model/best.onnx: 10.6 MB</code></td><td>ยืนยันว่าไฟล์จาก Step 2 มาถึงจริง ขนาดต้องตรงกับบนเครื่อง Windows</td></tr>
+<tr><td><code>กล้อง: video0, video1</code></td><td>กล้อง 1 ตัวมักขึ้น 2 device — <code>video0</code> คือภาพ ส่วน <code>video1</code> เป็น metadata</td></tr>
+</tbody>
+</table>
+
+<div class="card">
+<h4>📚 ทฤษฎี: ทำไม <code>pip install ultralytics</code> เฉย ๆ ถึงพัง Pi ได้</h4>
+<p>บนเครื่อง Windows ที่ผ่านมา <code>pip install ultralytics</code> ทำงานได้เลยไม่ต้องคิดอะไร แต่บน Pi
+คำสั่งเดียวกันจะไปดึง <b>torch รุ่นที่ผูกกับ CUDA</b> ลงมา</p>
+<pre class="out">Downloading torch-2.14.0-cp313-cp313-manylinux_2_28_aarch64.whl (454.0 MB)
+Collecting nvidia-cublas==13.1.1.3.*
+Collecting nvidia-cudnn-cu13==9.24.0.43
+Collecting nvidia-nccl-cu13==2.30.7
+Collecting triton</pre>
+<p>สาเหตุคือ PyPI มีล้อ (wheel) ของ torch สำหรับ <code>aarch64</code> อยู่ชุดเดียว และชุดนั้นสร้างมาเพื่อ
+บอร์ด NVIDIA Jetson / GH200 ซึ่งเป็น aarch64 เหมือนกันแต่<b>มี GPU NVIDIA</b> pip แยกไม่ออกว่า
+เครื่องปลายทางเป็น Jetson หรือ Raspberry Pi มันเห็นแค่ว่า "สถาปัตยกรรมตรงกัน" ก็ดึงมาให้</p>
+<p>ผลคือดาวน์โหลดหลาย GB ลง SD card ของ Pi เพื่อไปเก็บไลบรารี CUDA ที่<b>ไม่มีวันได้ใช้</b>
+ทางแก้คือชี้ไป index ที่มีเฉพาะรุ่น CPU:</p>
+<pre>pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu</pre>
+<table>
+<thead><tr><th></th><th>ขนาดล้อ torch</th><th>ไลบรารี NVIDIA ที่พ่วงมา</th></tr></thead>
+<tbody>
+<tr><td>PyPI ปกติ (ผิด)</td><td>454.0 MB</td><td>20 แพ็กเกจ (cuBLAS, cuDNN, NCCL, triton ...)</td></tr>
+<tr><td><b>index รุ่น CPU (ถูก)</b></td><td><b>159.3 MB</b></td><td><b>0 แพ็กเกจ</b></td></tr>
+</tbody>
+</table>
+<p><b>บทเรียนที่ใหญ่กว่านั้น:</b> เวลาย้ายงานลง Edge สิ่งที่พังก่อนโค้ดเสมอคือ<b>ชุดไลบรารี</b>
+เพราะเครื่องปลายทางไม่เหมือนเครื่องที่พัฒนา ทั้งสถาปัตยกรรม CPU ระบบปฏิบัติการ และเวอร์ชัน Python</p>
+</div>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>setup_pi.sh</code></h4>
+<pre>set -euo pipefail
+cd "$(dirname "$0")/.."
+
+python3 -m venv venv
+./venv/bin/pip install torch torchvision \
+    --index-url https://download.pytorch.org/whl/cpu
+./venv/bin/pip install ultralytics opencv-python onnxruntime onnx</pre>
+<table>
+<tbody>
+<tr><td>set -euo pipefail</td><td><b>ให้สคริปต์หยุดทันทีที่คำสั่งไหนล้มเหลว</b> ไม่ใช่ทำต่อไปเงียบ ๆ แล้วจบด้วยข้อความ "เสร็จแล้ว" ทั้งที่ไม่ได้ติดตั้งอะไรเลย</td></tr>
+<tr><td>cd "$(dirname "$0")/.."</td><td>ย้ายไปโฟลเดอร์แม่ของสคริปต์เสมอ ทำให้ <code>venv</code> กับ <code>model</code> ไปอยู่ที่เดียวกันไม่ว่าจะสั่งรันจากที่ไหน</td></tr>
+<tr><td>./venv/bin/pip</td><td>เรียก pip ของ venv ตรง ๆ แทนการ <code>source activate</code> ก่อน — สั้นกว่าและพลาดยากกว่า</td></tr>
+<tr><td>onnx</td><td>ต้องใส่ด้วย ไม่งั้นตอนรันครั้งแรก ultralytics จะแอบติดตั้งให้เอง (ขึ้น <code>AutoUpdate</code>) ซึ่งพังถ้าตอนนั้นไม่มีเน็ต</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
 <div class="step"><span class="n">Step 4</span>
-<h3>รัน Detection แบบ Real-time</h3>
-<pre>./run_detect_pi.sh</pre>
-<p>สคริปต์นี้เปิดกล้องแล้วรัน Detection พร้อมแสดง FPS บนหน้าจอ (กด <code>q</code> เพื่อออก)</p>
+<h3>วัดความเร็วด้วยภาพนิ่ง (ยังไม่ต้องใช้กล้อง)</h3>
+<p>วัดด้วยภาพชุดเดิมทุกครั้ง จะได้ตัวเลขที่เทียบกันได้ ไม่แกว่งตามสิ่งที่กล้องเห็น:</p>
+<pre>cd ~/Lab7_RaspberryPi
+./venv/bin/python scripts/fps_test.py --source samples --frames 30</pre>
+<figure>
+  <img src="../docs/images/lab7_fps_640.png" alt="ผลวัดความเร็วบน Raspberry Pi 5 ที่ขนาดภาพ 640">
+  <figcaption>YOLO11n ONNX ที่ 640×640 บน Pi 5 — <b>inference 148.7 ms</b> ต่อเฟรม ได้ราว <b>6 FPS</b></figcaption>
+</figure>
+<table>
+<thead><tr><th>ค่าที่วัดได้</th><th>คืออะไร</th><th>ทำไมต้องดู</th></tr></thead>
+<tbody>
+<tr><td><code>preprocess 10.9 ms</code></td><td>ย่อภาพ ใส่ letterbox แปลงเป็น tensor</td><td>งานของ CPU ล้วน ๆ ยิ่งภาพเข้าใหญ่ยิ่งนาน</td></tr>
+<tr><td><b><code>inference 148.7 ms</code></b></td><td>เวลาที่โมเดลคิดจริง ๆ</td><td><b>ตัวหลักที่ต้องจด</b> เอาไปเทียบกับ AI HAT ใน Lab 8</td></tr>
+<tr><td><code>postprocess 4.1 ms</code></td><td>ถอดกล่อง ทำ NMS</td><td>เล็กน้อยเมื่อเทียบกับ inference บนเครื่องนี้</td></tr>
+<tr><td><code>FPS (เฉพาะโมเดล) 6.1</code></td><td><code>1000 / 163.6</code></td><td>เพดานทางทฤษฎีถ้าอ่านภาพเข้ามาได้ฟรี</td></tr>
+<tr><td><code>FPS (ทั้งระบบ) 6.2</code></td><td>วัดจากเวลาจริงทั้งวง</td><td><b>ตัวเลขที่ผู้ใช้เห็นจริง</b> รวมเวลาอ่านภาพเข้ามาด้วย</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>เทียบกับ Lab 6:</b> โน้ตบุ๊ก RTX 3050 Ti รัน <code>.onnx</code> บน CPU ได้ 40.4 ms
+ส่วน Pi 5 ใช้ 148.7 ms — <b>ช้ากว่าราว 3.7 เท่า</b> นี่คือราคาของการย้ายลง Edge</div>
+
+<div class="walk">
+<h4>🔍 ในสคริปต์มีอะไร — <code>fps_test.py</code></h4>
+<pre>HERE = Path(__file__).resolve().parent
+DEFAULT_MODEL = HERE.parent / "model" / "best.onnx"
+
+for n, frame in enumerate(frames):
+    results = model(frame, **predict_kwargs)
+    if n &lt; args.warmup:
+        continue                      # ทิ้งรอบอุ่นเครื่อง
+    speed = results[0].speed          # ultralytics วัดมาให้เป็น ms
+    pre.append(speed["preprocess"])
+    inf.append(speed["inference"])
+    post.append(speed["postprocess"])</pre>
+<table>
+<tbody>
+<tr><td>Path(__file__)</td><td><b>อ้างตำแหน่งจากตัวไฟล์สคริปต์ ไม่ใช่ current directory</b> — ถ้าใช้ <code>"../model/best.onnx"</code> ตรง ๆ สคริปต์จะหาโมเดลเจอเฉพาะตอนสั่งรันจากในโฟลเดอร์ <code>scripts</code> เท่านั้น</td></tr>
+<tr><td>args.warmup</td><td>ทิ้ง 5 เฟรมแรก เพราะรอบแรกต้องโหลดโมเดลและจอง buffer ก่อน ช้ากว่าปกติหลายเท่า (หลักการเดียวกับ <code>N_WARMUP</code> ใน Lab 6)</td></tr>
+<tr><td>results[0].speed</td><td>ultralytics จับเวลาแยก 3 ท่อนมาให้แล้ว ไม่ต้องจับเอง ทำให้เห็นว่า<b>ช้าตรงไหน</b> ไม่ใช่แค่ "ช้า"</td></tr>
+<tr><td>--source ../samples</td><td>รับได้ทั้งเลข index กล้องและโฟลเดอร์ภาพ ทำให้<b>วัดผลซ้ำได้เหมือนเดิมทุกครั้ง</b> และทดสอบได้แม้ยังไม่มีกล้อง</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 
-<div class="tip">Raspberry Pi 5 (CPU-only) มักได้ประมาณ 5-15 FPS กับโมเดล YOLO nano ที่ imgsz=320-640 ขึ้นกับความซับซ้อนของโมเดล — ถ้าต้องการเร็วขึ้นอีก ให้ไปต่อที่ Lab 8 (AI HAT)</div>
+<div class="step"><span class="n">Step 5</span>
+<h3>รันกับกล้องจริง</h3>
+<p>วัดด้วยกล้องก่อน (สั่งผ่าน SSH ได้ ไม่ต้องมีหน้าจอ):</p>
+<pre>./venv/bin/python scripts/fps_test.py --source 0 --frames 20</pre>
+<pre class="out">แหล่งภาพ: กล้อง index 0
+Loading /home/admin/Lab7_RaspberryPi/model/best.onnx for ONNX Runtime inference...
+Using ONNX Runtime 1.29.0 with CPUExecutionProvider
+  วัดแล้ว  10 เฟรม | inference ล่าสุด  145.2 ms
+  วัดแล้ว  20 เฟรม | inference ล่าสุด  144.6 ms
+
+====================================================
+  เฟรมที่วัด        : 20 (ทิ้งรอบอุ่นเครื่อง 5)
+  preprocess เฉลี่ย :     9.8 ms
+  inference เฉลี่ย  :   145.6 ms   &lt;-- จดตัวนี้ไปใช้ใน Lab 8
+  postprocess เฉลี่ย:     2.8 ms
+  รวมต่อเฟรม        :   158.2 ms
+====================================================</pre>
+<p>ถ้าอยาก<b>เห็นภาพพร้อมกรอบ</b> ต้องรันที่หน้าจอที่ต่อกับ Pi โดยตรง (ผ่าน SSH เปล่า ๆ เปิดหน้าต่างไม่ได้):</p>
+<pre>./run_detect_pi.sh</pre>
+<div class="tip"><b>ตัวเลขจากกล้องใกล้เคียงกับจากภาพนิ่งมาก</b> (145.6 เทียบกับ 148.7 ms)
+แปลว่าคอขวดอยู่ที่<b>ตัวโมเดล</b> ไม่ใช่ที่กล้อง — ซื้อกล้องแพงขึ้นก็ไม่ช่วย</div>
+</div>
+
+<div class="step"><span class="n">Step 6</span>
+<h3>ทำให้เร็วขึ้น: ลดขนาดภาพเข้า</h3>
+<div class="danger"><b>อย่าเพิ่งลองใส่ <code>imgsz=320</code> ตอนรัน</b> — มันจะพัง ไม่ใช่แค่ไม่มีผล
+ลองดูว่าเกิดอะไรขึ้นก่อน แล้วค่อยอ่านคำอธิบาย</div>
+<pre>./venv/bin/python scripts/fps_test.py --source samples --imgsz 320</pre>
+<figure>
+  <img src="../docs/images/lab7_imgsz_error.png" alt="ONNX Runtime ปฏิเสธขนาดภาพที่ไม่ตรงกับตอน export">
+  <figcaption>ONNX Runtime ปฏิเสธทันที — <code>Got: 320 Expected: 640</code></figcaption>
+</figure>
+<p>เหตุผลอยู่ที่ <b>Lab 6</b> ตอน export เราสั่ง <code>imgsz=640</code> ไฟล์ <code>.onnx</code> จึงถูก
+"เชื่อม" ขนาดภาพเข้าไว้ตายตัวในกราฟการคำนวณแล้ว ต่างจาก <code>.pt</code> ที่ยืดหยุ่นได้ตอนรัน</p>
+<p><b>ทางแก้คือกลับไป export ใหม่ที่ Lab 6</b> — รันบนเครื่อง Windows:</p>
+<pre>yolo export model=runs\detect\full\weights\best.pt format=onnx imgsz=320 simplify=True</pre>
+<p>แล้วโอนไฟล์ไป Pi และวัดใหม่:</p>
+<figure>
+  <img src="../docs/images/lab7_fps_320.png" alt="ผลวัดความเร็วที่ขนาดภาพ 320">
+  <figcaption>ที่ 320×320 — <b>inference 32.4 ms</b> ได้ <b>24.9 FPS</b></figcaption>
+</figure>
+
+<h4>ตารางแลกเปลี่ยน: เร็วขึ้นแลกกับอะไร</h4>
+<table>
+<thead><tr><th>ขนาดภาพเข้า</th><th>inference</th><th>FPS</th><th>mAP50</th><th>mAP50-95</th></tr></thead>
+<tbody>
+<tr><td>640 × 640</td><td>148.7 ms</td><td>6.1</td><td><b>0.9750</b></td><td><b>0.8311</b></td></tr>
+<tr><td><b>320 × 320</b></td><td><b>32.4 ms</b></td><td><b>24.9</b></td><td>0.9471</td><td>0.7795</td></tr>
+<tr><td>ต่างกัน</td><td><b>เร็วขึ้น 4.6 เท่า</b></td><td>+18.8</td><td>−0.028</td><td>−0.052</td></tr>
+</tbody>
+</table>
+<div class="tip"><b>อ่านตารางนี้ให้เป็น</b> — ลดขนาดภาพครึ่งหนึ่ง งานคำนวณลดลงราว 4 เท่า (เพราะเป็นพื้นที่ ไม่ใช่ความยาว)
+ได้ความเร็วมา 4.6 เท่า โดยจ่ายด้วย mAP50 แค่ 2.8 จุด <b>สำหรับงานตรวจจับสัตว์ตัวใหญ่ ๆ นี่คือดีลที่คุ้มมาก</b>
+แต่ถ้าเป็นงานตรวจจับของเล็ก เช่น รอยร้าวหรือชิ้นส่วนอิเล็กทรอนิกส์ การลดขนาดภาพจะทำให้ของหายไปทั้งชิ้น</div>
+
+<div class="card">
+<h4>📚 ทฤษฎี: ทำไม Edge Device ถึงช้า และทำอะไรได้บ้าง</h4>
+<p>GPU ของโน้ตบุ๊กมีหน่วยคูณเมทริกซ์หลายพันตัวทำงานพร้อมกัน ส่วน Pi 5 มีแค่ CPU 4 คอร์
+ที่ต้องแบ่งเวลาไปทำงานอื่นของระบบด้วย งาน convolution ของ YOLO จึงถูกไล่ทำทีละส่วน</p>
+<p>ทางเลือกในการเร่งความเร็วบน Edge เรียงจากง่ายไปยาก:</p>
+<table>
+<thead><tr><th>วิธี</th><th>ได้เท่าไร</th><th>เสียอะไร</th></tr></thead>
+<tbody>
+<tr><td><b>ลดขนาดภาพเข้า</b> (ทำใน Lab นี้)</td><td>4-5 เท่า</td><td>ความแม่นยำลดลงเล็กน้อย ของเล็กหายง่ายขึ้น</td></tr>
+<tr><td>ใช้โมเดลเล็กลง (n → กว่านั้นไม่มีแล้ว)</td><td>ไม่เหลือให้ลด</td><td>YOLO11n เล็กสุดในตระกูลอยู่แล้ว</td></tr>
+<tr><td><b>Quantization</b> (float32 → int8)</td><td>2-4 เท่า</td><td>ต้องมีชุดข้อมูลปรับเทียบ และความแม่นยำลดลง</td></tr>
+<tr><td><b>ใช้ตัวเร่งเฉพาะทาง</b> (NPU)</td><td><b>หลายสิบเท่า</b></td><td>ต้องซื้อฮาร์ดแวร์ และแปลงโมเดลด้วยเครื่องมือเฉพาะ &rarr; <b>Lab 8</b></td></tr>
+</tbody>
+</table>
+<p>สังเกตว่าสองวิธีแรกคือการ<b>ยอมลดคุณภาพงาน</b> ส่วนวิธีสุดท้ายคือการ<b>เปลี่ยนฮาร์ดแวร์</b>
+ซึ่งเป็นเหตุผลที่อุปกรณ์ AI ราคาถูกในตลาดถึงเริ่มมี NPU ติดมาด้วยกันหมด</p>
+</div>
+</div>
+
+<h2>🔧 ปัญหาที่เจอจริงตอนทดสอบ</h2>
+<table>
+<thead><tr><th>อาการ / ข้อความที่ขึ้น</th><th>สาเหตุ</th><th>วิธีแก้</th></tr></thead>
+<tbody>
+<tr>
+<td><code>./setup_pi.sh: line 3: set: -: invalid option</code><br><code>$'\r': command not found</code><br>แล้วสคริปต์บอกว่า "เสร็จแล้ว" ทั้งที่ไม่ได้ทำอะไร</td>
+<td>ไฟล์ <code>.sh</code> ถูกคัดลอกมาจาก Windows แบบที่ยังมีอักขระขึ้นบรรทัดใหม่ของ Windows (CRLF) ติดมาด้วย bash อ่านไม่ออก</td>
+<td>รีโปตั้ง <code>.gitattributes</code> บังคับ <code>*.sh</code> เป็น LF ไว้แล้ว ถ้ายังเจอให้แก้บน Pi ด้วย<br><code>sed -i 's/\r$//' *.sh</code></td>
+</tr>
+<tr>
+<td><code>error: externally-managed-environment</code></td>
+<td>Raspberry Pi OS รุ่นใหม่ห้าม <code>pip install</code> ลงระบบตรง ๆ (PEP 668) เพื่อกันไปทับแพ็กเกจของ apt</td>
+<td>ต้องอยู่ใน venv เสมอ ถ้าเจอ error นี้แปลว่า venv ยังไม่ถูกสร้าง ให้ดูข้อความก่อนหน้าว่า <code>python3 -m venv venv</code> ล้มเหลวเพราะอะไร</td>
+</tr>
+<tr>
+<td><code>INVALID_ARGUMENT : Got invalid dimensions for input: images</code><br><code>index: 2 Got: 320 Expected: 640</code></td>
+<td>สั่ง <code>imgsz</code> ไม่ตรงกับตอน export ONNX ล็อกขนาดภาพไว้ตายตัว</td>
+<td>ไม่ต้องใส่ <code>imgsz</code> ตอนรัน ถ้าอยากได้ขนาดอื่นต้องกลับไป export ใหม่ที่ Lab 6</td>
+</tr>
+<tr>
+<td>ติดตั้งนานผิดปกติ ขึ้น <code>Collecting nvidia-cublas</code>, <code>Collecting triton</code></td>
+<td>pip ดึง torch รุ่น CUDA มาให้ (ดูหัวข้อทฤษฎีใน Step 3)</td>
+<td>กด Ctrl+C หยุด ลบ venv แล้วรัน <code>setup_pi.sh</code> ที่แก้แล้วซึ่งชี้ไป index รุ่น CPU<br>ล้างของที่โหลดค้างด้วย <code>pip cache purge</code></td>
+</tr>
+<tr>
+<td><code>เปิดกล้อง index 0 ไม่ได้</code></td>
+<td>ไม่มีกล้อง หรือระบบมองไม่เห็น</td>
+<td>เช็คด้วย <code>lsusb</code> และ <code>ls /dev/video*</code><br>Pi Camera ใช้ <code>rpicam-hello --list-cameras</code> แทน</td>
+</tr>
+<tr>
+<td><code>requirements: AutoUpdate success</code> ตอนรันครั้งแรก</td>
+<td>ultralytics ติดตั้งแพ็กเกจ <code>onnx</code> ให้เองระหว่างรัน</td>
+<td>ไม่อันตราย แต่จะพังถ้าตอนนั้นไม่มีเน็ต — <code>setup_pi.sh</code> ที่แก้แล้วลง <code>onnx</code> ไว้ตั้งแต่ต้น</td>
+</tr>
+<tr>
+<td>SSH เข้าไม่ได้ ขึ้น <code>Permission denied (publickey)</code></td>
+<td>Pi ปิดการล็อกอินด้วยรหัสผ่านไว้ รับเฉพาะ SSH key</td>
+<td>ต้องเอา public key ไปใส่ที่ <code>~/.ssh/authorized_keys</code> บน Pi จากหน้าจอที่ต่อกับ Pi โดยตรง</td>
+</tr>
+</tbody>
+</table>
+
+<div class="tip"><b>ทดสอบแล้วบนเครื่องจริง</b> — Raspberry Pi 5 Model B Rev 1.1 (RAM 4 GB, Raspberry Pi OS บน Debian 13 trixie, Python 3.13.5, aarch64 4 คอร์)
+กล้อง Logitech C270 ผ่าน USB ที่ <code>/dev/video0</code>:
+<code>setup_pi.sh</code> ใช้เวลา <b>7 นาที 38 วินาที</b> ได้ venv ขนาด <b>1.4 GB</b> —
+โมเดล YOLO11n ONNX ที่ 640 ได้ <b>inference 148.7 ms (6.1 FPS)</b> และที่ 320 ได้ <b>32.4 ms (24.9 FPS)</b>
+ตัวเลข mAP มาจากการ <code>val</code> บน test split ของ african-wildlife (227 ภาพ)</div>
 
 <div class="deliverable">
 <h2>📦 ผลลัพธ์ที่ต้องได้</h2>
 <ul class="checklist">
-<li>Raspberry Pi รัน Detection แบบ real-time ผ่านกล้องได้สำเร็จ</li>
-<li>บันทึกค่า FPS โดยประมาณที่วัดได้</li>
+<li>โมเดลจาก Lab 6 รันบน Raspberry Pi ได้จริง และตรวจจับจากกล้องได้</li>
+<li>ตัวเลข <code>inference</code> เฉลี่ยที่วัดได้เอง (จดไว้ ต้องใช้ต่อใน Lab 8)</li>
+<li>ตารางเทียบ 640 กับ 320 ทั้งความเร็วและ mAP</li>
+<li>อธิบายได้ว่าทำไมสั่ง <code>imgsz=320</code> ตอนรันแล้วถึงพัง แทนที่จะแค่ช้าเท่าเดิม</li>
+<li>อธิบายได้ว่าทำไม <code>pip install ultralytics</code> บน Pi ถึงต้องระวังเรื่อง index ของ torch</li>
 </ul>
 </div>
 
