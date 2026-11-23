@@ -1,4 +1,4 @@
-"""Lab 0 - โหลดของที่ต้องใช้ทั้งคอร์สไว้ล่วงหน้า ให้รันที่บ้านก่อนเข้าคลาส
+"""Lab 0 - โหลดชุดฝึกและเครื่องมือสำหรับ Lab 1-6 ไว้ล่วงหน้า
 
 โหลดครั้งเดียวจบ จะได้ไม่ต้องมานั่งรอดาวน์โหลดพร้อมกันทั้งห้อง
 รันซ้ำได้ ของที่มีอยู่แล้วจะถูกข้าม
@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 DATASETS = [
     ("coco8.yaml", "1 MB", "Lab 1"),
     ("african-wildlife.yaml", "100 MB", "Lab 3-6"),
-    ("construction-ppe.yaml", "178 MB", "Lab 9-10"),
 ]
 WEIGHTS = [("yolo11n.pt", "5 MB", "Lab 1-6")]
 
@@ -66,8 +65,8 @@ def get_labelimg():
 
 def main():
     print("=" * 62)
-    print(" Prefetching everything the course needs (run this before class)")
-    print(" Total download is roughly 300 MB. Re-running is safe.")
+    print(" Prefetching practice assets for Labs 1-6 (run this before class)")
+    print(" Downloads vary depending on what is already cached. Re-running is safe.")
     print("=" * 62)
 
     for name, size, labs in WEIGHTS:

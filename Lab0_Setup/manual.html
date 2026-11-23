@@ -218,7 +218,7 @@ python Lab0_Setup\scripts\check_env.py</pre>
 
 <div class="step"><span class="n">Step 5</span>
 <h3>โหลดของทั้งคอร์สล่วงหน้า — <b>ทำที่บ้านก่อนเข้าคลาส</b></h3>
-<div class="danger"><b>ขั้นตอนนี้สำคัญมาก อย่าข้าม</b> — แล็บถัดไปต้องดาวน์โหลดชุดข้อมูลรวมประมาณ <b>300 MB</b> ถ้ารอไปโหลดพร้อมกันทั้งห้องในคาบ จะเสียเวลาเรียนไปมากโดยไม่จำเป็น</div>
+<div class="danger"><b>แนะนำให้ทำก่อนเข้าคลาส</b> — โหลดชุดฝึกและเครื่องมือของ Lab 1-6 ไว้ล่วงหน้าประมาณ <b>170 MB</b> ถ้ารอโหลดพร้อมกันทั้งห้องในคาบ อาจเสียเวลาเรียน</div>
 <pre>cd Lab0_Setup\scripts
 .\prefetch.bat</pre>
 <p>สคริปต์จะโหลดทุกอย่างที่ใช้ตลอดคอร์สไว้ในเครื่อง แล้วสรุปให้ว่าครบไหม:</p>
@@ -228,15 +228,11 @@ python Lab0_Setup\scripts\check_env.py</pre>
 <tr><td><code>yolo11n.pt</code> โมเดลตั้งต้น</td><td>5 MB</td><td>Lab 1-6</td></tr>
 <tr><td><code>coco8</code> ชุดข้อมูลจิ๋ว</td><td>1 MB</td><td>Lab 1</td></tr>
 <tr><td><code>african-wildlife</code> (buffalo/elephant/rhino/zebra)</td><td>100 MB</td><td>Lab 3-6</td></tr>
-<tr><td><code>construction-ppe</code> (helmet/vest/…)</td><td>178 MB</td><td>Lab 9-10</td></tr>
 <tr><td>ภาพและวิดีโอตัวอย่าง</td><td>2 MB</td><td>Lab 2</td></tr>
 <tr><td><code>labelImg</code> พร้อม patch</td><td>60 MB</td><td>Lab 3</td></tr>
 </tbody>
 </table>
-<figure>
-  <img src="../docs/images/lab0_prefetch.png" alt="ผลการรัน prefetch.bat แสดงรายการที่โหลดครบ 6 รายการ">
-  <figcaption>ผลจริงจากการรัน — ต้องขึ้น <code>6/6 ready</code> และ <code>All set</code> ที่บรรทัดสุดท้าย</figcaption>
-</figure>
+<p>การเก็บภาพและเทรนโมเดลจากสายพานทำใน Lab 9-10 แยกต่างหาก จึงไม่ถูกดาวน์โหลดด้วยสคริปต์นี้</p>
 <div class="tip"><b>รันซ้ำได้ ไม่เสียหาย</b> — ของที่มีอยู่แล้วจะถูกข้าม (ขึ้นว่า <code>[skip]</code> หรือ <code>already applied</code>) ถ้าเน็ตหลุดกลางคันก็รันใหม่ได้เลย มันจะโหลดต่อเฉพาะส่วนที่ยังขาด<br>
 ถ้ามีรายการไหนขึ้น <code>[FAIL]</code> ยังเข้าคลาสได้ ระบบจะโหลดให้เองตอนใช้งานจริง แค่ช้ากว่า</div>
 </div>
