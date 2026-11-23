@@ -32,7 +32,8 @@ def main():
         print(f"  {name:<20} {count:>5} images")
     print(f"  {'total':<20} {sum(counts.values()):>5} images")
     print(f"Wrote {TARGET} ({TARGET.stat().st_size / 1e6:.1f} MB)")
-    print("Upload it to the top level of My Drive, then open Lab 10.")
+    print("Next: hand in this ZIP as your instructor asked.")
+    print("      (For Lab 10, upload it to the top level of My Drive.)")
     if len(counts) < 2:
         print("[WARN] Only one class. YOLO still trains, but it learns nothing to tell apart.")
     if min(counts.values()) < 30:

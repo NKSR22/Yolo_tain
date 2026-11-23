@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คู่มือเก็บภาพจากสายพาน</title>
+<style>
+:root{
+  --bg:#f6f7f9;--panel:#ffffff;--text:#1d2330;--muted:#5d6675;--border:#dde1e8;
+  --accent:#2563eb;--accent-soft:#e8f0fe;--code-bg:#f1f3f6;--term-bg:#14171d;--term-text:#d6dbe3;
+  --warn-bg:#fff7e6;--warn-border:#f5c46b;--warn-text:#6b4700;
+  --danger-bg:#fdecec;--danger-border:#f0a3a3;--danger-text:#7a1d1d;
+  --ok:#15803d;--yellow:#d4a106;--red:#dc2626;--green:#16a34a;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115;--panel:#171a21;--text:#e8eaed;--muted:#9aa4b2;--border:#2a2f3a;
+    --accent:#7aa2ff;--accent-soft:#1b2540;--code-bg:#1d212a;--term-bg:#0b0d11;--term-text:#d6dbe3;
+    --warn-bg:#2a1f0f;--warn-border:#6b5214;--warn-text:#fde68a;
+    --danger-bg:#2b1414;--danger-border:#6b2a2a;--danger-text:#fecaca;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Leelawadee UI","Sarabun","Segoe UI",Tahoma,sans-serif;line-height:1.75;font-size:16.5px}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 80px}
+header{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:18px}
+header small{color:var(--accent);font-weight:600;letter-spacing:.04em}
+h1{font-size:28px;margin:4px 0 6px;line-height:1.35}
+header p{margin:0;color:var(--muted)}
+nav.toc{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 22px;margin-bottom:18px}
+nav.toc ol{margin:6px 0 0;padding-left:22px;columns:2;column-gap:28px}
+nav.toc a{color:var(--accent);text-decoration:none}
+section{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:6px 24px 18px;margin:18px 0}
+h2{font-size:21px;margin:18px 0 8px;display:flex;gap:10px;align-items:center}
+h2 .n{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:15px;flex:none}
+h3{font-size:17px;margin:18px 0 4px}
+li{margin:5px 0}
+code{font-family:Consolas,"Cascadia Mono",monospace;background:var(--code-bg);padding:1px 6px;border-radius:5px;font-size:.92em}
+pre{font-family:Consolas,"Cascadia Mono",monospace;background:var(--term-bg);color:var(--term-text);
+  padding:14px 16px;border-radius:10px;overflow-x:auto;font-size:13.5px;line-height:1.55}
+.key{display:inline-block;border:1px solid var(--border);border-bottom-width:3px;border-radius:6px;padding:0 8px;
+  background:var(--code-bg);font-weight:600;font-size:.92em}
+.btn{display:inline-block;border:1px solid var(--border);border-radius:6px;padding:0 8px;background:var(--code-bg);
+  font-weight:600;font-size:.92em;white-space:nowrap}
+.note,.warn,.danger{border-radius:10px;padding:12px 16px;margin:14px 0;border:1px solid}
+.note{background:var(--accent-soft);border-color:var(--accent)}
+.warn{background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text)}
+.danger{background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-text)}
+figure{margin:16px 0}
+figure img{width:100%;height:auto;border:1px solid var(--border);border-radius:10px;display:block}
+figcaption{color:var(--muted);font-size:14px;margin-top:6px}
+table{border-collapse:collapse;width:100%;margin:10px 0;font-size:15.5px}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--code-bg)}
+.swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:2px solid}
+.check li{list-style:none;margin-left:-20px}
+.check li::before{content:"☐ ";color:var(--accent);font-weight:700}
+.tree{background:var(--code-bg);color:var(--text)}
+footer{text-align:center;color:var(--muted);font-size:13px;margin-top:30px}
+@media (max-width:640px){nav.toc ol{columns:1}h1{font-size:23px}section{padding:4px 16px 14px}}
+@media print{body{background:#fff}section,header,nav.toc{break-inside:avoid-page}pre{white-space:pre-wrap}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <small>CONVEYOR IMAGE CAPTURE</small>
+  <h1>คู่มือติดตั้งและเก็บภาพวัตถุจากสายพาน</h1>
+  <p>โปรแกรมดูภาพจากเว็บแคม แล้วถ่ายภาพวัตถุ<b>ชิ้นละ 1 ภาพ</b>ให้เองเมื่อวัตถุวิ่งมาถึงกลางกรอบ ภาพที่ได้จะใช้ทำชุดข้อมูลเทรน YOLO ต่อไป</p>
+</header>
+
+<nav class="toc">
+<b>สารบัญ</b>
+<ol>
+  <li><a href="#need">สิ่งที่ต้องมี</a></li>
+  <li><a href="#python">ติดตั้ง Python</a></li>
+  <li><a href="#extract">แตกไฟล์ ZIP</a></li>
+  <li><a href="#start">เปิดโปรแกรมครั้งแรก</a></li>
+  <li><a href="#camera">จัดกล้อง</a></li>
+  <li><a href="#capture">เก็บภาพ</a></li>
+  <li><a href="#quality">เก็บให้ได้ชุดข้อมูลที่ดี</a></li>
+  <li><a href="#submit">ตรวจภาพและส่งงาน</a></li>
+  <li><a href="#trouble">แก้ปัญหา</a></li>
+</ol>
+</nav>
+
+<section id="need">
+<h2><span class="n">1</span>สิ่งที่ต้องมี</h2>
+<table>
+<tr><th>รายการ</th><th>รายละเอียด</th></tr>
+<tr><td>คอมพิวเตอร์</td><td>Windows 10 หรือ 11 · พื้นที่ว่างประมาณ 300 MB</td></tr>
+<tr><td>Python</td><td>เวอร์ชัน 3.9 ขึ้นไป (แนะนำ 3.12 หรือ 3.13) จาก python.org · ดูขั้นที่ 2</td></tr>
+<tr><td>กล้อง</td><td>เว็บแคม USB (กล้องในตัวโน้ตบุ๊กใช้ได้ แต่ยึดให้มองสายพานได้ยาก)</td></tr>
+<tr><td>อินเทอร์เน็ต</td><td>ต้องใช้<b>ตอนเปิดโปรแกรมครั้งแรกเท่านั้น</b> (ดาวน์โหลดประมาณ 70 MB) ครั้งต่อไปใช้แบบออฟไลน์ได้</td></tr>
+</table>
+<p>สายพานในแล็บเปิดและกลับทิศด้วยสวิตช์ของตัวเครื่องเอง โปรแกรมนี้<b>ไม่ได้ควบคุมสายพาน</b> แค่ดูภาพจากกล้องอย่างเดียว</p>
+</section>
+
+<section id="python">
+<h2><span class="n">2</span>ติดตั้ง Python (ข้ามได้ถ้ามีแล้ว)</h2>
+<h3>เช็กก่อนว่ามีหรือยัง</h3>
+<p>กดปุ่ม <span class="key">Windows</span> พิมพ์ <code>cmd</code> แล้วกด <span class="key">Enter</span> จากนั้นพิมพ์:</p>
+<pre>py --version</pre>
+<p>ถ้าขึ้น <code>Python 3.9</code> หรือใหม่กว่า ข้ามไป<a href="#extract">ขั้นที่ 3</a> ได้เลย ถ้าขึ้นว่าไม่รู้จักคำสั่ง ให้ติดตั้งตามนี้:</p>
+<ol>
+  <li>เข้า <code>https://www.python.org/downloads/</code> กดปุ่ม <span class="btn">Download Python 3.x.x</span></li>
+  <li>เปิดไฟล์ที่โหลดมา <b>ติ๊กช่อง <code>Add python.exe to PATH</code></b> ที่ด้านล่างของหน้าต่างก่อน</li>
+  <li>กด <span class="btn">Install Now</span> รอจนขึ้น <code>Setup was successful</code> แล้วกด Close</li>
+</ol>
+<div class="note">ใช้แบบ <b>Install Now</b> ได้เลย ตัวติดตั้งปกติมี tcl/tk (ใช้วาดหน้าต่างโปรแกรม) มาให้แล้ว ถ้าเลือก Customize อย่าเอาติ๊ก <code>tcl/tk and IDLE</code> ออก</div>
+</section>
+
+<section id="extract">
+<h2><span class="n">3</span>แตกไฟล์ ZIP</h2>
+<ol>
+  <li>คลิกขวาที่ <code>ConveyorCapture_Student.zip</code> → <span class="btn">Extract All…</span> (แตกไฟล์ทั้งหมด) → <span class="btn">Extract</span></li>
+  <li>ย้ายโฟลเดอร์ <code>ConveyorCapture</code> ไปไว้ในที่ที่หาง่าย เช่น <code>Documents</code> หรือ <code>C:\ConveyorCapture</code></li>
+</ol>
+<div class="danger"><b>ห้ามดับเบิลคลิกเปิดไฟล์จากใน ZIP โดยตรง</b> Windows จะแตกออกมาแค่ไฟล์ที่คลิกไปไว้ในโฟลเดอร์ชั่วคราว ไฟล์อื่นในชุดไม่ถูกแตกตามมา โปรแกรมจึงทำงานไม่ได้ ต้องแตกไฟล์ทั้งชุดออกมาก่อน</div>
+<p>ข้างในจะมีไฟล์ดังนี้:</p>
+<pre class="tree">ConveyorCapture\
+├── Manual.html          คู่มือนี้
+├── START_CAPTURE.bat    ← ดับเบิลคลิกเพื่อเปิดโปรแกรม
+├── MAKE_ZIP.bat         ← ดับเบิลคลิกเพื่อรวมภาพเป็น ZIP ตอนส่งงาน
+└── app\                 ตัวโปรแกรม (ไม่ต้องแตะ)</pre>
+<p>หลังใช้งานจะมีโฟลเดอร์ <code>.venv</code> (ตัวโปรแกรมที่ติดตั้งแล้ว) และ <code>captured_images</code> (ภาพที่เก็บ) เพิ่มขึ้นมา</p>
+</section>
+
+<section id="start">
+<h2><span class="n">4</span>เปิดโปรแกรมครั้งแรก</h2>
+<p>ต่อเว็บแคมก่อน แล้วดับเบิลคลิก <code>START_CAPTURE.bat</code></p>
+<div class="warn"><b>ถ้าขึ้นหน้าต่างสีน้ำเงิน “Windows protected your PC”</b> ให้กด <span class="btn">More info</span> แล้วกด <span class="btn">Run anyway</span> เป็นเพราะไฟล์มาจากอินเทอร์เน็ต Windows เลยถามก่อนรันครั้งแรก</div>
+<p>ครั้งแรกจะมีหน้าต่างสีดำขึ้นมาติดตั้งเองประมาณ 1–3 นาที ต้องต่ออินเทอร์เน็ต <b>อย่าปิดหน้าต่างนี้</b> จะเห็นประมาณนี้:</p>
+<pre>============================================================
+ First run: setting up (needs internet, about 1-3 minutes)
+============================================================
+Using: python
+Installing opencv-python and Pillow ...
+Collecting opencv-python (from -r app\requirements.txt (line 1))
+  ...
+Successfully installed Pillow-13.0.0 numpy-2.5.5 opencv-python-5.1.0.95
+Starting Conveyor Image Capture ...</pre>
+<p>เลขเวอร์ชันในเครื่องของคุณอาจต่างจากนี้ได้ บรรทัดที่ต้องเห็นคือ <code>Successfully installed</code> ตามด้วย <code>Starting Conveyor Image Capture</code> จากนั้นหน้าต่างโปรแกรมจะเปิดขึ้น ครั้งต่อไปจะเปิดทันทีโดยไม่ติดตั้งซ้ำ</p>
+<p>หน้าต่างสีดำจะเปิดค้างไว้ตลอดที่ใช้โปรแกรม ถ้าเกิดข้อผิดพลาด ข้อความจะขึ้นที่หน้าต่างนี้ ปิดหน้าต่างสีดำได้เมื่อเลิกใช้งานแล้ว</p>
+</section>
+
+<section id="camera">
+<h2><span class="n">5</span>จัดกล้อง</h2>
+<ul>
+  <li><b>ยึดกล้องให้นิ่งสนิท</b> โปรแกรมรู้ว่ามีวัตถุจากการเทียบกับภาพสายพานเปล่า ถ้ากล้องขยับ ทั้งภาพจะดูเหมือนมีของเคลื่อนไหว</li>
+  <li>หันกล้องให้สายพานวิ่ง<b>ซ้าย ↔ ขวา</b>ในภาพ และให้สายพานพาดเต็มความกว้างของภาพ</li>
+  <li>ใช้มุมกล้องเดียวกับที่จะใช้ตอนนำโมเดลไปรันจริง ภาพตอนเทรนกับตอนใช้งานยิ่งเหมือนกัน โมเดลยิ่งแม่น</li>
+  <li>แสงต้องคงที่ ไม่มีแดดส่องที่เปลี่ยนไปเรื่อย ๆ และไม่มีเงาคนเดินผ่านบนสายพาน</li>
+</ul>
+</section>
+
+<section id="capture">
+<h2><span class="n">6</span>เก็บภาพ</h2>
+
+<h3>6.1 เปิดกล้อง</h3>
+<p>กด <span class="btn">Open camera</span> ภาพจากกล้องจะขึ้นกลางหน้าต่าง ถ้าเปิดได้กล้องผิดตัว (เช่น กล้องหน้าของโน้ตบุ๊ก) ให้เปลี่ยน <b>Camera index</b> เป็น 1 หรือ 2 แล้วกด Open camera ใหม่</p>
+<figure>
+  <img src="images/gui_open.jpg" alt="หน้าต่างโปรแกรมหลังกด Open camera เห็นสายพานกลางภาพ">
+  <figcaption>รูปที่ 1 · หลังกด Open camera (ภาพในคู่มือใช้สายพานจำลอง ของจริงจะเป็นภาพจากกล้องของคุณ)</figcaption>
+</figure>
+
+<h3>6.2 วาดกรอบ ตั้งชื่อคลาส และเริ่ม</h3>
+<ol>
+  <li>กด <span class="btn">Draw capture area</span> แล้ว<b>ลากเมาส์</b>บนภาพให้เป็นกรอบ<b>คร่อมสายพาน</b>ตรงกลางภาพ กรอบควรกว้างกว่าวัตถุชิ้นใหญ่ที่สุดพอสมควร</li>
+  <li>พิมพ์ชื่อวัตถุในช่อง <b>Class name</b> เป็น<b>ภาษาอังกฤษ</b> เช่น <code>bottle</code>, <code>can</code>, <code>red_cap</code> (ใช้ได้เฉพาะ A–Z, a–z, 0–9, <code>_</code> และ <code>-</code> ห้ามเว้นวรรค ห้ามภาษาไทย)</li>
+  <li><b>เปิดสวิตช์สายพาน</b> ให้วิ่งเปล่า ๆ ไม่มีของอยู่ในกรอบ</li>
+  <li>กด <span class="btn">Start auto capture</span> กรอบจะเป็น<b>สีเหลือง</b> และแถบล่างขึ้น <code>Learning the belt: …/45 frames</code> โปรแกรมกำลังจำหน้าตาสายพานเปล่า ใช้เวลา 2–3 วินาที <b>ห้ามมีวัตถุในกรอบช่วงนี้</b></li>
+</ol>
+<figure>
+  <img src="images/gui_learning.jpg" alt="กรอบสีเหลืองคร่อมสายพาน แถบสถานะขึ้น Learning the belt">
+  <figcaption>รูปที่ 2 · กรอบสีเหลือง: กำลังจำสายพานเปล่า รอให้ครบ 45 frames</figcaption>
+</figure>
+
+<h3>6.3 วางวัตถุ</h3>
+<p>เมื่อแถบล่างเปลี่ยนเป็น <code>Auto capture: motion 0.0% … waiting for an object</code> ให้วางวัตถุบนสายพาน<b>ทีละชิ้น</b> ด้านใดก็ได้ เมื่อวัตถุวิ่งมาถึงกลางกรอบ กรอบจะเป็น<b>สีแดง</b>และบันทึกภาพ 1 ใบ บรรทัดล่างสุดนับจำนวนภาพต่อคลาสให้</p>
+<figure>
+  <img src="images/gui_capture.jpg" alt="กรอบสีแดงเมื่อวัตถุอยู่กลางกรอบ แถบล่างขึ้น Saved this session: bottle 2">
+  <figcaption>รูปที่ 3 · กรอบสีแดง: วัตถุอยู่กลางกรอบ บันทึกภาพแล้ว (ชิ้นที่ 2 ของคลาส bottle)</figcaption>
+</figure>
+<p>ภาพที่บันทึกเป็นภาพ<b>เต็มเฟรม</b>จากกล้อง ไม่ได้ตัดเฉพาะในกรอบ:</p>
+<figure>
+  <img src="images/saved_photo.jpg" alt="ภาพเต็มเฟรมที่บันทึกได้ มีวัตถุอยู่บนสายพาน" style="max-width:480px">
+  <figcaption>รูปที่ 4 · ไฟล์ภาพที่ได้ใน <code>captured_images\bottle\</code></figcaption>
+</figure>
+
+<table>
+<tr><th>สีกรอบ</th><th>ความหมาย</th></tr>
+<tr><td><span class="swatch" style="border-color:var(--green)"></span>เขียว</td><td>วาดกรอบแล้ว ยังไม่ได้กด Start auto capture</td></tr>
+<tr><td><span class="swatch" style="border-color:var(--yellow)"></span>เหลือง</td><td>กำลังจำสายพานเปล่า หรือรอวัตถุชิ้นถัดไป</td></tr>
+<tr><td><span class="swatch" style="border-color:var(--red)"></span>แดง</td><td>มีวัตถุอยู่กลางกรอบ (ถ่ายไปแล้ว 1 ภาพ จะไม่ถ่ายซ้ำจนกว่าชิ้นนี้จะออกไป)</td></tr>
+</table>
+
+<h3>6.4 เปลี่ยนไปเก็บวัตถุชนิดอื่น</h3>
+<p>กด <span class="btn">Stop auto capture</span> → แก้ <b>Class name</b> → กด <span class="btn">Start auto capture</span> ใหม่ ภาพของแต่ละคลาสจะแยกโฟลเดอร์ให้เอง</p>
+
+<h3>ปุ่มและค่าอื่น ๆ</h3>
+<table>
+<tr><th>ปุ่ม/ค่า</th><th>ใช้ทำอะไร</th></tr>
+<tr><td><span class="btn">Capture now (Space)</span></td><td>ถ่ายภาพทันที 1 ใบโดยไม่รอ ใช้เก็บท่าที่ auto พลาด หรือกด <span class="key">Space</span> แทนก็ได้ (คลิกบนภาพก่อน ไม่ให้เคอร์เซอร์อยู่ในช่องพิมพ์)</td></tr>
+<tr><td>Motion threshold %</td><td>วัตถุต้องกินพื้นที่ในกรอบอย่างน้อยกี่ % จึงนับว่ามีของ ค่าเริ่มต้น 2.0 ดูวิธีปรับใน<a href="#trouble">ขั้นที่ 9</a></td></tr>
+<tr><td>Save under / Browse</td><td>โฟลเดอร์ที่เก็บภาพ ค่าเริ่มต้นคือ <code>captured_images</code> ในโฟลเดอร์โปรแกรม <b>ไม่ต้องเปลี่ยน</b> เพราะ MAKE_ZIP.bat จะหาภาพจากที่นี่</td></tr>
+</table>
+<div class="danger"><b>ความปลอดภัย:</b> ระวังมือ ผม สายคล้องคอ และแขนเสื้อเข้าใกล้สายพานที่กำลังวิ่ง ปิดสายพานด้วยสวิตช์ของเครื่อง โปรแกรมนี้สั่งหยุดสายพานไม่ได้</div>
+</section>
+
+<section id="quality">
+<h2><span class="n">7</span>เก็บให้ได้ชุดข้อมูลที่ดี</h2>
+<p>โมเดลจะเก่งได้เท่าที่ภาพสอนมันเท่านั้น ใช้รายการนี้เช็กก่อนส่ง:</p>
+<ul class="check">
+  <li>อย่างน้อย <b>50 ภาพต่อคลาส</b></li>
+  <li>ใช้วัตถุ<b>หลายชิ้น</b>ต่อคลาส ไม่ใช่ชิ้นเดียววนซ้ำ 50 รอบ</li>
+  <li>วางหลาย<b>ตำแหน่ง</b>: ชิดขอบบน กลาง ชิดขอบล่างของสายพาน</li>
+  <li>วางหลาย<b>ท่า</b>: หมุน ตะแคง หงาย คว่ำ</li>
+  <li><b>กลับทิศสายพาน</b>ด้วยสวิตช์ แล้วเก็บอีกชุด (ไม่ต้องตั้งค่าอะไรในโปรแกรม)</li>
+  <li>แต่ละคลาสมีจำนวนภาพใกล้เคียงกัน</li>
+</ul>
+</section>
+
+<section id="submit">
+<h2><span class="n">8</span>ตรวจภาพและส่งงาน</h2>
+<h3>8.1 ตรวจภาพ</h3>
+<p>ปิดโปรแกรม แล้วเปิดโฟลเดอร์ <code>captured_images</code> จะเห็นโฟลเดอร์ย่อยตามชื่อคลาส เปิดดูแล้ว<b>ลบภาพเหล่านี้ทิ้ง</b>:</p>
+<ul>
+  <li>ภาพเบลอ หรือภาพที่วัตถุตกขอบออกไปครึ่งหนึ่ง</li>
+  <li>ภาพที่ไม่มีวัตถุ หรือมีมือคนอยู่ในภาพ</li>
+  <li>ภาพที่อยู่ผิดโฟลเดอร์ (เช่น ขวดไปอยู่ใน <code>can</code>) ย้ายไปโฟลเดอร์ที่ถูก</li>
+</ul>
+
+<h3>8.2 รวมเป็น ZIP</h3>
+<p>ดับเบิลคลิก <code>MAKE_ZIP.bat</code> จะได้ไฟล์ <code>conveyor_images.zip</code> ในโฟลเดอร์โปรแกรม หน้าจอจะสรุปจำนวนภาพแบบนี้:</p>
+<pre>  bottle                  62 images
+  can                     55 images
+  total                  117 images
+Wrote C:\...\ConveyorCapture\conveyor_images.zip (9.8 MB)
+Next: hand in this ZIP as your instructor asked.
+      (For Lab 10, upload it to the top level of My Drive.)</pre>
+<p>ตัวเลขข้างบนเป็นตัวอย่าง ของจริงจะเป็นจำนวนภาพของคุณ ถ้าขึ้น <code>[WARN]</code> แปลว่ายังมีบางอย่างไม่ครบ:</p>
+<table>
+<tr><th>ข้อความ</th><th>ความหมาย</th></tr>
+<tr><td><code>[WARN] Only one class.</code></td><td>มีวัตถุชนิดเดียว โมเดลต้องมีอย่างน้อย 2 คลาสจึงจะเรียนรู้ความต่างได้</td></tr>
+<tr><td><code>[WARN] A class has fewer than 30 images.</code></td><td>มีคลาสที่ภาพน้อยเกินไป ให้เก็บเพิ่มให้ได้ 50 ภาพขึ้นไป</td></tr>
+<tr><td><code>[ERROR] No images found</code></td><td>ยังไม่มีภาพใน <code>captured_images</code> หรือเปลี่ยน Save under ไปที่อื่น</td></tr>
+</table>
+
+<h3>8.3 ส่งงาน</h3>
+<div class="note">ส่งไฟล์ <code>conveyor_images.zip</code> ตามช่องทางที่ผู้สอนกำหนด<br>
+ถ้าจะนำไปเทรนเองใน Lab 10 ให้อัปโหลดไฟล์นี้ไว้ที่ชั้นบนสุดของ Google Drive (My Drive) โดยไม่เปลี่ยนชื่อไฟล์</div>
+</section>
+
+<section id="trouble">
+<h2><span class="n">9</span>แก้ปัญหา</h2>
+<table>
+<tr><th>อาการ</th><th>สาเหตุและวิธีแก้</th></tr>
+<tr><td>หน้าต่างดำขึ้นแล้วหายไปทันที หรือขึ้น <code>No working Python 3.9+ with tcl/tk was found</code></td><td>ยังไม่ได้ติดตั้ง Python หรือติดตั้งไม่สมบูรณ์ ทำ<a href="#python">ขั้นที่ 2</a> ใหม่ ถ้าติดตั้งแล้วยังขึ้น ให้ถอน Python ออกจาก Settings → Apps แล้วติดตั้งใหม่แบบ Install Now</td></tr>
+<tr><td><code>Installation failed</code></td><td>อินเทอร์เน็ตหลุดระหว่างดาวน์โหลด ต่อเน็ตแล้วดับเบิลคลิก START_CAPTURE.bat ใหม่ จะติดตั้งต่อให้</td></tr>
+<tr><td><code>Could not create a working Python environment</code></td><td>ย้ายโฟลเดอร์ <code>ConveyorCapture</code> ไปไว้ที่ <code>C:\ConveyorCapture</code> แล้วรันใหม่ (โฟลเดอร์ใน OneDrive หรือโฟลเดอร์ที่ซิงก์อยู่มักมีปัญหา)</td></tr>
+<tr><td>ข้อความมีคำว่า <code>tcl</code>, <code>tk</code> หรือ <code>init.tcl</code></td><td>ลบโฟลเดอร์ <code>.venv</code> ในโฟลเดอร์โปรแกรมทิ้ง แล้วดับเบิลคลิก START_CAPTURE.bat ใหม่</td></tr>
+<tr><td><code>Could not open camera index 0</code></td><td>ยังไม่ได้ต่อกล้อง หรือกล้องถูกโปรแกรมอื่นใช้อยู่ (Zoom, Teams, LINE, แอป Camera) ปิดโปรแกรมนั้นก่อน หรือลอง Camera index เป็น 1</td></tr>
+<tr><td>ภาพในโปรแกรมดำทั้งจอ แต่ไม่มี error</td><td>
+  1) Settings → Privacy &amp; security → Camera: เปิด <b>Camera access</b> และ <b>Let desktop apps access your camera</b><br>
+  2) โปรแกรมป้องกันไวรัสบางตัว (เช่น Kaspersky) บล็อกกล้องเงียบ ๆ ต้องอนุญาต <code>.venv\Scripts\python.exe</code> ในโปรแกรมป้องกันไวรัส</td></tr>
+<tr><td><code>Camera frame read failed</code></td><td>กล้องหลุดหรืออ่านภาพไม่ทัน กด <span class="btn">Close camera</span> แล้ว <span class="btn">Open camera</span> ใหม่ ถ้ายังไม่หาย ให้ถอดสาย USB แล้วเสียบใหม่</td></tr>
+<tr><td>ถ่ายรัว ๆ ทั้งที่ไม่มีวัตถุ</td><td>ดูตัวเลข <code>motion</code> ที่แถบล่างตอนสายพานวิ่งเปล่า ควรใกล้ 0% ถ้าสูงกว่า threshold แปลว่ากล้องสั่นหรือลายสายพานถูกนับเป็นวัตถุ ให้ยึดกล้องให้แน่น แล้ว<b>เพิ่ม</b> Motion threshold ทีละ 1 จนหยุดถ่ายเอง จากนั้นกด Stop แล้ว Start ใหม่</td></tr>
+<tr><td>วัตถุวิ่งผ่านแต่ไม่ถ่าย</td><td>วัตถุเล็กเกินไปเมื่อเทียบกับกรอบ ให้วาดกรอบให้เล็กลง หรือ<b>ลด</b> Motion threshold · ถ้าวัตถุสีกลืนกับสายพาน ให้ใช้ปุ่ม Capture now แทน</td></tr>
+<tr><td>ชิ้นเดียวได้ 2 ภาพ</td><td>เกิดเมื่อวัตถุหยุดหรือกลิ้งถอยกลับกลางกรอบ ลบภาพที่ซ้ำทิ้งตอนตรวจภาพ</td></tr>
+<tr><td>กด Start แล้วขึ้น <code>Use English letters, digits…</code></td><td>Class name มีภาษาไทย เว้นวรรค หรือสัญลักษณ์ ใช้แบบ <code>red_cap</code> แทน <code>red cap</code></td></tr>
+</table>
+</section>
+
+<footer>Conveyor Image Capture · YOLO Training Labs</footer>
+</div>
+</body>
+</html>

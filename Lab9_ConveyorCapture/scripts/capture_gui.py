@@ -138,7 +138,7 @@ class CaptureApp:
         self.count_var = tk.StringVar(value="Saved: none yet")
 
         self._build_ui()
-        self.root.bind("<space>", lambda _event: self.capture_now())
+        self.root.bind("<space>", self._space_pressed)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
         self.root.after(30, self.update_preview)
 
@@ -258,6 +258,9 @@ class CaptureApp:
         self.status_var.set("Drag a box across the belt where objects pass.")
 
     def roi_press(self, event):
+        # Clicking the picture moves keyboard focus off the text boxes, so the
+        # Space key works as "Capture now" again.
+        self.preview.focus_set()
         if not self.selecting_roi:
             return
         self.drag_start = (self._clamp_x(event.x), self._clamp_y(event.y))
@@ -343,6 +346,12 @@ class CaptureApp:
             self.status_var.set("Auto capture stopped.")
         self.capture_active = False
         self.trigger = None
+
+    def _space_pressed(self, event):
+        # Typing a space in a text box must not take a photo.
+        if isinstance(event.widget, (tk.Entry, ttk.Entry, ttk.Spinbox)):
+            return
+        self.capture_now()
 
     def capture_now(self):
         if self.frame is None:

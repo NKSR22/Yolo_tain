@@ -399,5 +399,12 @@ Lab 9 ทำเฉพาะการเก็บภาพ ไม่รวมก�
 `test_conveyor_count.py` (8 กรณี), GUI กับเว็บแคมจริง, `make_zip`, export + `run_count.bat` กับวิดีโอจำลอง
 (รถบัสวิ่งไป-กลับ นับ bus ได้ +1 และ -1 ถูกต้อง 27 fps บน CPU), `run_test.bat` ทั้งภาพ/path ผิด/กล้อง
 
+**ชุดแจกนักศึกษา (2026-11-23):** `scripts/build_package.py` → `dist/ConveyorCapture_Student.zip`
+(Manual.html ภาษาไทยฝังภาพในไฟล์เดียว + `START_CAPTURE.bat` + `MAKE_ZIP.bat` + `app/`) ต้นฉบับอยู่ใน `package/`
+ภาพในคู่มือถ่ายจาก GUI จริงที่ป้อนกล้องจำลองสายพาน (ไม่มีหน้าคน) ทดสอบติดตั้งจากศูนย์ในโฟลเดอร์ชื่อไทยผ่าน
+- เครื่องนี้มี `C:\Python313` ที่ติดตั้งไม่ครบ (ไม่มี `Lib\`) แต่ `py -3` ยังเลือกมันเป็นตัวหลัก `import tkinter` ผ่าน
+  แต่ `Tk()` พังด้วย `Can't find a usable init.tcl` → launcher ต้องทดสอบด้วยการเปิด `Tk()` จริง แล้วไล่ลอง `py -3`, `python`, `py`
+- pip ในชุดแจกได้ opencv-python **5.1** (repo venv เป็น 5.0) เทสต์ทั้งหมดผ่านบน 5.1
+
 **ยังไม่ได้ทดสอบ:** สายพานจริง (ลายสายพานกับ Motion threshold 2%), `run_count_pi.sh` และ `copy_to_pi.bat`
 ของ Lab 12 บน Pi จริง, FPS บน Pi 5, notebook Lab 10 กับภาพจาก GUI จริง · ภาพประกอบยังไม่มี

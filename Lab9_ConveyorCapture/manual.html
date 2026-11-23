@@ -52,7 +52,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <h2>2. เปิดโปรแกรม</h2>
 <p>จาก PowerShell ที่โฟลเดอร์หลักของ repository:</p>
 <pre>.\Lab9_ConveyorCapture\scripts\run_capture_gui.bat</pre>
-<p>ถ้าใช้ชุด ZIP แบบ portable (ไม่มี venv จาก Lab 0) ให้ดับเบิลคลิก <code>scripts\run_capture_gui_portable.bat</code> แทน ครั้งแรกต้องต่ออินเทอร์เน็ตเพื่อติดตั้ง <code>opencv-python</code> และ <code>Pillow</code></p>
+<p><b>ชุดแจกนักศึกษา</b> (ไม่ต้องมี repository หรือ venv จาก Lab 0): ผู้สอนสร้างไฟล์ ZIP ที่มีโปรแกรมและคู่มือติดตั้งภาษาไทยในชุดเดียว ด้วยคำสั่ง</p>
+<pre>.\venv\Scripts\python.exe Lab9_ConveyorCapture\scripts\build_package.py</pre>
+<p>จะได้ <code>Lab9_ConveyorCapture\dist\ConveyorCapture_Student.zip</code> นักศึกษาแตกไฟล์ แล้วทำตาม <code>Manual.html</code> ที่อยู่ในชุด (ดับเบิลคลิก <code>START_CAPTURE.bat</code>) ต้นฉบับของคู่มือและไฟล์ .bat อยู่ใน <code>Lab9_ConveyorCapture\package\</code></p>
 </div>
 
 <div class="step">
