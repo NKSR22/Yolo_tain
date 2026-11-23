@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab 10: เตรียมชุดข้อมูลและเทรนบน Google Colab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--panel2:#1d2129;--text:#e8eaed;--muted:#9aa4b2;--accent:#5b8cff;--warn:#f59e0b;--border:#2a2f3a;--code:#11141a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Sarabun",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+header,.card,.step,.warn{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0}
+header{background:linear-gradient(135deg,#1a2540,#0f1115)}
+h1{font-size:27px;margin:4px 0}.meta,small{color:var(--muted)}
+h2{font-size:20px;margin-top:30px;border-bottom:2px solid var(--border);padding-bottom:8px}
+h3{font-size:16px;color:var(--accent);margin-top:8px}
+pre{background:var(--code);padding:14px 16px;border:1px solid var(--border);border-radius:8px;overflow:auto;color:#c9d1d9}
+code{font-family:Consolas,monospace;color:#7dd3fc}
+li{margin:7px 0}
+.warn{background:#2a1f0f;border-color:#55420f;color:#fde68a}
+a{color:#7dbaff}
+nav{display:flex;justify-content:space-between;margin-top:36px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <small>LAB 10 · Dataset + Colab</small>
+  <h1>เตรียมชุดข้อมูลและเทรน YOLO บน Google Colab</h1>
+  <div class="meta">รับภาพจาก Lab 9 → ให้โมเดลเสนอกรอบและตรวจแก้ → เทรนบน Colab</div>
+</header>
+
+<div class="card">
+<h2>สิ่งที่ต้องเข้าใจก่อน</h2>
+<p>โฟลเดอร์คลาสจาก GUI ใน Lab 9 ยังไม่ใช่ label สำหรับ Object Detection Notebook จะเสนอ Bounding Box จากโมเดล YOLO-World ให้ตรวจแก้ใน Colab แล้วสร้าง label และชุดข้อมูล YOLO ให้ก่อนเทรน ผลลัพธ์เป็น <code>best.pt</code></p>
+</div>
+
+<div class="step">
+<h2>1. เตรียมภาพและ ZIP</h2>
+<ol>
+<li>คัดภาพที่ชัดและไม่ซ้ำจากโฟลเดอร์ <code>Lab9_ConveyorCapture\captured_images\&lt;class&gt;\</code></li>
+<li>รัน <code>.\Lab9_ConveyorCapture\scripts\make_zip.bat</code> จะได้ <code>Lab9_ConveyorCapture\conveyor_images.zip</code> แล้วอัปโหลดไปที่ชั้นบนสุดของ Google Drive (My Drive)</li>
+</ol>
+<p>ให้มีหลายชิ้นงาน มุม ตำแหน่ง และสภาพแสงต่อคลาส ไม่ใช่ถ่ายวัตถุเดิมซ้ำหลายเฟรม</p>
+</div>
+
+<div class="step">
+<h2>2. เปิด Colab และตรวจ Bounding Box</h2>
+<ol>
+<li>ใน Colab เลือก File → Upload notebook แล้วเลือก <code>colab_train_conveyor.ipynb</code> จาก repository</li>
+<li>เลือก Runtime → Change runtime type → GPU แล้วรันเซลล์จากบนลงล่าง อนุญาตให้เชื่อมต่อ Google Drive</li>
+<li>ใช้โหมด <code>raw</code> และตรวจตำแหน่ง ZIP ในเซลล์ตั้งค่า ชื่อคลาสจาก Lab 9 เป็นภาษาอังกฤษอยู่แล้ว และถูกใช้เป็นคำค้นให้ YOLO-World หาวัตถุ ถ้าชื่อคลาสไม่ได้บอกว่าวัตถุหน้าตาเป็นอย่างไร (เช่น <code>part_a</code>) ให้กำหนด <code>PROMPT_OVERRIDES</code> เช่น <code>{"part_a": "small metal bracket"}</code></li>
+<li>ตรวจกรอบทุกภาพ: โมเดลเสนอกรอบตามคลาสของโฟลเดอร์ภาพนั้น ให้เพิ่มกรอบของวัตถุคลาสอื่นที่มีในภาพเอง เลือกคลาส ลากเพิ่ม/แก้/ลบกรอบ แล้วกด <b>Submit</b> หากภาพไม่มีวัตถุจริง ให้เลือกช่องยืนยันภาพว่างก่อน Submit</li>
+<li><b>Skip</b> จะข้ามโดยไม่บันทึกผลตรวจ ต้องกลับมาตรวจและ Submit ให้ครบก่อนเทรน</li>
+</ol>
+<p>ผลตรวจบันทึกลง Drive ใน <code>conveyor_reviews</code> และสามารถกลับมาทำต่อได้โดยใช้ ZIP และการตั้งค่าเดิม หากแก้ prompt หรือเปลี่ยน ZIP จะเริ่มชุดผลตรวจใหม่</p>
+</div>
+
+<div class="step">
+<h2>3. สร้าง Dataset และเทรน</h2>
+<ol>
+<li>เมื่อกด Submit ครบทุกภาพ ให้รันเซลล์สร้างชุดข้อมูล ระบบจะแบ่ง Train/Validation และสร้าง YOLO labels ให้อัตโนมัติ</li>
+<li>รันเซลล์ตรวจชุดข้อมูล เทรน และประเมินผลตามลำดับ</li>
+</ol>
+<p>หากมีชุดข้อมูล YOLO ที่ทำ label และแบ่ง Train/Val ไว้แล้ว สามารถเลือกโหมด <code>prepared</code> และระบุ ZIP แทนได้</p>
+</div>
+
+<div class="warn">
+กรอบอัตโนมัติอาจพลาดวัตถุหรือคลาส โดยเฉพาะชิ้นงานเฉพาะทางและความแตกต่างแบบดี/เสีย ต้องตรวจทุกภาพ อย่าให้ภาพซ้ำหรือเกือบซ้ำกระจายอยู่ทั้ง Train และ Val เพราะตัวเลขประเมินอาจดูดีเกินจริง ตรวจ <code>results.csv</code> และผล validation ประกอบ อย่าตัดสินคุณภาพจากค่าเดียว
+</div>
+
+<div class="card">
+<h2>ผลลัพธ์และขั้นถัดไป</h2>
+<p>โมเดล <code>best.pt</code> และผลฝึก <code>results.csv</code> จะอยู่ใน Google Drive ที่ <code>conveyor_training\&lt;run name&gt;\</code> ดาวน์โหลด <code>best.pt</code> แล้วนำไปทดสอบภาพ/วิดีโอบนคอมตาม <a href="../Lab11_WindowsTesting/manual.html">Lab 11</a></p>
+</div>
+
+<nav><a href="../Lab9_ConveyorCapture/manual.html">&larr; Lab 9: เก็บภาพ</a><a href="../Lab11_WindowsTesting/manual.html">Lab 11: ทดสอบบนคอม &rarr;</a></nav>
+<footer>YOLO Training Labs</footer>
+</div>
+</body>
+</html>

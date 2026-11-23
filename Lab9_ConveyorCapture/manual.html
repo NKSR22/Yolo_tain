@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab 9: เก็บภาพจากสายพาน</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--panel2:#1d2129;--text:#e8eaed;--muted:#9aa4b2;--accent:#5b8cff;--warn:#f59e0b;--border:#2a2f3a;--code:#11141a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Sarabun",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+header,.card,.step,.warn{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0}
+header{background:linear-gradient(135deg,#1a2540,#0f1115)}
+h1{font-size:27px;margin:4px 0}.meta,small{color:var(--muted)}
+h2{font-size:20px;margin-top:30px;border-bottom:2px solid var(--border);padding-bottom:8px}
+h3{font-size:16px;color:var(--accent);margin-top:8px}
+pre{background:var(--code);padding:14px 16px;border:1px solid var(--border);border-radius:8px;overflow:auto;color:#c9d1d9}
+code{font-family:Consolas,monospace;color:#7dd3fc}
+li{margin:7px 0}
+.warn{background:#2a1f0f;border-color:#55420f;color:#fde68a}
+table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}th{background:#1d2230}
+a{color:#7dbaff}
+nav{display:flex;justify-content:space-between;margin-top:36px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+</style>
+<body>
+<div class="wrap">
+<header>
+  <small>LAB 9 · Image collection</small>
+  <h1>เก็บภาพวัตถุจากสายพานที่วิ่งอยู่</h1>
+  <div class="meta">คอม Windows + เว็บแคม · สายพานเปิด/กลับทิศด้วยสวิตช์ ไม่มี MCU ควบคุม</div>
+</header>
+
+<div class="card">
+<h2>เป้าหมายและขอบเขต</h2>
+<p>สายพานวิ่งเองตลอดเมื่อเปิดสวิตช์ โปรแกรมนี้แค่ดูกล้องอย่างเดียว ผู้เรียนวางวัตถุทีละชิ้นบนสายพาน เมื่อวัตถุเคลื่อนมาถึง<b>กลางกรอบ</b>ที่วาดไว้ โปรแกรมจะบันทึกภาพเต็มเฟรมหนึ่งใบ แล้วรอจนวัตถุนั้นออกไปก่อนจึงพร้อมถ่ายชิ้นถัดไป ดังนั้นวัตถุหนึ่งชิ้นที่วิ่งผ่านจะได้ภาพหนึ่งใบ</p>
+<p>ชื่อคลาสที่พิมพ์ในโปรแกรมจะกลายเป็นชื่อโฟลเดอร์ และกลายเป็น<b>ชื่อคลาสของ YOLO</b> ใน <a href="../Lab10_ColabTraining/manual.html">Lab 10</a> Lab นี้ยังไม่ได้ทำ Bounding Box</p>
+<pre>Lab9 เก็บภาพ (Windows) → Lab10 ตีกรอบ + เทรน (Colab) → Lab11 ทดสอบ best.pt (Windows) → Lab12 ONNX + นับจำนวนบน Pi</pre>
+</div>
+
+<div class="step">
+<h2>1. จัดกล้องให้นิ่ง</h2>
+<ol>
+<li>ยึดกล้องให้มองสายพานจาก<b>ตำแหน่งเดียวกับที่จะใช้ตอนรันจริงบน Pi ใน Lab 12</b> ภาพตอนเทรนกับตอนใช้งานยิ่งเหมือนกัน โมเดลยิ่งแม่น</li>
+<li>วางกล้องให้สายพานวิ่ง<b>ซ้าย↔ขวา</b>ในภาพ (Lab 12 นับด้วยเส้นแนวตั้งเป็นค่าเริ่มต้น)</li>
+<li>กล้องต้องไม่ขยับระหว่างเก็บภาพ โปรแกรมตรวจจับวัตถุจากความต่างกับภาพพื้นหลัง กล้องที่สั่นจะทำให้ทั้งกรอบดูเหมือนมีการเคลื่อนไหว</li>
+<li>เปิดไฟให้สว่างคงที่ หลีกเลี่ยงแสงแดดที่เปลี่ยนไปเรื่อย ๆ</li>
+</ol>
+</div>
+
+<div class="step">
+<h2>2. เปิดโปรแกรม</h2>
+<p>จาก PowerShell ที่โฟลเดอร์หลักของ repository:</p>
+<pre>.\Lab9_ConveyorCapture\scripts\run_capture_gui.bat</pre>
+<p>ถ้าใช้ชุด ZIP แบบ portable (ไม่มี venv จาก Lab 0) ให้ดับเบิลคลิก <code>scripts\run_capture_gui_portable.bat</code> แทน ครั้งแรกต้องต่ออินเทอร์เน็ตเพื่อติดตั้ง <code>opencv-python</code> และ <code>Pillow</code></p>
+</div>
+
+<div class="step">
+<h2>3. ตั้งค่าและเริ่มเก็บภาพ</h2>
+<ol>
+<li>กด <b>Open camera</b> (ถ้าเปิดผิดตัว เปลี่ยน Camera index เป็น 1, 2 …)</li>
+<li>กด <b>Draw capture area</b> แล้วลากกรอบ<b>คร่อมสายพาน</b>ตรงกลางภาพ ให้กว้างกว่าวัตถุชิ้นใหญ่สุดพอสมควร</li>
+<li>พิมพ์ <b>Class name</b> เป็นภาษาอังกฤษ เช่น <code>bottle</code>, <code>red_cap</code> (ใช้ได้เฉพาะ A–Z, 0–9, <code>_</code>, <code>-</code>)</li>
+<li>เปิดสวิตช์สายพาน ปล่อยให้วิ่งเปล่า ๆ แล้วกด <b>Start auto capture</b> โปรแกรมจะเรียนรู้หน้าตาสายพานเปล่าประมาณ 45 เฟรม (กรอบเป็นสีเหลือง) ห้ามมีวัตถุในกรอบช่วงนี้</li>
+<li>วางวัตถุบนสายพานทีละชิ้น เว้นระยะระหว่างชิ้น เมื่อวัตถุถึงกลางกรอบ กรอบจะเป็นสีแดงและบันทึกภาพหนึ่งใบ</li>
+<li>เปลี่ยนคลาส: กด <b>Stop auto capture</b> → แก้ Class name → <b>Start auto capture</b> ใหม่</li>
+</ol>
+<p>ภาพถูกบันทึกที่ <code>Lab9_ConveyorCapture\captured_images\&lt;class&gt;\</code> แถวล่างของหน้าต่างแสดงจำนวนภาพต่อคลาสที่เก็บในรอบนี้</p>
+
+<table>
+<tr><th>ปุ่ม/ค่า</th><th>ใช้ทำอะไร</th></tr>
+<tr><td>Motion threshold %</td><td>วัตถุต้องกินพื้นที่ในกรอบอย่างน้อยกี่ % จึงนับว่ามีวัตถุ ค่าเริ่มต้น 2.0 ดูตัวเลข <code>motion</code> ที่แถบสถานะตอนสายพานวิ่งเปล่า ๆ ควรใกล้ 0% ถ้าสูงเกิน threshold (ลายหรือรอยต่อสายพาน) ให้เพิ่ม threshold</td></tr>
+<tr><td>Capture now (Space)</td><td>ถ่ายทันทีหนึ่งใบโดยไม่รอการตรวจจับ ใช้เก็บภาพมุมแปลก ๆ หรือภาพที่ auto พลาด</td></tr>
+<tr><td>สีกรอบ</td><td>เขียว = ยังไม่เริ่ม · เหลือง = กำลังเรียนรู้/รอวัตถุ · แดง = มีวัตถุอยู่กลางกรอบ</td></tr>
+</table>
+</div>
+
+<div class="step">
+<h2>4. เก็บภาพให้ได้ชุดข้อมูลที่ดี</h2>
+<ul>
+<li>อย่างน้อย <b>50 ภาพต่อคลาส</b> จากชิ้นงานหลายชิ้น ไม่ใช่ชิ้นเดียววนซ้ำ 50 รอบ</li>
+<li>เปลี่ยนตำแหน่งบนสายพาน (ชิดขอบซ้าย/กลาง/ขวา) และหมุนวัตถุหลายท่า</li>
+<li><b>กลับทิศสายพานด้วยสวิตช์</b>แล้วเก็บอีกชุด ตัวตรวจจับไม่สนทิศ ไม่ต้องตั้งค่าอะไรเพิ่ม และโมเดลจะได้เห็นวัตถุทั้งสองทิศ</li>
+<li>เปิดโฟลเดอร์ดูภาพ ลบภาพเบลอ ภาพที่วัตถุตกขอบ และภาพที่ไม่มีวัตถุ</li>
+</ul>
+</div>
+
+<div class="step">
+<h2>5. บีบอัดส่งต่อให้ Lab 10</h2>
+<pre>.\Lab9_ConveyorCapture\scripts\make_zip.bat</pre>
+<pre class="out">  bottle                  62 images
+  can                     55 images
+  total                  117 images
+Wrote C:\dev\Yolo_tain\Lab9_ConveyorCapture\conveyor_images.zip (9.8 MB)
+Upload it to the top level of My Drive, then open Lab 10.</pre>
+<p>อัปโหลด <code>conveyor_images.zip</code> ไปไว้ที่ My Drive ชั้นบนสุด (ตัวเลขด้านบนเป็นตัวอย่าง ของจริงขึ้นกับจำนวนภาพที่เก็บ) ถ้ามีคลาสไหนต่ำกว่า 30 ภาพ สคริปต์จะเตือน</p>
+</div>
+
+<div class="card">
+<h2>Troubleshooting</h2>
+<table>
+<tr><th>อาการ</th><th>สาเหตุ / วิธีแก้</th></tr>
+<tr><td>ภาพในหน้าต่างดำทั้งจอ แต่ไม่มี error</td><td>แอนตี้ไวรัสบล็อกกล้อง (เช่น Kaspersky Webcam Protection) ต้องอนุญาต <code>venv\Scripts\python.exe</code></td></tr>
+<tr><td>Camera frame read failed</td><td>กล้องถูกโปรแกรมอื่นใช้อยู่ (Teams, Zoom, Camera app) ปิดโปรแกรมนั้น แล้วกด Open camera ใหม่</td></tr>
+<tr><td>ถ่ายรัว ๆ ทั้งที่ไม่มีวัตถุ</td><td>กล้องสั่น หรือลายสายพานถูกนับเป็นวัตถุ ยึดกล้องให้แน่น และเพิ่ม Motion threshold</td></tr>
+<tr><td>วัตถุวิ่งผ่านแต่ไม่ถ่าย</td><td>วัตถุเล็กเกินเมื่อเทียบกับกรอบ ให้วาดกรอบเล็กลง หรือลด threshold · หรือวัตถุสีกลืนกับสายพาน</td></tr>
+<tr><td>ชิ้นเดียวได้สองภาพ</td><td>เกิดเมื่อวัตถุหยุดหรือถอยกลับกลางกรอบ ลบภาพซ้ำทิ้ง</td></tr>
+<tr><td>Class name ถูกปฏิเสธ</td><td>ใช้ภาษาไทยหรือเว้นวรรคไม่ได้ เพราะชื่อนี้ใช้เป็น prompt ภาษาอังกฤษให้ YOLO-World ใน Lab 10 และ OpenCV บน Pi วาดตัวอักษรไทยไม่ได้</td></tr>
+</table>
+</div>
+
+<nav><a href="../Lab8_AIHat/manual.html">&larr; Lab 8: AI HAT</a><a href="../Lab10_ColabTraining/manual.html">Lab 10: ตีกรอบและเทรนบน Colab &rarr;</a></nav>
+<footer>YOLO Training Labs</footer>
+</div>
+</body>
+</html>

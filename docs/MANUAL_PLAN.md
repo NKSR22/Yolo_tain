@@ -37,10 +37,12 @@
 | Lab 6 Export | ✅ | ✅ | ✅ 3 ใบ | **เสร็จ** — export + benchmark 3 แบบ |
 | Lab 7 RaspberryPi | ✅ | ✅ | ✅ 4 ใบ | **เสร็จ** — ทดสอบบน Pi 5 จริง + กล้อง C270 |
 | Lab 8 AIHat | ✅ | ✅ | ✅ 3 ใบ | **เสร็จ** — ทดสอบบน Hailo-8 จริง |
-| Lab 9 ConveyorGPIO | ✅ | ✅ | ✅ 4 ใบ | **เสร็จถึง Step 6** — ยังไม่ได้ทดสอบกับมอเตอร์/เซ็นเซอร์จริง |
-| Lab 10 MiniProject | ❌ | ❌ | ❌ | ทำหลัง Lab 4-6 เสร็จ |
+| Lab 9 ConveyorCapture | ✅ (GUI + เว็บแคมจริง, ไม่มีสายพาน) | ✅ | — | **เก็บภาพจากสายพานที่วิ่งอยู่** — ไม่มี MCU; ยังไม่ได้ทดสอบกับสายพานจริง |
+| Lab 10 ColabTraining | — | ✅ | — | **เตรียมข้อมูลและเทรนบน Google Colab** — ต้องตรวจด้วย dataset จริง |
+| Lab 11 WindowsTesting | ✅ (ใช้ yolo11n แทน) | ✅ | — | **ทดสอบโมเดลบนคอม** + โหมดกล้องสด — ต้องตรวจด้วย best.pt จริง |
+| Lab 12 RPiDeployment | ✅ บน Windows (ใช้ yolo11n + วิดีโอจำลอง) | ✅ | — | **ONNX + นับวัตถุต่อคลาสเมื่อข้ามเส้น** — ยังไม่ได้รันบน Pi |
 
-**Lab 0-9 เขียนครบแล้ว** — Lab 9 เหลือแค่ Step 7 (ต่อวงจรจริง) ที่ต้องรออุปกรณ์ · Lab 10 ทำได้แล้ว
+**Lab 0-8 เป็นชุดฝึกเดิมที่ทดสอบแล้ว** · Lab 9-12 เป็น workflow ใหม่ที่ต้องทดสอบกับภาพและโมเดลของผู้เรียน
 
 ---
 
@@ -180,15 +182,15 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 
 1. ~~**ชื่อ run ไม่ตรงกันทั้งสาย Lab 4 → 10**~~ **แก้แล้ว** — ตกลง convention เป็น
    `runs\detectull\weightsest.pt` (โมเดลจาก Lab 4 รอบชุดเต็ม) และ `data=african-wildlife.yaml`
-   แก้ครบทั้ง Lab5/evaluate, Lab6/export_onnx, Lab6/test_onnx, Lab10/copy_from_previous_labs
-   พร้อมใส่ด่านตรวจว่ามีไฟล์จริงก่อนรัน (เดิม Lab 10 กลืน error ด้วย `2>nul`)
+   แก้ครบทั้ง Lab5/evaluate, Lab6/export_onnx, Lab6/test_onnx และ helper คัดลอกโมเดลของ Mini Project เดิม (ปัจจุบันเลิกใช้)
+   พร้อมใส่ด่านตรวจว่ามีไฟล์จริงก่อนรัน (helper ของ Mini Project เดิมกลืน error ด้วย `2>nul`)
 
    <details>รายละเอียดปัญหาเดิม</details>
    `train_baseline.bat` เขียนผลที่ `name=baseline` แต่ `train_custom.bat` ใช้ `name=exp`
    ส่วน `Lab5/evaluate.bat`, `Lab6/export_onnx.bat`, `Lab6/test_onnx.bat`,
-   `Lab10/copy_from_previous_labs.bat` ไป hardcode `runs\exp\weights\best.pt` กันหมด
+   helper คัดลอกโมเดลของ Mini Project เดิม hardcode `runs\exp\weights\best.pt` ไปด้วย
    → ถ้านักศึกษารันแค่ baseline ตามคู่มือ จะหาไฟล์ไม่เจอ
-   (Lab 10 ยังกลืน error ด้วย `2>nul` อีก เลยเงียบสนิท)
+   (helper ของ Mini Project เดิมยังกลืน error ด้วย `2>nul` อีก เลยเงียบสนิท)
    **ต้องตัดสินใจ convention ให้ตรงกันแล้วแก้ทีเดียวทั้งสาย**
 
 2. ~~**`Lab6/benchmark.py` path ผิดชั้น**~~ **แก้แล้ว** — เปลี่ยนไปคำนวณจาก `Path(__file__)`
@@ -230,7 +232,20 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 
 ---
 
-## 7. การตัดสินใจเรื่อง dataset (ตกลงกันแล้ว 2026-08-30)
+## 7. การตัดสินใจเรื่อง dataset และ workflow
+
+### Workflow ปัจจุบัน (ปรับ 2026-11-17)
+
+| Lab | Input / Output | ขั้นตอน |
+|---|---|---|
+| 9 | ภาพจากสายพานแยกตามโฟลเดอร์คลาส | เก็บภาพด้วย GUI; ยังไม่มี Bounding Box |
+| 10 | ภาพ + YOLO labels → `best.pt` | Annotate, split train/val, เทรนบน Google Colab |
+| 11 | `best.pt` + ภาพ/วิดีโอทดสอบ | ทดสอบ inference บน Windows |
+| 12 | `best.pt` → `best.onnx` → Raspberry Pi | Export, ตรวจ ONNX, โอนไปรันบน Pi |
+
+Lab 9 ทำเฉพาะการเก็บภาพ ไม่รวมการ train หรือระบบคัดแยก Mini Project เดิมถูกถอดออกจากลำดับ Lab แล้ว ส่วนรายละเอียดด้านล่างเป็นบันทึกการตัดสินใจเดิมเพื่อเก็บประวัติ ไม่ใช่แผนงานปัจจุบัน
+
+### บันทึกการตัดสินใจเดิม (2026-08-30; ถูกแทนที่)
 
 **ปัญหา:** คู่มือ Lab 4-10 ต้องอ้างอิงตัวเลขและกราฟจาก dataset ตัวใดตัวหนึ่ง
 ถ้าใช้ชุดเล็ก (10-20 รูป) ตัวเลขที่ได้จะเป็นสัญญาณรบกวน ไม่ใช่ผลของการปรับค่า
@@ -346,43 +361,43 @@ python docs/shoot.py pick runs/detect/train/results.png lab4_results -w 900
 | 2026-09-07 | Lab 8 ครบ: ทดสอบบน Hailo-8 จริง เขียน `download_sample_hef.sh` ให้ใช้งานได้จริง | (commit นี้) |
 | 2026-09-07 | Lab 9 แก้บั๊ก GPIO บน Pi 5 (RPi.GPIO ใช้ไม่ได้) + บันทึกว่าต้องออกแบบใหม่ในข้อ 9 | (commit นี้) |
 | 2026-09-08 | Lab 9 ออกแบบใหม่เป็น Pi + Arduino ผ่าน USB, ทดสอบ build/upload/โปรโตคอล/เดโมครบ | (commit นี้) |
+| 2026-11-23 | สายพานจริงไม่มี MCU (สวิตช์เปิด/กลับทิศ) → ตัด Arduino ออก, Lab 9 เปลี่ยนชื่อเป็น ConveyorCapture, Lab 12 นับวัตถุต่อคลาส | (commit นี้) |
 
 ---
 
-## 9. Lab 9 — ออกแบบใหม่แล้ว (2026-09-08)
+## 9. Lab 9-12 — workflow สายพาน (ออกแบบใหม่ 2026-11-23)
 
-**ข้อจำกัดที่เปลี่ยนโจทย์:** AI HAT ของ Lab 8 เสียบทับหัว GPIO ของ Pi ไปแล้ว ไม่เหลือขาว่าง
-Lab 9 เดิมที่ใช้ `gpiozero` ต่อขา GPIO ตรง ๆ จึงใช้กับชุดจริงของวิชานี้ไม่ได้
+**ข้อจำกัดของฮาร์ดแวร์จริง:** สายพานไม่ได้ถูกควบคุมด้วย MCU มีแค่สวิตช์เปิดและกลับทิศ
+ระบบจึง**ดูกล้องอย่างเดียว** ไม่สั่งงานอะไร ทุกอย่างที่เกี่ยวกับ Arduino (firmware, PlatformIO,
+`conveyor_link.py`, `conveyor_ai_demo.py`) ถูกลบทิ้งทั้งหมด ดูของเดิมได้ใน git history ก่อน commit นี้
 
-**สถาปัตยกรรมใหม่ (ทดสอบแล้ว):**
+    Lab 9  Windows + เว็บแคม  GUI ถ่ายหนึ่งภาพต่อวัตถุหนึ่งชิ้น  → captured_images/<class>/
+           make_zip.bat → conveyor_images.zip (อัปโหลด My Drive)
+    Lab 10 Colab              YOLO-World เสนอกรอบ → คนตรวจแก้ → เทรน → best.pt
+    Lab 11 Windows            best.pt กับภาพที่ไม่ได้เทรน + กล้องสด (run_test.bat 0)
+    Lab 12 Windows → Pi       export ONNX → ซ้อมนับบนคอม (run_count.bat) → copy_to_pi.bat → run_count_pi.sh
 
-    Raspberry Pi 5              Arduino Uno
-    กล้อง + YOLO + ตัดสินใจ  --USB serial-->  มอเตอร์ / เซ็นเซอร์ / ตัวคัดแยก
+**การตัดสินใจที่สำคัญ:**
+- Lab 9 ถ่ายเมื่อ**จุดศูนย์กลางของ foreground อยู่กลางกรอบ** (ไม่ใช่ตอนขอบวัตถุเพิ่งเข้า)
+  ไม่สนทิศ สวิตช์กลับทิศจึงไม่ต้องตั้งค่า
+- ชื่อคลาสบังคับ ASCII (`[A-Za-z0-9][A-Za-z0-9_-]*`) เพราะเป็นทั้งชื่อคลาส YOLO, prompt ของ YOLO-World,
+  และข้อความที่ OpenCV วาดบน Pi (วาดไทยไม่ได้)
+- บันทึกภาพด้วย `cv2.imencode` + `write_bytes` เพราะ `cv2.imwrite` เงียบ ๆ ล้มเหลวกับ path ภาษาไทยบน Windows
+- Lab 12 เขียน tracker เอง (จับคู่ด้วยจุดศูนย์กลางที่ใกล้สุด) แทน ByteTrack เพราะ ByteTrack ต้องใช้แพ็กเกจ `lap`
+  ซึ่งไม่มีทั้งใน venv และบน Pi · นับครั้งเดียวต่อ track ตอนข้ามเส้น, คลาสใช้เสียงข้างมาก
+- Lab 12 ใช้ venv ของ Lab 7 บน Pi (`~/Lab7_RaspberryPi/venv`) ไม่สร้างใหม่
 
-- โปรแกรม Arduino จากบนตัว Pi ด้วย **PlatformIO Core 6.2.0** (ติดตั้งผ่าน installer ทางการ
-  ซึ่งสร้าง venv ของตัวเองที่ `~/.platformio/penv` จึงไม่ชนกฎ PEP 668 ของ Debian 13)
-- โค้ด Arduino เก็บในรีโปที่ `Lab9_ConveyorGPIO/arduino/` (`platformio.ini` + `src/main.cpp`)
-- โปรโตคอลเป็นข้อความบรรทัดต่อบรรทัด (`PING`/`M1`/`S1`/`SENSOR?`/`STATUS?`) ทุกคำสั่งมีคำตอบ
-  จึงไม่ต้องใช้ `sleep` เดาเวลา และเปิด Serial Monitor พิมพ์ทดสอบเองได้
+**บั๊กที่เจอจากการรันจริง (2026-11-23):**
+1. GUI เปิดกล้องด้วย DirectShow ก่อน ได้ **7 fps** ส่วน Media Foundation (ค่า default) ได้ **27.6 fps**
+   บนกล้องตัวเดียวกัน สายพานที่วิ่งอยู่ 7 fps อาจข้ามวัตถุไปเลย → สลับให้ MSMF ก่อน
+2. MSMF อ่านเฟรมแรกไม่สำเร็จเป็นบางครั้ง (`can't grab frame. Error: -2147483638`) 2 จาก ~7 ครั้ง
+   รันใหม่แล้วหาย ไม่ขึ้นกับ Tk หรือ yolo.exe ใส่ไว้ใน Troubleshooting ของ Lab 9/11 แล้ว
+3. ONNX บนคอมที่มี CUDA: ultralytics 8.4.131 + onnxruntime 1.29 เลือก CUDA provider แล้วพังตอน bind input
+   (`no data transfer registered`) → `conveyor_count.py` บังคับ `device="cpu"` สำหรับไฟล์ .onnx
 
-**บั๊กเดิมที่แก้แล้ว:**
+**ทดสอบแล้ว:** `test_capture_gate.py` (7 กรณี รวมสายพานวิ่งเปล่า/กลับทิศ/สองชิ้นติดกัน/path ไทย),
+`test_conveyor_count.py` (8 กรณี), GUI กับเว็บแคมจริง, `make_zip`, export + `run_count.bat` กับวิดีโอจำลอง
+(รถบัสวิ่งไป-กลับ นับ bus ได้ +1 และ -1 ถูกต้อง 27 fps บน CPU), `run_test.bat` ทั้งภาพ/path ผิด/กล้อง
 
-1. ~~`setup_gpio.sh` ลง `RPi.GPIO` ผ่าน pip~~ ใช้กับ Pi 5 ไม่ได้เลย
-   (`RuntimeError: Cannot determine SOC peripheral base address`) — ตอนนี้ไม่ใช้ GPIO ของ Pi แล้ว
-   ไฟล์ถูกเปลี่ยนเป็น `setup_link.sh` ที่เตรียม PlatformIO + pyserial แทน
-2. ~~`conveyor_ai_demo.py` ใช้ path `runs/exp/weights/best.onnx` ที่ตกสำรวจตอนแก้ Lab 5/6/10~~
-   เปลี่ยนไปอ้างจาก `Path(__file__)` ชี้ไปที่โมเดลของ Lab 7
-3. ~~`SORT_CLASS = "defect"` ซึ่งไม่มีในชุดข้อมูลไหนของคอร์ส~~ เปลี่ยนเป็น `zebra`
-   และสคริปต์เตือนพร้อมพิมพ์รายชื่อคลาสที่โมเดลรู้จัก ถ้าตั้งชื่อที่ไม่มีจริง
-
-**ที่ทดสอบจริงแล้วบน Pi 5 + Arduino Uno R3:** build/upload firmware (RAM 211/2048 ไบต์,
-Flash 5404/32256 ไบต์), โปรโตคอลครบทุกคำสั่ง, และเดโมทั้งวงด้วยภาพ african-wildlife จริง
-
-**ที่ยังไม่ได้ทดสอบ (Step 7 ของคู่มือ):** มอเตอร์ ไดรเวอร์ L298N เซ็นเซอร์ IR และชุดสายพาน
-ยังไม่มีอุปกรณ์ — ตารางเลขขาในคู่มือระบุไว้ชัดว่าเป็นค่าตั้งต้นที่เลือกไว้ ไม่ใช่ค่าที่ยืนยันกับวงจรจริง
-**ห้ามแก้กล่องเตือนนั้นออกจนกว่าจะได้ทดสอบกับของจริง**
-
-**สองอย่างที่ทำให้ทดสอบได้ทั้งที่ยังไม่มีอุปกรณ์** (เก็บไว้ ไม่ต้องถอดออกตอนมีของแล้ว):
-- firmware สั่งไฟบนบอร์ด (ขา 13) สะท้อนสถานะมอเตอร์
-- `conveyor_ai_demo.py` มี `--trigger timer` (ใช้เวลาแทนเซ็นเซอร์) และ `--source <โฟลเดอร์>`
-  (ป้อนภาพแทนกล้อง)
+**ยังไม่ได้ทดสอบ:** สายพานจริง (ลายสายพานกับ Motion threshold 2%), `run_count_pi.sh` และ `copy_to_pi.bat`
+ของ Lab 12 บน Pi จริง, FPS บน Pi 5, notebook Lab 10 กับภาพจาก GUI จริง · ภาพประกอบยังไม่มี

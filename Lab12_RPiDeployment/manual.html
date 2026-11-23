@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab 12: นับวัตถุบนสายพานด้วย Raspberry Pi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--text:#e8eaed;--muted:#9aa4b2;--accent:#5b8cff;--warn:#f59e0b;--border:#2a2f3a;--code:#11141a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Sarabun",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+header,.card,.step,.warn{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0}
+header{background:linear-gradient(135deg,#1a2540,#0f1115)}
+h1{font-size:27px;margin:4px 0}.meta,small{color:var(--muted)}
+h2{font-size:20px;margin-top:30px;border-bottom:2px solid var(--border);padding-bottom:8px}
+pre{background:var(--code);padding:14px 16px;border:1px solid var(--border);border-radius:8px;overflow:auto;color:#c9d1d9}
+code{font-family:Consolas,monospace;color:#7dd3fc}
+li{margin:7px 0}
+.warn{background:#2a1f0f;border-color:#55420f;color:#fde68a}
+table{border-collapse:collapse;width:100%;margin:10px 0}td,th{border:1px solid var(--border);padding:6px 10px;text-align:left;vertical-align:top}th{background:#1d2230}
+a{color:#7dbaff}
+nav{display:flex;justify-content:space-between;margin-top:36px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <small>LAB 12 · Raspberry Pi deployment</small>
+  <h1>Export ONNX แล้วนับวัตถุต่อคลาสบน Raspberry Pi</h1>
+  <div class="meta">best.pt (Lab 10–11) → best.onnx → ซ้อมบนคอม → รันบน Pi + กล้อง USB · นับเมื่อวัตถุข้ามเส้น</div>
+</header>
+
+<div class="card">
+<h2>หลักการนับ</h2>
+<p>สคริปต์ <code>conveyor_count.py</code> ตรวจจับทุกเฟรม แล้วจับคู่กรอบในเฟรมนี้กับเฟรมก่อนด้วย<b>จุดศูนย์กลางที่ใกล้ที่สุด</b> (track) วัตถุแต่ละชิ้นจะถูกนับ<b>ครั้งเดียว</b>ตอนจุดศูนย์กลางข้าม<b>เส้นนับ</b>สีเหลือง ไม่ว่าจะข้ามจากซ้ายหรือขวา สวิตช์กลับทิศสายพานจึงไม่ต้องตั้งค่าอะไร ทิศจะถูกบันทึกไว้เป็น <code>+</code> (ซ้าย→ขวา) หรือ <code>-</code> (ขวา→ซ้าย)</p>
+<p>คลาสที่นับใช้<b>เสียงข้างมาก</b>ตลอดช่วงที่ track นั้นอยู่ในภาพ ถ้าโมเดลทายผิดเฟรมเดียวตอนข้ามเส้น ผลนับก็ไม่เปลี่ยน</p>
+</div>
+
+<div class="step">
+<h2>1. Export เป็น ONNX บน Windows</h2>
+<p>คัดลอก <code>best.pt</code> ที่ผ่าน Lab 11 แล้วไปไว้ที่ <code>Lab12_RPiDeployment\best.pt</code> แล้วรัน:</p>
+<pre>.\Lab12_RPiDeployment\scripts\export_custom_onnx.bat</pre>
+<p>ได้ <code>Lab12_RPiDeployment\best.onnx</code> ขนาดภาพ 640 ล็อกตายตัวในไฟล์ ถ้าอยากเปลี่ยนขนาดต้อง export ใหม่</p>
+</div>
+
+<div class="step">
+<h2>2. ซ้อมนับบนคอมก่อน</h2>
+<p>ใช้ไฟล์ ONNX ตัวเดียวกับที่จะส่งไป Pi และรันบน CPU เหมือน Pi เปิดสวิตช์สายพานแล้วรัน:</p>
+<pre>.\Lab12_RPiDeployment\scripts\run_count.bat 0
+.\Lab12_RPiDeployment\scripts\run_count.bat "C:\data\belt clip.mp4"</pre>
+<p>หน้าต่าง <code>conveyor count</code> แสดงกรอบ เส้นนับ จำนวนต่อคลาส และ FPS กด <code>q</code> เพื่อหยุด ตัวอย่างข้างล่างเป็นผลจริงตอนทดสอบสคริปต์ด้วยโมเดล COCO (<code>yolo11n</code>) กับวิดีโอจำลองที่รถบัสวิ่งไปแล้ววิ่งกลับ (คนสองคนที่ยืนหน้ารถในภาพก็ถูกนับด้วย):</p>
+<pre class="out">21:22:38  #1    bus              +  (total bus: 1)
+21:22:38  #3    person           +  (total person: 1)
+21:22:39  #4    person           +  (total person: 2)
+21:22:42  #6    person           -  (total person: 3)
+21:22:42  #7    person           -  (total person: 4)
+21:22:42  #8    bus              -  (total bus: 2)
+
+=========== summary ===========
+  bus                      2
+  person                   4
+  total                    6
+  average FPS             27.1</pre>
+<table>
+<tr><th>ส่วน</th><th>ความหมาย</th></tr>
+<tr><td><code>#1</code></td><td>หมายเลข track ของวัตถุชิ้นนั้น ถ้าชิ้นเดียวได้หลายหมายเลข แปลว่า track หลุด (ดู Troubleshooting)</td></tr>
+<tr><td><code>+</code> / <code>-</code></td><td>ทิศที่ข้ามเส้น ซ้าย→ขวา / ขวา→ซ้าย</td></tr>
+<tr><td>average FPS</td><td>ความเร็วจริง ถ้าต่ำมากเทียบกับความเร็วสายพาน วัตถุอาจกระโดดไกลเกินระหว่างเฟรมจนจับคู่ไม่ได้</td></tr>
+</table>
+<p>ทุกการนับถูกบันทึกลง <code>Lab12_RPiDeployment\counts_windows.csv</code> (คอลัมน์ time, track_id, class, direction) เปิดด้วย Excel ได้</p>
+</div>
+
+<div class="step">
+<h2>3. ปรับเส้นนับ</h2>
+<table>
+<tr><th>ตัวเลือก</th><th>ค่าเริ่มต้น</th><th>ใช้เมื่อ</th></tr>
+<tr><td><code>--line 0.4</code></td><td>0.5</td><td>ย้ายเส้นนับ (สัดส่วนของความกว้างภาพ 0–1) วางเส้นตรงที่โมเดลตรวจจับได้มั่นคงที่สุด</td></tr>
+<tr><td><code>--axis y</code></td><td>x</td><td>กล้องวางให้สายพานวิ่งขึ้น↔ลงในภาพ เส้นนับจะเป็นแนวนอน</td></tr>
+<tr><td><code>--conf 0.5</code></td><td>0.4</td><td>มีกรอบผีโผล่ (นับเกิน) ให้เพิ่ม · วัตถุจริงหลุดบ่อย ให้ลด</td></tr>
+<tr><td><code>--no-show</code></td><td>-</td><td>ไม่เปิดหน้าต่าง แสดงผลในเทอร์มินัลอย่างเดียว</td></tr>
+</table>
+<pre>.\Lab12_RPiDeployment\scripts\run_count.bat 0 --line 0.4 --conf 0.5</pre>
+</div>
+
+<div class="step">
+<h2>4. ส่งไป Raspberry Pi</h2>
+<p>ต้องทำ <a href="../Lab7_RaspberryPi/manual.html">Lab 7</a> บน Pi ตัวนี้มาก่อน สคริปต์ใช้ Python environment <code>~/Lab7_RaspberryPi/venv</code> ตัวเดิม จาก Windows:</p>
+<pre>.\Lab12_RPiDeployment\scripts\copy_to_pi.bat admin@mIoT.local</pre>
+<p>ไฟล์จะไปอยู่ที่ <code>~/Lab12_RPiDeployment/</code> บน Pi จากนั้นที่<b>หน้าจอของ Pi</b> (ไม่ใช่ SSH) เปิด Terminal แล้วรัน:</p>
+<pre>~/Lab12_RPiDeployment/scripts/run_count_pi.sh
+~/Lab12_RPiDeployment/scripts/run_count_pi.sh 0 --line 0.4</pre>
+<p>ถ้ารันผ่าน SSH สคริปต์จะรู้เองว่าไม่มีจอ และนับในเทอร์มินัลอย่างเดียว (หยุดด้วย Ctrl+C) ไฟล์ log อยู่ที่ <code>~/Lab12_RPiDeployment/counts_&lt;วันเวลา&gt;.csv</code></p>
+</div>
+
+<div class="warn">
+<b>ยังไม่ได้ทดสอบบน Pi กับโมเดลและสายพานจริง</b> ส่วนที่ทดสอบแล้วบน Windows: ตรรกะการนับ (8 กรณี รวมกลับทิศ/วัตถุสองชิ้นคู่กัน/ตรวจจับหลุดชั่วคราว), export, และการนับจากวิดีโอด้วย ONNX บน CPU · FPS บน Pi 5 จะต่ำกว่าบนคอมมาก วัดจริงแล้วบันทึกไว้
+</div>
+
+<div class="card">
+<h2>Troubleshooting</h2>
+<table>
+<tr><th>อาการ</th><th>สาเหตุ / วิธีแก้</th></tr>
+<tr><td>ชิ้นเดียวนับสองครั้ง</td><td>track หลุดตรงเส้นนับ: โมเดลตรวจจับไม่ติดต่อกัน ลด <code>--conf</code> หรือย้าย <code>--line</code> ไปจุดที่ตรวจจับได้มั่นคง</td></tr>
+<tr><td>วัตถุผ่านแต่ไม่นับ</td><td>โมเดลไม่เห็นวัตถุตอนอยู่ใกล้เส้น หรือ FPS ต่ำจนวัตถุกระโดดเกิน 15% ของภาพระหว่างเฟรม ลดความเร็วสายพานไม่ได้ จึงต้องเพิ่ม FPS (export ขนาดเล็กลงใน Lab 6) หรือใช้ AI HAT (Lab 8)</td></tr>
+<tr><td>นับผิดคลาส</td><td>กลับไปเก็บภาพคลาสนั้นเพิ่มใน Lab 9 แล้วเทรนใหม่ ตรวจว่าแสงและมุมกล้องตอนเก็บภาพตรงกับตอนนี้</td></tr>
+<tr><td><code>no data transfer registered</code> บนคอม</td><td>ONNX ถูกส่งไป GPU สคริปต์บังคับ CPU ให้แล้วสำหรับไฟล์ .onnx ถ้ายังเจอ ตรวจว่าใช้สคริปต์เวอร์ชันล่าสุด</td></tr>
+<tr><td><code>Python environment not found</code> บน Pi</td><td>ยังไม่ได้ทำ Lab 7: <code>cd ~/Lab7_RaspberryPi/scripts &amp;&amp; ./setup_pi.sh</code></td></tr>
+</table>
+</div>
+
+<nav><a href="../Lab11_WindowsTesting/manual.html">&larr; Lab 11: ทดสอบบนคอม</a><a href="../index.html">หน้าหลักคอร์ส &rarr;</a></nav>
+<footer>YOLO Training Labs</footer>
+</div>
+</body>
+</html>

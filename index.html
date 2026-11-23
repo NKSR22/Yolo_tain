@@ -57,15 +57,15 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 <header class="hero">
   <span class="badge">คอร์สเตรียมความพร้อม</span>
   <h1>YOLO Object Detection: จากศูนย์ถึงโครงงานจริง</h1>
-  <div class="meta"><span>📚 11 Lab (Lab 0-10)</span><span>⏱ รวมประมาณ 30-40 ชั่วโมง</span><span>🖥 Windows + Raspberry Pi</span></div>
+  <div class="meta"><span>📚 13 Lab (Lab 0-12)</span><span>⏱ รวมประมาณ 30-40 ชั่วโมง</span><span>🖥 Windows + Raspberry Pi</span></div>
 </header>
 
 <div class="card">
 <h2>📖 เกี่ยวกับคอร์สนี้</h2>
 <p>ชุดแบบฝึกนี้ออกแบบมาเพื่อเตรียมความพร้อมนักศึกษาก่อนเริ่มทำโครงงานที่ใช้ YOLO Object Detection
 ตั้งแต่การเตรียมเครื่อง การ Train โมเดล การสร้าง Dataset เอง ไปจนถึงการนำโมเดลไปใช้งานจริงบน Raspberry Pi
-ร่วมกับ AI HAT และชุดสายพานที่ควบคุมผ่าน Arduino</p>
-<p>แต่ละ Lab มีโฟลเดอร์แยกของตัวเอง พร้อมสคริปต์สำหรับรันงาน (<code>.bat</code> สำหรับ Windows, <code>.sh</code> สำหรับ Raspberry Pi ใน Lab 7-9) และคู่มือฉบับเต็มแบบ HTML</p>
+ร่วมกับ AI HAT และนับวัตถุบนสายพานลำเลียง</p>
+<p>แต่ละ Lab มีโฟลเดอร์แยกของตัวเอง พร้อมสคริปต์สำหรับรันงาน (<code>.bat</code> สำหรับ Windows, <code>.sh</code> สำหรับ Raspberry Pi ใน Lab 7, 8 และ 12) และคู่มือฉบับเต็มแบบ HTML</p>
 </div>
 
 <div class="card">
@@ -136,22 +136,34 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 </tr><tr>
 <td>3-4 ชม.</td>
 <td><b>Lab 9</b></td>
-<td>เชื่อม AI เข้ากับสายพาน + Sensor ผ่าน Arduino (USB)</td>
-<td>AI + Embedded</td>
-<td><a href="Lab9_ConveyorGPIO/manual.html">เปิดคู่มือ &rarr;</a></td>
+<td>เก็บภาพวัตถุจากสายพานที่วิ่งอยู่ด้วย GUI</td>
+<td>Data collection</td>
+<td><a href="Lab9_ConveyorCapture/manual.html">เปิดคู่มือ &rarr;</a></td>
 </tr><tr>
-<td>3-6 ชม.</td>
+<td>3-4 ชม.</td>
 <td><b>Lab 10</b></td>
-<td>โครงงานย่อย: ระบบคัดแยกวัตถุจริง</td>
-<td>Mini Project</td>
-<td><a href="Lab10_MiniProject/manual.html">เปิดคู่มือ &rarr;</a></td>
+<td>เตรียมชุดข้อมูลและเทรนบน Google Colab</td>
+<td>Dataset + Training</td>
+<td><a href="Lab10_ColabTraining/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>1-2 ชม.</td>
+<td><b>Lab 11</b></td>
+<td>ทดสอบโมเดลที่เทรนได้บนคอมพิวเตอร์</td>
+<td>Windows Inference</td>
+<td><a href="Lab11_WindowsTesting/manual.html">เปิดคู่มือ &rarr;</a></td>
+</tr><tr>
+<td>2-3 ชม.</td>
+<td><b>Lab 12</b></td>
+<td>แปลงโมเดลและนำไปรันบน Raspberry Pi</td>
+<td>Deployment</td>
+<td><a href="Lab12_RPiDeployment/manual.html">เปิดคู่มือ &rarr;</a></td>
 </tr>
 </table>
 
 <h2>🚀 เริ่มต้นอย่างไร</h2>
 <div class="step"><span class="n">1</span><p>Clone/คัดลอกโฟลเดอร์นี้ทั้งหมดไว้บนเครื่อง Windows ของกลุ่ม</p></div>
 <div class="step"><span class="n">2</span><p>เปิด <a href="Lab0_Setup/manual.html">Lab 0 — การเตรียมเครื่อง</a> แล้วทำตามขั้นตอนก่อนเป็นอันดับแรก</p></div>
-<div class="step"><span class="n">3</span><p>ทำ Lab ตามลำดับ 0 → 10 โดยแต่ละ Lab จะใช้ผลลัพธ์ (โมเดล/ไฟล์) ต่อจาก Lab ก่อนหน้า</p></div>
+<div class="step"><span class="n">3</span><p>ทำ Lab ตามลำดับ 0 → 12 โดยแต่ละ Lab จะใช้ผลลัพธ์ (โมเดล/ไฟล์) ต่อจาก Lab ก่อนหน้า</p></div>
 
 <h2>📁 โครงสร้างโปรเจกต์</h2>
 <div class="filetree">Yolo_tain/
@@ -170,10 +182,12 @@ footer{margin-top:50px;color:var(--muted);font-size:12px;text-align:center}
 ├── Lab6_Export/ ...
 ├── Lab7_RaspberryPi/            (สคริปต์ .sh รันบน Raspberry Pi OS)
 ├── Lab8_AIHat/                  (สคริปต์ .sh รันบน Raspberry Pi OS)
-├── Lab9_ConveyorGPIO/           (สคริปต์รันบน Pi + โปรเจค PlatformIO ของ Arduino)
-└── Lab10_MiniProject/           (โครงงานย่อยรวมทุก Lab)</div>
+├── Lab9_ConveyorCapture/        (GUI เก็บภาพจากสายพาน)
+├── Lab10_ColabTraining/         (เตรียม Dataset และเทรนบน Google Colab)
+├── Lab11_WindowsTesting/        (ทดสอบ best.pt บน Windows)
+└── Lab12_RPiDeployment/         (ONNX + นับวัตถุต่อคลาสบน Raspberry Pi)</div>
 
-<div class="tip">Lab 0-6 และ 10 (ส่วนเตรียมโมเดล) ออกแบบให้รันบน <b>Windows</b> เป็นหลัก ส่วน Lab 7-9 (และการรันจริงของ Lab 10) ต้องใช้ <b>Raspberry Pi OS</b> เนื่องจากต้องเข้าถึงฮาร์ดแวร์ (กล้อง, AI HAT, บอร์ด Arduino) โดยตรง — ไฟล์โมเดล/Dataset ที่เตรียมจาก Windows จะถูกโอนไปยัง Pi ตามที่อธิบายไว้ใน Lab 7</div>
+<div class="tip">Lab 0-6, 9-11 และขั้น export ใน Lab 12 ใช้ <b>Windows</b> เป็นหลัก ส่วน Lab 7-8 และขั้นรันจริงใน Lab 12 ใช้ <b>Raspberry Pi OS</b> ไฟล์ ONNX จะถูกโอนไปยัง Pi ตามขั้นตอนใน Lab 12</div>
 
 <footer>เอกสารประกอบวิชาเตรียมความพร้อมโครงงาน YOLO Object Detection</footer>
 </div>

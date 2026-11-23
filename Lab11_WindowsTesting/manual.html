@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Lab 11: ทดสอบโมเดลบนคอมพิวเตอร์</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root{--bg:#0f1115;--panel:#171a21;--text:#e8eaed;--muted:#9aa4b2;--accent:#5b8cff;--warn:#f59e0b;--border:#2a2f3a;--code:#11141a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Sarabun",sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:920px;margin:0 auto;padding:32px 24px 80px}
+header,.card,.step,.warn{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin:16px 0}
+header{background:linear-gradient(135deg,#1a2540,#0f1115)}
+h1{font-size:27px;margin:4px 0}.meta,small{color:var(--muted)}
+h2{font-size:20px;margin-top:30px;border-bottom:2px solid var(--border);padding-bottom:8px}
+pre{background:var(--code);padding:14px 16px;border:1px solid var(--border);border-radius:8px;overflow:auto;color:#c9d1d9}
+code{font-family:Consolas,monospace;color:#7dd3fc}
+li{margin:7px 0}
+.warn{background:#2a1f0f;border-color:#55420f;color:#fde68a}
+a{color:#7dbaff}
+nav{display:flex;justify-content:space-between;margin-top:36px}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <small>LAB 11 · Windows inference</small>
+  <h1>ทดสอบโมเดลที่เทรนจาก Colab บนคอม</h1>
+  <div class="meta">ตรวจว่า best.pt โหลดได้และตรวจจับวัตถุในภาพจริงก่อนแปลงไป Raspberry Pi</div>
+</header>
+
+<div class="step">
+<h2>1. วางโมเดลและเตรียมเครื่อง</h2>
+<ol>
+<li>ดาวน์โหลด <code>best.pt</code> จาก Drive หลังจบ Lab 10</li>
+<li>คัดลอกไปไว้ที่ <code>Lab11_WindowsTesting\best.pt</code></li>
+<li>เปิด PowerShell ที่ root ของ repository ตรวจว่ามี venv จาก Lab 0</li>
+</ol>
+</div>
+
+<div class="step">
+<h2>2. รันกับภาพหรือวิดีโอ</h2>
+<p>ส่ง path ของภาพหรือวิดีโอเป็น argument ให้สคริปต์ เช่น:</p>
+<pre>.\Lab11_WindowsTesting\scripts\run_test.bat "C:\path\to\an-unseen-test-image.jpg"
+.\Lab11_WindowsTesting\scripts\run_test.bat "C:\data\conveyor\test clip.mp4"</pre>
+<p>เปลี่ยนตัวอย่าง path ให้เป็นไฟล์จริงบนเครื่อง ผลภาพที่วาดกรอบแล้วจะอยู่ใน <code>runs\detect\lab11_custom_test\</code> ตรวจชื่อคลาส ความถูกต้องของกรอบ และกรณีที่วัตถุถูกพลาดหรือทายผิด</p>
+<p>ภาพทดสอบที่ดีที่สุดคือภาพจากสายพานจริงที่<b>ไม่ได้อยู่ใน ZIP ที่ใช้เทรน</b> เปิด GUI ของ <a href="../Lab9_ConveyorCapture/manual.html">Lab 9</a> อีกครั้ง ตั้ง Save under เป็นโฟลเดอร์ใหม่ เช่น <code>C:\data\lab11_test</code> แล้วเก็บภาพชุดใหม่ไว้ทดสอบ</p>
+</div>
+
+<div class="step">
+<h2>3. ทดสอบสดกับกล้องบนสายพาน</h2>
+<p>ใส่หมายเลขกล้องแทน path จะเปิดหน้าต่างแสดงผลสด (ไม่บันทึกไฟล์) ปิดด้วย <code>q</code> หรือ Ctrl+C:</p>
+<pre>.\Lab11_WindowsTesting\scriptsun_test.bat 0</pre>
+<p>เปิดสวิตช์สายพาน วางวัตถุแต่ละคลาสให้วิ่งผ่าน กลับทิศแล้วลองอีกรอบ ดูว่ากรอบติดตามวัตถุได้ต่อเนื่องตลอดทางหรือหลุดบางช่วง ช่วงที่หลุดบ่อยคือช่วงที่ไม่ควรวางเส้นนับใน Lab 12</p>
+<p>ถ้าขึ้น <code>can't grab frame</code> แล้วจบทันที ให้รันคำสั่งเดิมอีกครั้ง เว็บแคม USB บางรุ่นบน Windows อ่านเฟรมแรกไม่สำเร็จเป็นบางครั้ง (ตอนทดสอบเจอ 2 ครั้งจากการเปิดกล้องประมาณ 7 ครั้ง)</p>
+</div>
+
+<div class="warn">
+ทดสอบด้วยภาพที่ไม่ได้ใช้ฝึก โดยเฉพาะภาพจากสภาพแสง/ตำแหน่งที่ต่างกัน ตรวจทั้งวัตถุที่มีและไม่มีในภาพ อย่าใช้ภาพ Train ชุดเดิมเป็นหลักฐานว่าโมเดล generalize ได้
+</div>
+
+<div class="card">
+<h2>ผลลัพธ์และขั้นถัดไป</h2>
+<p>เมื่อโมเดลทำงานและผลบนภาพทดสอบน่าเชื่อถือแล้ว ให้ใช้ไฟล์ <code>best.pt</code> เดิมทำ ONNX และนำไปรันบน Raspberry Pi ตาม <a href="../Lab12_RPiDeployment/manual.html">Lab 12</a></p>
+</div>
+
+<nav><a href="../Lab10_ColabTraining/manual.html">&larr; Lab 10: เทรน Colab</a><a href="../Lab12_RPiDeployment/manual.html">Lab 12: Raspberry Pi &rarr;</a></nav>
+<footer>YOLO Training Labs</footer>
+</div>
+</body>
+</html>

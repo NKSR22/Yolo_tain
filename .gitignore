@@ -20,5 +20,14 @@ Lab3_CustomDataset/dataset/
 Lab3_CustomDataset/answer_key/
 Lab3_CustomDataset/compare/
 
+# Lab 9 conveyor image capture output + the ZIP made from it
+Lab9_ConveyorCapture/captured_images/
+Lab9_ConveyorCapture/conveyor_images.zip
+Lab9_ConveyorCapture/.venv/
+
+# Lab 12 exported model and count logs
+Lab12_RPiDeployment/best.onnx
+Lab12_RPiDeployment/counts_*.csv
+
 # Lab 5 report output (regenerate with export_report.bat)
 Lab5_Evaluation/report/

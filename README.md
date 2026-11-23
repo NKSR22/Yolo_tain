@@ -1,6 +1,6 @@
 # YOLO Training Labs
 
-ชุดแบบฝึก Lab 0-10 เพื่อเตรียมความพร้อมนักศึกษาก่อนทำโครงงาน YOLO Object Detection
+ชุดแบบฝึก Lab 0-12 เพื่อเตรียมความพร้อมนักศึกษาก่อนทำโครงงาน YOLO Object Detection
 
 เปิด `index.html` ด้วยเบราว์เซอร์เพื่อดูสารบัญและลิงก์ไปคู่มือของแต่ละ Lab
 
@@ -14,10 +14,12 @@
 |---|---|---|
 | 0-6 | Windows (มีการ์ดจอ NVIDIA จะดีมาก) | `.bat` — ต้องพิมพ์ `.\` นำหน้าเสมอบน PowerShell |
 | 7-8 | Raspberry Pi 5 | `.sh` |
-| 9 | Raspberry Pi 5 + Arduino Uno ต่อ USB | `.sh` / `.py` บน Pi + โปรเจค PlatformIO ใน `Lab9_ConveyorGPIO/arduino/` |
-| 10 | เตรียมของบน Windows แล้วรันจริงบน Pi | ทั้งสองแบบ |
+| 9 | Windows + เว็บแคม | GUI เก็บภาพวัตถุจากสายพานที่วิ่งอยู่ |
+| 10 | เตรียมภาพบน Windows, ตรวจกรอบและเทรนบน Google Colab | Notebook + Bounding Box review |
+| 11 | Windows | ทดสอบ `best.pt` กับภาพ/วิดีโอ |
+| 12 | Windows export แล้ว Raspberry Pi 5 | ONNX + นับวัตถุต่อคลาสเมื่อข้ามเส้น |
 
-ไฟล์โมเดลที่เตรียมจาก Windows โอนไป Pi ด้วย `Lab7_RaspberryPi\scripts\copy_to_pi.bat`
+ไฟล์โมเดลที่เตรียมจาก Windows โอนไป Pi ด้วย `Lab7_RaspberryPi\scripts\copy_to_pi.bat` (Lab 7) และ `Lab12_RPiDeployment\scripts\copy_to_pi.bat` (Lab 12)
 
 ## ฮาร์ดแวร์ที่คู่มืออ้างอิง
 
@@ -29,7 +31,7 @@
 | รันบน Edge | Raspberry Pi 5 Model B (RAM 4 GB), Raspberry Pi OS บน Debian 13, Python 3.13 |
 | กล้อง | Logitech C270 ผ่าน USB |
 | ตัวเร่งความเร็ว | Hailo-8 AI HAT บน PCIe |
-| ควบคุมสายพาน | Arduino Uno R3 ต่อ USB (AI HAT เสียบทับหัว GPIO ของ Pi ไปแล้ว) |
+| สายพาน | เปิด/กลับทิศด้วยสวิตช์ ไม่มี MCU ควบคุม ระบบแค่ดูกล้อง |
 
 ## ชุดข้อมูล
 
@@ -39,7 +41,7 @@
 |---|---|---|
 | Lab 1 | `coco8` | ชุดจิ๋ว 8 ภาพ ใช้ซ้อมให้ครบกระบวนการ |
 | Lab 3-8 | `african-wildlife` | buffalo, elephant, rhino, zebra |
-| Lab 9-10 | `construction-ppe` | helmet, gloves, vest, boots, goggles, person |
+| Lab 9-10 | ภาพจากสายพานของผู้เรียน | annotate และเทรนคลาสของโครงงานเอง |
 
 ให้นักศึกษารัน `Lab0_Setup\scripts\prefetch.bat` ที่บ้านก่อนเข้าคลาส จะได้ไม่ต้องรอโหลดพร้อมกันทั้งห้อง
 
@@ -47,9 +49,9 @@
 
 | Lab | สถานะ |
 |---|---|
-| 0-9 | เขียนครบและทดสอบบนเครื่องจริงแล้ว |
-| 9 Step 7 | ยังไม่ได้ทดสอบกับมอเตอร์/เซ็นเซอร์/สายพานจริง (ระบุไว้ในคู่มือแล้ว) |
-| 10 | ยังไม่ได้เขียน |
+| 0-8 | เขียนครบและทดสอบตามคู่มือเดิม |
+| 9 | คู่มือโฟกัสการเก็บภาพ; การทดสอบกล้อง/สายพานจริงขึ้นกับอุปกรณ์ |
+| 10-12 | เตรียม workflow แล้ว; ยังต้องทดสอบด้วยชุดข้อมูลและโมเดลของผู้เรียน |
 
 รายละเอียดแผนงาน สิ่งที่ค้าง และบันทึกการตัดสินใจทั้งหมดอยู่ที่ **`docs/MANUAL_PLAN.md`** — เปิดไฟล์นั้นก่อนเริ่มงานทุกครั้ง
 
